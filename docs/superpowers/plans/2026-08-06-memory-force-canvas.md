@@ -89,7 +89,7 @@ git add src/memoryState.ts src/memoryState.test.ts src/memoryCanvasState.ts src/
 git commit -m "feat: model memory graph positions from data"
 ```
 
-### Task 2: Add local force movement and batched persistence
+### Task 2: Replace the static graph with a force-driven canvas
 
 **Files:**
 - Modify: `package.json`
@@ -101,15 +101,15 @@ git commit -m "feat: model memory graph positions from data"
 **Interfaces:**
 - `MemoryWorkspace` accepts optional `initialGraph?: MemoryGraphData` and `onPositionsCommit?: (positions: Record<string, MemoryPosition>) => void`.
 - `MemoryGraph` accepts `onPositionsChange(positions)` and emits one final changed-position batch after a drag settles.
-- `MemoryGraph` uses `d3-force` only over `draggedId` plus `directNodeIds(visibleEdges, draggedId)`.
+- `MemoryGraph` uses React Flow for the canvas and `d3-force` only over `draggedId` plus `directNodeIds(visibleEdges, draggedId)`.
 
-- [ ] **Step 1: Add the dependency and ensure its types are resolvable**
+- [ ] **Step 1: Add the canvas and force dependencies and ensure their types are resolvable**
 
-Run: `npm install d3-force && npm install -D @types/d3-force`
+Run: `npm install @xyflow/react d3-force && npm install -D @types/d3-force`
 
-Expected: only `d3-force` and its TypeScript definitions are added to the lockfile and package manifests.
+Expected: only `@xyflow/react`, `d3-force`, and D3-force TypeScript definitions are added to the lockfile and package manifests.
 
-- [ ] **Step 2: Replace parent-owned temporary positions with graph-record positions**
+- [ ] **Step 2: Replace the static SVG with data-owned React Flow nodes**
 
 ```tsx
 export default function MemoryWorkspace({ initialGraph = initialMemoryGraph, locale, onPositionsCommit }: Props) {
@@ -124,7 +124,7 @@ export default function MemoryWorkspace({ initialGraph = initialMemoryGraph, loc
 }
 ```
 
-Remove `initialMemoryPosition`, `nodePositions`, `setNodePosition`, and `moveVisibleNeighbours` from the workspace API. Existing mock upload behaviour continues to return full API-shaped nodes with a position.
+Remove the SVG position table and hash fallback from `MemoryGraph`. Each React Flow node uses the matching record's `position` and a diameter derived from complete-graph degree. Existing mock upload behaviour continues to return full API-shaped nodes with a position.
 
 - [ ] **Step 3: Drive only the active star with D3-force**
 
