@@ -3,37 +3,61 @@ import test from 'node:test'
 
 const memoryCanvasState = await import('./memoryCanvasState.ts')
 
-test('node diameters use stable total-edge-count buckets', () => {
+test('node diameters use compact total-edge-count buckets', () => {
   assert.deepEqual(
     [0, 1, 2, 3, 4, 9].map(memoryCanvasState.nodeDiameterForDegree),
-    [24, 24, 36, 48, 60, 60],
-  )
-
-  assert.deepEqual(
-    memoryCanvasState.nodeDegrees([
-      { from: 'a', to: 'b' },
-      { from: 'a', to: 'c' },
-      { from: 'a', to: 'd' },
-      { from: 'a', to: 'e' },
-      { from: 'b', to: 'c' },
-    ]),
-    { a: 4, b: 2, c: 2, d: 1, e: 1 },
+    [16, 16, 22, 30, 38, 38],
   )
 })
 
-test('dragging a node moves only its direct neighbours', () => {
+test('force drag participants include every visible node', () => {
   assert.deepEqual(
-    memoryCanvasState.moveDirectNeighbours(
-      { a: { x: 10, y: 10 }, b: { x: 20, y: 20 }, c: { x: 30, y: 30 }, d: { x: 40, y: 40 } },
-      [{ from: 'a', to: 'b' }, { from: 'a', to: 'c' }, { from: 'c', to: 'd' }],
-      'a',
-      { x: 8, y: -4 },
+    memoryCanvasState.forceParticipantIds([{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }]),
+    new Set(['a', 'b', 'c', 'd']),
+  )
+})
+
+test('edge gradients anchor each end to its node color', () => {
+  assert.deepEqual(
+    memoryCanvasState.edgeGradientColors('#82957d', '#839eb3'),
+    { sourceColor: '#82957d', targetColor: '#839eb3' },
+  )
+  assert.deepEqual(
+    memoryCanvasState.edgeGradientColors(undefined, '#839eb3'),
+    { sourceColor: '#969189', targetColor: '#839eb3' },
+  )
+})
+
+test('force links preserve a 72px node-edge gap', () => {
+  assert.equal(memoryCanvasState.forceLinkDistance(15, 11), 98)
+})
+
+test('force links keep a uniform constraint strength', () => {
+  assert.equal(memoryCanvasState.forceLinkStrength, 1)
+})
+
+test('force links use extra iterations to settle spacing precisely', () => {
+  assert.equal(memoryCanvasState.forceLinkIterations, 4)
+})
+
+test('only changed local positions are emitted for persistence', () => {
+  assert.deepEqual(
+    memoryCanvasState.changedPositions(
+      { a: { x: 10, y: 10 }, b: { x: 20, y: 20 }, c: { x: 30, y: 30 } },
+      { a: { x: 10, y: 10 }, b: { x: 31, y: 17 }, c: { x: 30, y: 30 } },
+      new Set(['a', 'b']),
     ),
-    { a: { x: 10, y: 10 }, b: { x: 28, y: 16 }, c: { x: 38, y: 26 }, d: { x: 40, y: 40 } },
+    { b: { x: 31, y: 17 } },
   )
 })
 
-test('new Memory nodes receive a stable canvas position', () => {
-  assert.deepEqual(memoryCanvasState.initialMemoryPosition('context-brief'), { x: 485, y: 275 })
-  assert.deepEqual(memoryCanvasState.initialMemoryPosition('context-file-3'), memoryCanvasState.initialMemoryPosition('context-file-3'))
+test('current canvas coordinates survive a server confirmation in the same visit', () => {
+  assert.deepEqual(
+    memoryCanvasState.displayPosition({ x: 527, y: 283 }, { x: 485, y: 275 }),
+    { x: 527, y: 283 },
+  )
+  assert.deepEqual(
+    memoryCanvasState.displayPosition(undefined, { x: 485, y: 275 }),
+    { x: 485, y: 275 },
+  )
 })

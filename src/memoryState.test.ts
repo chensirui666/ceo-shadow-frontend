@@ -6,9 +6,9 @@ const memoryState = await import('./memoryState.ts')
 test('visibleMemoryGraph filters by layer, source, keyword, and visible edge endpoints', () => {
   const graph = {
     nodes: [
-      { id: 'a', layer: 'context', source: 'dingtalk', title: '产品节奏', summary: '本周发布', tier: 'core' },
-      { id: 'b', layer: 'context', source: 'file', title: '发布计划', summary: '产品节奏说明', tier: 'leaf' },
-      { id: 'c', layer: 'user', source: 'dingtalk', title: '工作偏好', summary: '优先产品', tier: 'core' },
+      { id: 'a', layer: 'context', source: 'dingtalk', title: '产品节奏', summary: '本周发布', position: { x: 320, y: 180 }, visual: { color: '#789abc' } },
+      { id: 'b', layer: 'context', source: 'file', title: '发布计划', summary: '产品节奏说明', position: { x: 180, y: 300 } },
+      { id: 'c', layer: 'user', source: 'dingtalk', title: '工作偏好', summary: '优先产品', position: { x: 500, y: 180 } },
     ],
     edges: [{ from: 'a', to: 'b' }, { from: 'a', to: 'c' }],
   } satisfies import('./memoryState.ts').MemoryGraphData
@@ -21,6 +21,13 @@ test('visibleMemoryGraph filters by layer, source, keyword, and visible edge end
     nodes: [graph.nodes[0]],
     edges: [],
   })
+})
+
+test('every graph node owns its server-provided canvas coordinate', () => {
+  assert.equal(
+    memoryState.initialMemoryGraph.nodes.every((node) => Number.isFinite(node.position.x) && Number.isFinite(node.position.y)),
+    true,
+  )
 })
 
 test('material tasks preserve the graph on failure and add the matching source on completion', () => {

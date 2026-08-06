@@ -358,6 +358,7 @@ button, input { font: inherit; }
 
 /* Memory */
 .memory-page {
+  --memory-node-fallback: #969189;
   --memory-source-dingtalk: #82957d;
   --memory-source-feishu: #839eb3;
   --memory-source-teams: #9990a8;
@@ -442,22 +443,18 @@ button, input { font: inherit; }
 
 .memory-map-area { display: grid; min-height: 492px; margin-top: 9px; }
 .memory-graph { min-width: 0; min-height: 492px; animation: memory-map-in .16s ease-out; }
-.memory-flow { width: 100%; height: 492px; border-radius: 12px; background: #fbfaf7; }
+.memory-flow { width: 100%; height: 492px; border: 1px solid #e9e5dd; border-radius: 12px; background: #fbfaf7; }
 .memory-flow .react-flow__pane { cursor: grab; }
 .memory-flow .react-flow__pane:active { cursor: grabbing; }
 .memory-flow .react-flow__edge-path { stroke: var(--memory-edge); stroke-width: 1.4; }
-.memory-flow-node { position: relative; border: 2px solid #fffefd; border-radius: 50%; cursor: grab; transition: opacity .16s ease, box-shadow .16s ease; }
+.memory-flow-node { position: relative; border: 1.5px solid #fffefd; border-radius: 50%; cursor: grab; opacity: 1; transition: box-shadow .16s ease; }
 .memory-flow-node:active { cursor: grabbing; }
 .memory-flow .react-flow__node:focus-visible .memory-flow-node { outline: 3px solid rgb(36 36 34 / 18%); outline-offset: 3px; }
-.memory-flow-node-dingtalk { background: var(--memory-source-dingtalk); }
-.memory-flow-node-feishu { background: var(--memory-source-feishu); }
-.memory-flow-node-teams { background: var(--memory-source-teams); }
-.memory-flow-node-file { background: var(--memory-source-file); }
-.memory-flow-node-conversation { background: var(--memory-source-conversation); }
-.memory-flow-node-leaf { opacity: .58; }
-.memory-flow-node-connection { opacity: .82; }
 .memory-flow-handle { top: 50% !important; left: 50% !important; width: 1px !important; height: 1px !important; min-width: 1px !important; min-height: 1px !important; border: 0 !important; background: transparent !important; opacity: 0; transform: translate(-50%, -50%) !important; }
-.memory-flow-label { position: absolute; top: 50%; left: calc(100% + 8px); color: #4b4740; pointer-events: none; transform: translateY(-50%); white-space: nowrap; font-size: 14px; font-weight: 700; }
+.memory-flow-tooltip { position: absolute; z-index: 2; bottom: calc(100% + 9px); left: 50%; display: grid; width: max-content; max-width: 210px; gap: 3px; border: 1px solid #dfdbd3; border-radius: 8px; background: #fffefd; box-shadow: 0 8px 18px rgb(54 48 39 / 12%); color: #4b4740; opacity: 0; padding: 7px 9px; pointer-events: none; transform: translateX(-50%); transition: opacity .14s ease; white-space: normal; }
+.memory-flow-tooltip strong { font-size: 12px; font-weight: 700; }
+.memory-flow-tooltip small { color: #79736a; font-size: 11px; line-height: 1.35; }
+.memory-flow-node:hover .memory-flow-tooltip, .memory-flow .react-flow__node:focus-visible .memory-flow-tooltip { opacity: 1; }
 .memory-flow .react-flow__controls { overflow: hidden; border: 1px solid #ded9cf; border-radius: 8px; box-shadow: 0 6px 18px rgb(54 48 39 / 10%); }
 .memory-flow .react-flow__controls-button { width: 30px; height: 30px; border-bottom-color: #e6e1d8; background: #fffefd; color: #514c44; }
 .memory-flow .react-flow__controls-button:hover { background: #f2efe8; }
@@ -767,7 +764,6 @@ button, input { font: inherit; }
   .memory-search-input { width: 100%; }
   .memory-map-area, .memory-graph { min-height: 350px; }
   .memory-flow { height: 350px; }
-  .memory-flow-label { font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

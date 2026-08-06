@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Turn Memory into a compact, backend-shaped canvas with opaque nodes, a grid, and a one-hop local force drag that persists only final positions.
+**Goal:** Turn Memory into a compact, backend-shaped canvas with opaque nodes, a grid, and a full-visible-graph force drag that persists only final positions.
 
-**Architecture:** `MemoryNode` owns the backend-provided position and optional visual colour. `MemoryWorkspace` keeps the graph response and exposes one batched position-change callback. `MemoryGraph` remains the React Flow adapter and owns only the transient D3-force simulation while a node is being dragged.
+**Architecture:** `MemoryNode` owns the backend-provided position and optional visual colour. `MemoryWorkspace` keeps the graph response and exposes one batched position-change callback. `MemoryGraph` remains the React Flow adapter and owns one transient D3-force simulation over all currently visible nodes while a node is being dragged.
 
 **Tech Stack:** React 19, TypeScript, `@xyflow/react`, `d3-force`, Node test runner, Vite.
 
@@ -13,9 +13,10 @@
 - Backend records, not component code, supply node IDs, labels, summaries, colours and coordinates.
 - The backend-provided coordinate is the only initialization source; do not retain an ID-to-coordinate map or hash layout fallback.
 - Degree 0–1/2/3/4+ maps to exactly 16/22/30/38px, calculated from complete graph edges.
-- Only the dragged node and its direct visible neighbours take part in force motion; second-hop nodes remain fixed.
-- A link equilibrium distance is the two node radii plus 72px. Persist only the final changed positions after the simulation cools.
-- Respect `prefers-reduced-motion` by using the existing instantaneous one-hop movement rather than force animation.
+- Every currently visible node takes part in force motion; the active node is pinned to the pointer and links remain limited to visible backend edges.
+- A link equilibrium distance is the two node radii plus 72px. Its strength is 1 with four solver iterations so all pairs return to the same visible gap after release. Persist only the final changed positions after the simulation cools.
+- Render every edge as a straight 1.6px SVG path with a source-to-target gradient from the node visual colours; a missing endpoint uses `#969189`.
+- Respect `prefers-reduced-motion` by not starting automatic force animation.
 - Keep the current fixture solely as API-shaped demo data because this checkout has no graph endpoint.
 
 ---
@@ -30,7 +31,7 @@
 
 **Interfaces:**
 - Produces `MemoryPosition`, `MemoryNode.position`, and optional `MemoryNode.visual.color`.
-- Produces `directNodeIds(edges, draggedId): Set<string>` and `changedPositions(before, after, ids): Record<string, MemoryPosition>`.
+- Produces `forceParticipantIds(nodes): Set<string>` and `changedPositions(before, after, ids): Record<string, MemoryPosition>`.
 - Removes `initialMemoryPosition` and `MemoryNodeTier`.
 
 - [ ] **Step 1: Write failing tests for data-owned coordinates and compact buckets**
@@ -69,12 +70,10 @@ export type MemoryNode = {
   visual?: { color?: string }
 }
 
-export const directNodeIds = (edges: MemoryEdge[], draggedId: string) => new Set(
-  edges.flatMap(({ from, to }) => from === draggedId ? [to] : to === draggedId ? [from] : []),
-)
+export const forceParticipantIds = (nodes: Array<{ id: string }>) => new Set(nodes.map(({ id }) => id))
 ```
 
-Move the fixture coordinates onto its records, remove tier-specific fields, and give its fixture records visual colours. Retain `moveDirectNeighbours` only for the reduced-motion path and base it on `directNodeIds`.
+Move the fixture coordinates onto its records, remove tier-specific fields, and give its fixture records visual colours.
 
 - [ ] **Step 4: Run the focused tests and TypeScript check**
 
@@ -89,7 +88,7 @@ git add src/memoryState.ts src/memoryState.test.ts src/memoryCanvasState.ts src/
 git commit -m "feat: model memory graph positions from data"
 ```
 
-### Task 2: Add local force movement and batched persistence
+### Task 2: Replace the static graph with a force-driven canvas
 
 **Files:**
 - Modify: `package.json`
@@ -101,15 +100,15 @@ git commit -m "feat: model memory graph positions from data"
 **Interfaces:**
 - `MemoryWorkspace` accepts optional `initialGraph?: MemoryGraphData` and `onPositionsCommit?: (positions: Record<string, MemoryPosition>) => void`.
 - `MemoryGraph` accepts `onPositionsChange(positions)` and emits one final changed-position batch after a drag settles.
-- `MemoryGraph` uses `d3-force` only over `draggedId` plus `directNodeIds(visibleEdges, draggedId)`.
+- `MemoryGraph` uses React Flow for the canvas and `d3-force` over all currently visible nodes.
 
-- [ ] **Step 1: Add the dependency and ensure its types are resolvable**
+- [ ] **Step 1: Add the canvas and force dependencies and ensure their types are resolvable**
 
-Run: `npm install d3-force && npm install -D @types/d3-force`
+Run: `npm install @xyflow/react d3-force && npm install -D @types/d3-force`
 
-Expected: only `d3-force` and its TypeScript definitions are added to the lockfile and package manifests.
+Expected: only `@xyflow/react`, `d3-force`, and D3-force TypeScript definitions are added to the lockfile and package manifests.
 
-- [ ] **Step 2: Replace parent-owned temporary positions with graph-record positions**
+- [ ] **Step 2: Replace the static SVG with data-owned React Flow nodes**
 
 ```tsx
 export default function MemoryWorkspace({ initialGraph = initialMemoryGraph, locale, onPositionsCommit }: Props) {
@@ -124,14 +123,14 @@ export default function MemoryWorkspace({ initialGraph = initialMemoryGraph, loc
 }
 ```
 
-Remove `initialMemoryPosition`, `nodePositions`, `setNodePosition`, and `moveVisibleNeighbours` from the workspace API. Existing mock upload behaviour continues to return full API-shaped nodes with a position.
+Remove the SVG position table and hash fallback from `MemoryGraph`. Each React Flow node uses the matching record's `position` and a diameter derived from complete-graph degree. Existing mock upload behaviour continues to return full API-shaped nodes with a position.
 
 - [ ] **Step 3: Drive only the active star with D3-force**
 
 ```ts
-const localIds = new Set([node.id, ...directNodeIds(edges, node.id)])
+const participantIds = forceParticipantIds(flowNodes)
 const simulation = forceSimulation(forceNodes)
-  .force('link', forceLink(forceEdges).id((item) => item.id).distance((edge) => edge.source.radius + edge.target.radius + 72))
+  .force('link', forceLink(forceEdges).id((item) => item.id).distance((edge) => forceLinkDistance(edge.source.radius, edge.target.radius)).strength(1).iterations(4))
   .force('charge', forceManyBody().strength(-90))
   .force('collide', forceCollide((item) => item.radius + 10).strength(.85))
   .alphaDecay(.08)
@@ -139,7 +138,7 @@ const simulation = forceSimulation(forceNodes)
 
 Pin the dragged force node to the pointer on every `onNodeDrag`. On each simulation tick, copy only force-node positions into React Flow in one `requestAnimationFrame`. On `end`, compare the force node positions to their drag-start values with `changedPositions`, call `onPositionsChange` once, and stop the simulation. Pin the root to its release position so the local group cannot drift after a drag.
 
-When reduced motion is preferred, call `moveDirectNeighbours` on the local node positions and emit the final batch in `onNodeDragStop`; do not start a simulation.
+When reduced motion is preferred, emit the dragged node's final position in `onNodeDragStop`; do not start a simulation.
 
 - [ ] **Step 4: Keep node rendering generic**
 
@@ -193,7 +192,7 @@ Delete the leaf/connection opacity selectors and the core-label selector. Keep t
 
 Run: `npm run build`
 
-At desktop and 390px width: confirm grid visibility, fully opaque 16–38px nodes, tooltip title/summary, canvas pan/zoom/fit, direct-neighbour fluid motion, fixed second-hop nodes, stretch-and-settle edges, and one drag-end position batch.
+At desktop and 390px width: confirm grid visibility, fully opaque 16–38px nodes, tooltip title/summary, canvas pan/zoom/fit, full-visible-graph fluid motion, stretch-and-settle edges, and one drag-end position batch.
 
 Expected: Vite build succeeds and the browser console has no errors or warnings.
 

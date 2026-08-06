@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Modal, useOverlayState } from '@heroui/react'
 import type { Locale } from '../appState.ts'
-import { initialMemoryPosition, moveDirectNeighbours } from '../memoryCanvasState.ts'
 import type { MemoryPosition } from '../memoryCanvasState.ts'
 import { translations } from '../content/translations.ts'
 import {
@@ -11,20 +10,23 @@ import {
   startMaterialTask,
   visibleMemoryGraph,
 } from '../memoryState.ts'
-import type { MaterialKind, MaterialTask, MemoryLayer, MemorySource } from '../memoryState.ts'
+import type { MaterialKind, MaterialTask, MemoryGraphData, MemoryLayer, MemorySource } from '../memoryState.ts'
 import MemoryGraph from './MemoryGraph.tsx'
 import MemoryToolbar from './MemoryToolbar.tsx'
 
 type DialogMode = 'upload' | 'migration-prompt' | 'migration-file'
 
-export default function MemoryWorkspace({ locale }: { locale: Locale }) {
+type MemoryWorkspaceProps = {
+  initialGraph?: MemoryGraphData
+  locale: Locale
+  onPositionsCommit?: (positions: Record<string, MemoryPosition>) => void
+}
+
+export default function MemoryWorkspace({ initialGraph = initialMemoryGraph, locale, onPositionsCommit }: MemoryWorkspaceProps) {
   const copy = translations[locale].workspace.memory
   const dialogState = useOverlayState()
   const timers = useRef<number[]>([])
-  const [graph, setGraph] = useState(initialMemoryGraph)
-  const [nodePositions, setNodePositions] = useState<Record<string, MemoryPosition>>(() => Object.fromEntries(
-    initialMemoryGraph.nodes.map((node) => [node.id, initialMemoryPosition(node.id)]),
-  ))
+  const [graph, setGraph] = useState(initialGraph)
   const [layer, setLayer] = useState<MemoryLayer>('context')
   const [source, setSource] = useState<MemorySource>('all')
   const [keyword, setKeyword] = useState('')
@@ -33,15 +35,6 @@ export default function MemoryWorkspace({ locale }: { locale: Locale }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), [])
-  useEffect(() => {
-    setNodePositions((current) => {
-      const missingNodes = graph.nodes.filter((node) => !current[node.id])
-      return missingNodes.length
-        ? { ...current, ...Object.fromEntries(missingNodes.map((node) => [node.id, initialMemoryPosition(node.id)])) }
-        : current
-    })
-  }, [graph.nodes])
-
   const schedule = (callback: () => void, delay: number) => {
     const timer = window.setTimeout(() => {
       timers.current = timers.current.filter((item) => item !== timer)
@@ -74,15 +67,14 @@ export default function MemoryWorkspace({ locale }: { locale: Locale }) {
   }
 
   const visible = visibleMemoryGraph(graph, { layer, source, keyword })
-  const setNodePosition = useCallback((id: string, position: MemoryPosition) => {
-    setNodePositions((current) => current[id]?.x === position.x && current[id]?.y === position.y
-      ? current
-      : { ...current, [id]: position })
-  }, [])
-  const moveVisibleNeighbours = useCallback((draggedId: string, delta: MemoryPosition) => {
-    if (!delta.x && !delta.y) return
-    setNodePositions((current) => moveDirectNeighbours(current, visible.edges, draggedId, delta))
-  }, [visible.edges])
+  const applyPositions = useCallback((positions: Record<string, MemoryPosition>) => {
+    if (!Object.keys(positions).length) return
+    setGraph((current) => ({
+      ...current,
+      nodes: current.nodes.map((node) => positions[node.id] ? { ...node, position: positions[node.id] } : node),
+    }))
+    onPositionsCommit?.(positions)
+  }, [onPositionsCommit])
   const emptyMessage = keyword.trim()
     ? copy.empty.search
     : source !== 'all'
@@ -107,7 +99,7 @@ export default function MemoryWorkspace({ locale }: { locale: Locale }) {
       <p aria-live="polite" className="sr-only">{summary}</p>
       <div className="memory-map-area">
         {visible.nodes.length
-          ? <MemoryGraph allEdges={graph.edges} edges={visible.edges} moveVisibleNeighbours={moveVisibleNeighbours} nodes={visible.nodes} positions={nodePositions} setNodePosition={setNodePosition} summary={summary} />
+          ? <MemoryGraph allEdges={graph.edges} edges={visible.edges} nodes={visible.nodes} onPositionsChange={applyPositions} summary={summary} />
           : <div className="memory-empty"><p>{emptyMessage}</p><Button onPress={clearEmptyState} type="button">{clearEmptyLabel}</Button></div>}
       </div>
 

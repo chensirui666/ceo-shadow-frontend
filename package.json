@@ -14,12 +14,14 @@
     "@heroui/react": "^3.2.3",
     "@heroui/styles": "^3.2.3",
     "@xyflow/react": "^12.11.2",
+    "d3-force": "^3.0.0",
     "lucide-react": "^1.28.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@types/d3-force": "^3.0.10",
     "@types/node": "^26.1.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
