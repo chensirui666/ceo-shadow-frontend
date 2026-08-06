@@ -29,7 +29,8 @@ The backend is authoritative for initial and persisted positions. The frontend r
 - React Flow supplies the canvas, viewport controls and grid.
 - All node fills are opaque. Node diameters derive only from the complete graph's degree: degree 0–1/2/3/4+ maps to 16/22/30/38px.
 - On drag, every node currently visible on the canvas forms one D3-force simulation. The active node is pinned to the pointer; link forces still use only the real visible edges, while charge and collision let every visible node respond.
-- A link's equilibrium centre distance equals its two node radii plus a 72px gap. It may stretch while dragging and settles after release. Collision uses each node's actual radius plus the same visual breathing room.
+- A link's equilibrium centre distance equals its two node radii plus a 72px gap. It may stretch while dragging and settles after release; every real edge uses strength 1 and four link iterations so differently sized node pairs return to the same visible gap. Collision uses each node's actual radius plus the same visual breathing room.
+- Edges are straight 1.6px SVG paths. Each path has a user-space gradient from its source node colour to its target node colour, using the neutral fallback only at a missing-colour endpoint.
 - The simulation ticks through `requestAnimationFrame`, stops once cool, and is disabled for `prefers-reduced-motion`.
 
 ## Position Persistence

@@ -14,6 +14,15 @@ export const nodeDegrees = (edges: MemoryEdge[]): Record<string, number> => edge
 
 export const forceParticipantIds = (nodes: Array<{ id: string }>): Set<string> => new Set(nodes.map(({ id }) => id))
 
+export const edgeGradientColors = (sourceColor?: string, targetColor?: string) => ({
+  sourceColor: sourceColor ?? '#969189',
+  targetColor: targetColor ?? '#969189',
+})
+
+export const forceLinkDistance = (sourceRadius: number, targetRadius: number): number => sourceRadius + targetRadius + 72
+export const forceLinkStrength = 1
+export const forceLinkIterations = 4
+
 export const changedPositions = (
   before: Record<string, MemoryPosition>,
   after: Record<string, MemoryPosition>,

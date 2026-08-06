@@ -17,6 +17,29 @@ test('force drag participants include every visible node', () => {
   )
 })
 
+test('edge gradients anchor each end to its node color', () => {
+  assert.deepEqual(
+    memoryCanvasState.edgeGradientColors('#82957d', '#839eb3'),
+    { sourceColor: '#82957d', targetColor: '#839eb3' },
+  )
+  assert.deepEqual(
+    memoryCanvasState.edgeGradientColors(undefined, '#839eb3'),
+    { sourceColor: '#969189', targetColor: '#839eb3' },
+  )
+})
+
+test('force links preserve a 72px node-edge gap', () => {
+  assert.equal(memoryCanvasState.forceLinkDistance(15, 11), 98)
+})
+
+test('force links keep a uniform constraint strength', () => {
+  assert.equal(memoryCanvasState.forceLinkStrength, 1)
+})
+
+test('force links use extra iterations to settle spacing precisely', () => {
+  assert.equal(memoryCanvasState.forceLinkIterations, 4)
+})
+
 test('only changed local positions are emitted for persistence', () => {
   assert.deepEqual(
     memoryCanvasState.changedPositions(

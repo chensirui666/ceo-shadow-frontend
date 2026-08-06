@@ -1,14 +1,15 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { applyNodeChanges, Background, BackgroundVariant, Controls, Handle, Position, ReactFlow } from '@xyflow/react'
-import type { Edge, Node, NodeProps, NodeTypes, OnNodesChange } from '@xyflow/react'
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { applyNodeChanges, Background, BackgroundVariant, BaseEdge, Controls, getStraightPath, Handle, Position, ReactFlow } from '@xyflow/react'
+import type { Edge, EdgeProps, EdgeTypes, Node, NodeProps, NodeTypes, OnNodesChange } from '@xyflow/react'
 import { forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force'
 import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force'
 import '@xyflow/react/dist/style.css'
-import { changedPositions, displayPosition, forceParticipantIds, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
+import { changedPositions, displayPosition, edgeGradientColors, forceLinkDistance, forceLinkIterations, forceLinkStrength, forceParticipantIds, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
 import type { MemoryPosition } from '../memoryCanvasState.ts'
 import type { MemoryEdge, MemoryNode } from '../memoryState.ts'
 
 type MemoryFlowNode = Node<MemoryNode & { diameter: number }, 'memory'>
+type MemoryFlowEdge = Edge<{ sourceColor: string; targetColor: string }, 'memory'>
 type ForceNode = SimulationNodeDatum & { id: string; radius: number }
 type ForceLink = SimulationLinkDatum<ForceNode> & { source: ForceNode | string; target: ForceNode | string }
 type DragState = {
@@ -42,7 +43,24 @@ const MemoryCanvasNode = memo(({ data }: NodeProps<MemoryFlowNode>) => (
   </div>
 ))
 
+const MemoryGradientEdge = ({ data, id, sourceX, sourceY, targetX, targetY }: EdgeProps<MemoryFlowEdge>) => {
+  const gradientId = useId()
+  const [path] = getStraightPath({ sourceX, sourceY, targetX, targetY })
+  return (
+    <>
+      <defs>
+        <linearGradient gradientUnits="userSpaceOnUse" id={gradientId} x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
+          <stop offset="0%" stopColor={data?.sourceColor ?? '#969189'} />
+          <stop offset="100%" stopColor={data?.targetColor ?? '#969189'} />
+        </linearGradient>
+      </defs>
+      <BaseEdge id={id} path={path} style={{ stroke: `url(#${gradientId})`, strokeWidth: 1.6 }} />
+    </>
+  )
+}
+
 const nodeTypes: NodeTypes = { memory: MemoryCanvasNode }
+const edgeTypes: EdgeTypes = { memory: MemoryGradientEdge }
 
 const createFlowNodes = (
   nodes: MemoryNode[],
@@ -82,12 +100,16 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
     if (current.frame !== null) window.cancelAnimationFrame(current.frame)
   }, [])
 
-  const flowEdges = useMemo<Edge[]>(() => edges.map((edge) => ({
-    id: `${edge.from}-${edge.to}`,
-    source: edge.from,
-    target: edge.to,
-    type: 'straight',
-  })), [edges])
+  const flowEdges = useMemo<MemoryFlowEdge[]>(() => {
+    const nodeById = new Map(nodes.map((node) => [node.id, node]))
+    return edges.map((edge) => ({
+      data: edgeGradientColors(nodeById.get(edge.from)?.visual?.color, nodeById.get(edge.to)?.visual?.color),
+      id: `${edge.from}-${edge.to}`,
+      source: edge.from,
+      target: edge.to,
+      type: 'memory',
+    }))
+  }, [edges, nodes])
 
   const updateForcePositions = useCallback((state: DragState) => {
     if (state.frame !== null) return
@@ -130,6 +152,7 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
         nodeOrigin={[0.5, 0.5]}
         nodes={flowNodes}
         nodesConnectable={false}
+        edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
         onNodeDrag={(_, node) => {
           const state = dragState.current
@@ -162,8 +185,8 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
             .force('link', forceLink<ForceNode, ForceLink>(forceEdges).distance((edge) => {
               const source = typeof edge.source === 'string' ? forceNodeById.get(edge.source) : edge.source
               const target = typeof edge.target === 'string' ? forceNodeById.get(edge.target) : edge.target
-              return source && target ? source.radius + target.radius + 72 : 72
-            }))
+              return source && target ? forceLinkDistance(source.radius, target.radius) : 72
+            }).strength(forceLinkStrength).iterations(forceLinkIterations))
             .force('charge', forceManyBody().strength(-90))
             .force('collide', forceCollide<ForceNode>((item) => item.radius + 10).strength(.85))
             .alphaDecay(.08)

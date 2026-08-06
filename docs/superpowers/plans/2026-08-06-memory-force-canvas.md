@@ -14,7 +14,8 @@
 - The backend-provided coordinate is the only initialization source; do not retain an ID-to-coordinate map or hash layout fallback.
 - Degree 0–1/2/3/4+ maps to exactly 16/22/30/38px, calculated from complete graph edges.
 - Every currently visible node takes part in force motion; the active node is pinned to the pointer and links remain limited to visible backend edges.
-- A link equilibrium distance is the two node radii plus 72px. Persist only the final changed positions after the simulation cools.
+- A link equilibrium distance is the two node radii plus 72px. Its strength is 1 with four solver iterations so all pairs return to the same visible gap after release. Persist only the final changed positions after the simulation cools.
+- Render every edge as a straight 1.6px SVG path with a source-to-target gradient from the node visual colours; a missing endpoint uses `#969189`.
 - Respect `prefers-reduced-motion` by not starting automatic force animation.
 - Keep the current fixture solely as API-shaped demo data because this checkout has no graph endpoint.
 
@@ -129,7 +130,7 @@ Remove the SVG position table and hash fallback from `MemoryGraph`. Each React F
 ```ts
 const participantIds = forceParticipantIds(flowNodes)
 const simulation = forceSimulation(forceNodes)
-  .force('link', forceLink(forceEdges).id((item) => item.id).distance((edge) => edge.source.radius + edge.target.radius + 72))
+  .force('link', forceLink(forceEdges).id((item) => item.id).distance((edge) => forceLinkDistance(edge.source.radius, edge.target.radius)).strength(1).iterations(4))
   .force('charge', forceManyBody().strength(-90))
   .force('collide', forceCollide((item) => item.radius + 10).strength(.85))
   .alphaDecay(.08)
