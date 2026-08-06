@@ -59,3 +59,7 @@ test('saveSettings persists normalized preferences for a later load', () => {
   assert.equal(settingsState.countEnabledNotifications(saved.general.notifications), 2)
   assert.deepEqual(settingsState.loadSettings(storage), saved)
 })
+
+test('settings navigation includes a dedicated language category', () => {
+  assert.deepEqual(settingsState.settingsSections, ['apps', 'general', 'language', 'profile'])
+})
