@@ -89,7 +89,6 @@ type MemoryCopy = {
 }
 
 export type HomeCopy = {
-  title: string
   recent: string
   sources: Record<HomeSource, string>
   source: string
@@ -98,10 +97,9 @@ export type HomeCopy = {
   reply: string
   labelSeparator: string
   countdown: (seconds: number) => string
-  demoDisclosure: string
   status: Record<HomeStatus, string>
   outcome: Record<HomeOutcome, string>
-  mode: { label: (mode: OperatingMode) => string; description: (mode: OperatingMode) => string; action: (mode: OperatingMode) => string; switchToTrial: string }
+  mode: { action: (mode: OperatingMode) => string }
   chart: { title: string; processed: string; pending: string; failed: string; legend: (totals: Pick<ActivityHour, 'processed' | 'pending' | 'failed'>) => string; hourLabel: (hour: ActivityHour) => string; empty: string }
   empty: { loading: string; error: string; noConnections: string; events: string; source: (source: string) => string }
   detail: { back: string; eventInformation: string; source: string; conversation: string; sender: string; time: string; status: string; result: string; originalMessage: string; rationale: string; response: string; waiting: string; processing: string; trialNote: string; editReply: string }
@@ -188,7 +186,6 @@ export const translations: Record<Locale, Translation> = {
       accountMenu: 'Account menu',
       signOut: 'Sign out',
       home: {
-        title: 'Home',
         recent: 'Recent 24 hours',
         sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
         source: 'Source',
@@ -197,14 +194,10 @@ export const translations: Record<Locale, Translation> = {
         reply: 'Reply',
         labelSeparator: ': ',
         countdown: (seconds) => `${Math.floor(seconds / 60)}m ${seconds % 60}s until automatic reply`,
-        demoDisclosure: 'Frontend demo: actions update this page only. Friday will not send a message to DingTalk, Feishu, or Teams.',
         status: { waiting: 'Waiting for you', processing: 'Processing', 'needs-confirmation': 'Needs your confirmation', completed: 'Processed', 'trial-complete': 'Trial complete, not sent', 'send-failed': 'Send failed', 'connection-error': 'Connection issue' },
         outcome: { sent: 'Sent', cancelled: 'Cancelled, Friday did not send', 'self-replied': 'You replied, Friday did not send', 'no-reply': 'No reply needed' },
         mode: {
-          label: (mode) => ({ trial: 'Trial mode', active: 'Active', paused: 'Paused' })[mode],
-          description: (mode) => ({ trial: 'Replies are for your review only and will not be sent.', active: 'Friday is replying according to your rules.', paused: 'Friday has paused new work messages.' })[mode],
           action: (mode) => ({ trial: 'Enable active mode', active: 'Pause', paused: 'Resume active mode' })[mode],
-          switchToTrial: 'Switch to trial mode',
         },
         chart: {
           title: '24-hour message activity', processed: 'Processed', pending: 'Pending', failed: 'Send failed',
@@ -382,7 +375,6 @@ export const translations: Record<Locale, Translation> = {
       accountMenu: '账户菜单',
       signOut: '退出登录',
       home: {
-        title: '首页',
         recent: '最近 24 小时',
         sources: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' },
         source: '来源',
@@ -391,14 +383,10 @@ export const translations: Record<Locale, Translation> = {
         reply: '回复',
         labelSeparator: '：',
         countdown: (seconds) => `${Math.floor(seconds / 60)}分${seconds % 60}秒后自动回复`,
-        demoDisclosure: '前端演示：操作只更新当前页面，不会向钉钉、飞书或 Teams 发送消息。',
         status: { waiting: '等待你先回复', processing: '正在处理', 'needs-confirmation': '待你确认', completed: '已处理', 'trial-complete': '测试完成，未发送', 'send-failed': '发送失败', 'connection-error': '连接异常' },
         outcome: { sent: '已发送', cancelled: '已取消，Friday 未发送', 'self-replied': '你已回复，Friday 未发送', 'no-reply': '无需回复' },
         mode: {
-          label: (mode) => ({ trial: '试运行中', active: '正式运行中', paused: '已暂停' })[mode],
-          description: (mode) => ({ trial: '回复只供你查看，不会发送。', active: 'Friday 正在按你的规则协助回复。', paused: 'Friday 已暂停处理新的工作消息。' })[mode],
           action: (mode) => ({ trial: '正式启用', active: '暂停', paused: '恢复正式运行' })[mode],
-          switchToTrial: '切回试运行',
         },
         chart: {
           title: '24 小时消息处理总览', processed: '已处理', pending: '待处理', failed: '发送失败',

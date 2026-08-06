@@ -60,3 +60,16 @@ test('sent detail includes the recipient feedback preview while a failure has no
   assert.match(sent, /未解决/)
   assert.doesNotMatch(failed, /重试|重新连接/)
 })
+
+test('source row keeps the pause action with filtering and omits the trial shortcut', async () => {
+  const { HomeSourceRow } = await vite.ssrLoadModule('/src/components/HomeWorkspace.tsx')
+  const html = renderToStaticMarkup(createElement(HomeSourceRow, {
+    connectedSources: ['dingtalk', 'feishu'] as const, copy: translations.en.workspace.home, mode: 'active',
+    onModeChange: async () => {}, onSourceChange: () => {}, source: 'all',
+  }))
+
+  assert.match(html, /Source/)
+  assert.match(html, /All apps/)
+  assert.match(html, />Pause</)
+  assert.doesNotMatch(html, /Switch to trial mode/)
+})
