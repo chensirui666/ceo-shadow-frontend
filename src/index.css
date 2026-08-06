@@ -361,6 +361,7 @@ button, input { font: inherit; }
   --memory-source-file: #b59663;
   --memory-source-conversation: #bc8d86;
   --memory-edge: #d9d6ce;
+  --memory-node-fallback: #969189;
   width: min(1130px, calc(100% - 104px));
   margin: 0 auto;
   padding: 0 0 48px;
@@ -449,18 +450,22 @@ button, input { font: inherit; }
 
 .memory-map-area { display: grid; min-height: 492px; margin-top: 9px; }
 .memory-graph { min-width: 0; min-height: 492px; animation: memory-map-in .16s ease-out; }
-.memory-graph svg { display: block; width: 100%; height: 492px; overflow: visible; }
-.memory-edge { stroke: var(--memory-edge); stroke-width: 1.4; }
-.memory-node { transition: opacity .16s ease; }
-.memory-node circle { stroke: #fffefd; stroke-width: 2; }
-.memory-node-dingtalk circle { fill: var(--memory-source-dingtalk); }
-.memory-node-feishu circle { fill: var(--memory-source-feishu); }
-.memory-node-teams circle { fill: var(--memory-source-teams); }
-.memory-node-file circle { fill: var(--memory-source-file); }
-.memory-node-conversation circle { fill: var(--memory-source-conversation); }
-.memory-node-leaf { opacity: .58; }
-.memory-node-connection { opacity: .82; }
-.memory-node-core text { fill: #4b4740; font-family: "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", sans-serif; font-size: 14px; font-weight: 700; }
+.memory-flow { width: 100%; height: 492px; border: 1px solid #e9e5dd; border-radius: 12px; background: #fbfaf7; }
+.memory-flow .react-flow__pane { cursor: grab; }
+.memory-flow .react-flow__pane:active { cursor: grabbing; }
+.memory-flow .react-flow__edge-path { stroke: var(--memory-edge); stroke-width: 1.4; }
+.memory-flow-node { position: relative; border: 1.5px solid #fffefd; border-radius: 50%; cursor: grab; opacity: 1; transition: box-shadow .16s ease; }
+.memory-flow-node:active { cursor: grabbing; }
+.memory-flow .react-flow__node:focus-visible .memory-flow-node { outline: 3px solid rgb(36 36 34 / 18%); outline-offset: 3px; }
+.memory-flow-handle { top: 50% !important; left: 50% !important; width: 1px !important; height: 1px !important; min-width: 1px !important; min-height: 1px !important; border: 0 !important; background: transparent !important; opacity: 0; transform: translate(-50%, -50%) !important; }
+.memory-flow-tooltip { position: absolute; z-index: 2; bottom: calc(100% + 9px); left: 50%; display: grid; width: max-content; max-width: 210px; gap: 3px; border: 1px solid #dfdbd3; border-radius: 8px; background: #fffefd; box-shadow: 0 8px 18px rgb(54 48 39 / 12%); color: #4b4740; opacity: 0; padding: 7px 9px; pointer-events: none; transform: translateX(-50%); transition: opacity .14s ease; white-space: normal; }
+.memory-flow-tooltip strong { font-size: 12px; font-weight: 750; }
+.memory-flow-tooltip small { color: #716c65; font-size: 11px; line-height: 1.4; }
+.memory-flow-node:hover .memory-flow-tooltip, .memory-flow .react-flow__node:focus-visible .memory-flow-tooltip { opacity: 1; }
+.memory-flow .react-flow__controls { overflow: hidden; border: 1px solid #ded9cf; border-radius: 8px; box-shadow: 0 6px 18px rgb(54 48 39 / 10%); }
+.memory-flow .react-flow__controls-button { width: 30px; height: 30px; border-bottom-color: #e6e1d8; background: #fffefd; color: #514c44; }
+.memory-flow .react-flow__controls-button:hover { background: #f2efe8; }
+.memory-flow .react-flow__controls-button svg { fill: currentColor; }
 
 .memory-empty { display: grid; min-height: 410px; place-content: center; justify-items: center; gap: 13px; color: #79736a; text-align: center; }
 .memory-empty p { margin: 0; font-size: 15px; }
@@ -769,10 +774,9 @@ button, input { font: inherit; }
   .memory-search { flex: 1; min-width: 160px; }
   .memory-search input { width: 100%; }
   .memory-map-area, .memory-graph { min-height: 350px; }
-  .memory-graph svg { height: 350px; }
-  .memory-node-core text { font-size: 32px; }
+  .memory-flow { height: 350px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .memory-graph, .memory-node { animation: none; transition: none; }
+  .memory-graph, .memory-flow-node, .memory-flow-tooltip { animation: none; transition: none; }
 }
