@@ -10,13 +10,10 @@ test('node diameters use compact total-edge-count buckets', () => {
   )
 })
 
-test('direct node IDs exclude second-hop nodes', () => {
+test('force drag participants include every visible node', () => {
   assert.deepEqual(
-    memoryCanvasState.directNodeIds(
-      [{ from: 'a', to: 'b' }, { from: 'a', to: 'c' }, { from: 'c', to: 'd' }],
-      'a',
-    ),
-    new Set(['b', 'c']),
+    memoryCanvasState.forceParticipantIds([{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }]),
+    new Set(['a', 'b', 'c', 'd']),
   )
 })
 

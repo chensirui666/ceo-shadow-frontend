@@ -4,7 +4,7 @@ import type { Edge, Node, NodeProps, NodeTypes, OnNodesChange } from '@xyflow/re
 import { forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force'
 import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force'
 import '@xyflow/react/dist/style.css'
-import { changedPositions, directNodeIds, displayPosition, moveDirectNeighbours, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
+import { changedPositions, displayPosition, forceParticipantIds, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
 import type { MemoryPosition } from '../memoryCanvasState.ts'
 import type { MemoryEdge, MemoryNode } from '../memoryState.ts'
 
@@ -15,7 +15,7 @@ type DragState = {
   forceNodes: ForceNode[]
   frame: number | null
   initialPositions: Record<string, MemoryPosition>
-  localIds: Set<string>
+  participantIds: Set<string>
   reducedMotion: boolean
   released: boolean
   root: ForceNode
@@ -107,7 +107,7 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
     setFlowNodes((current) => current.map((node) => finalPositions[node.id]
       ? { ...node, position: finalPositions[node.id] }
       : node))
-    onPositionsChange(changedPositions(state.initialPositions, finalPositions, state.localIds))
+    onPositionsChange(changedPositions(state.initialPositions, finalPositions, state.participantIds))
     if (dragState.current === state) dragState.current = null
   }, [onPositionsChange])
 
@@ -134,16 +134,7 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
         onNodeDrag={(_, node) => {
           const state = dragState.current
           if (!state) return
-          if (state.reducedMotion) {
-            setFlowNodes((current) => {
-              const positions = Object.fromEntries(current.map((item) => [item.id, item.position]))
-              const rootPosition = positions[node.id]
-              if (!rootPosition) return current
-              const nextPositions = moveDirectNeighbours(positions, edges, node.id, { x: node.position.x - rootPosition.x, y: node.position.y - rootPosition.y })
-              return current.map((item) => nextPositions[item.id] === item.position ? item : { ...item, position: nextPositions[item.id] })
-            })
-            return
-          }
+          if (state.reducedMotion) return
           state.root.fx = node.position.x
           state.root.fy = node.position.y
           state.root.x = node.position.x
@@ -152,9 +143,8 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
         }}
         onNodeDragStart={(_, node) => {
           dragState.current?.simulation.stop()
-          const localIds = new Set([node.id, ...directNodeIds(edges, node.id)])
-          const localNodes = flowNodes.filter((item) => localIds.has(item.id))
-          const forceNodes: ForceNode[] = localNodes.map((item) => ({
+          const participantIds = forceParticipantIds(flowNodes)
+          const forceNodes: ForceNode[] = flowNodes.map((item) => ({
             id: item.id,
             radius: item.data.diameter / 2,
             x: item.position.x,
@@ -180,8 +170,8 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
           const state: DragState = {
             forceNodes,
             frame: null,
-            initialPositions: Object.fromEntries(localNodes.map((item) => [item.id, item.position])),
-            localIds,
+            initialPositions: Object.fromEntries(flowNodes.map((item) => [item.id, item.position])),
+            participantIds,
             reducedMotion: reducedMotionPreferred(),
             released: false,
             root,
@@ -201,8 +191,8 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
           const state = dragState.current
           if (!state) return
           if (state.reducedMotion) {
-            const finalPositions = Object.fromEntries(flowNodes.filter((item) => state.localIds.has(item.id)).map((item) => [item.id, item.position]))
-            onPositionsChange(changedPositions(state.initialPositions, finalPositions, state.localIds))
+            const finalPositions = Object.fromEntries(flowNodes.map((item) => [item.id, item.position]))
+            onPositionsChange(changedPositions(state.initialPositions, finalPositions, state.participantIds))
             dragState.current = null
             return
           }

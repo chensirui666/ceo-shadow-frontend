@@ -1,4 +1,4 @@
-import type { MemoryEdge, MemoryPosition } from './memoryState.ts'
+import type { MemoryPosition } from './memoryState.ts'
 
 export type { MemoryPosition }
 
@@ -12,21 +12,7 @@ export const nodeDegrees = (edges: MemoryEdge[]): Record<string, number> => edge
   [edge.to]: (degrees[edge.to] ?? 0) + 1,
 }), {})
 
-export const directNodeIds = (edges: MemoryEdge[], draggedId: string): Set<string> => new Set(
-  edges.flatMap(({ from, to }) => from === draggedId ? [to] : to === draggedId ? [from] : []),
-)
-
-export const moveDirectNeighbours = (
-  positions: Record<string, MemoryPosition>,
-  edges: MemoryEdge[],
-  draggedId: string,
-  delta: MemoryPosition,
-): Record<string, MemoryPosition> => {
-  const neighbours = directNodeIds(edges, draggedId)
-  return Object.fromEntries(Object.entries(positions).map(([id, position]) => [id, neighbours.has(id)
-    ? { x: position.x + delta.x, y: position.y + delta.y }
-    : position]))
-}
+export const forceParticipantIds = (nodes: Array<{ id: string }>): Set<string> => new Set(nodes.map(({ id }) => id))
 
 export const changedPositions = (
   before: Record<string, MemoryPosition>,

@@ -28,14 +28,14 @@ The backend is authoritative for initial and persisted positions. The frontend r
 
 - React Flow supplies the canvas, viewport controls and grid.
 - All node fills are opaque. Node diameters derive only from the complete graph's degree: degree 0–1/2/3/4+ maps to 16/22/30/38px.
-- On drag, the active node and its direct visible neighbours form a local D3-force simulation. All other nodes are pinned, so second-hop nodes do not move.
+- On drag, every node currently visible on the canvas forms one D3-force simulation. The active node is pinned to the pointer; link forces still use only the real visible edges, while charge and collision let every visible node respond.
 - A link's equilibrium centre distance equals its two node radii plus a 72px gap. It may stretch while dragging and settles after release. Collision uses each node's actual radius plus the same visual breathing room.
 - The simulation ticks through `requestAnimationFrame`, stops once cool, and is disabled for `prefers-reduced-motion`.
 
 ## Position Persistence
 
-The dragged node is pinned to the pointer. On release, the locally simulated nodes settle and one batched callback emits only changed `{ id, position }` records. The host's backend client can persist that payload; this demo does not invent an endpoint or simulate network success.
+The dragged node is pinned to the pointer. On release, the visible simulation settles and one batched callback emits only changed `{ id, position }` records. The host's backend client can persist that payload; this demo does not invent an endpoint or simulate network success.
 
 ## Scope and Verification
 
-The existing fixture may remain as API-shaped demo input, but rendering code must not refer to fixture IDs. Add focused tests for compact degree buckets, backend-provided initial coordinates, generic visual fallback, local one-hop simulation inputs, and the emitted changed-position batch. Verify with the existing test suite, TypeScript, production build, and desktop/mobile drag checks.
+The existing fixture may remain as API-shaped demo input, but rendering code must not refer to fixture IDs. Add focused tests for compact degree buckets, backend-provided initial coordinates, generic visual fallback, full-visible-graph simulation inputs, and the emitted changed-position batch. Verify with the existing test suite, TypeScript, production build, and desktop/mobile drag checks.
