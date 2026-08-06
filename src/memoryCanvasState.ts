@@ -2,6 +2,8 @@ import type { MemoryEdge, MemoryPosition } from './memoryState.ts'
 
 export type { MemoryPosition }
 
+export const displayPosition = (current: MemoryPosition | undefined, initial: MemoryPosition): MemoryPosition => current ?? initial
+
 export const nodeDiameterForDegree = (degree: number): number => degree >= 4 ? 38 : [16, 16, 22, 30][Math.max(0, degree)]
 
 export const nodeDegrees = (edges: MemoryEdge[]): Record<string, number> => edges.reduce<Record<string, number>>((degrees, edge) => ({

@@ -4,7 +4,7 @@ import type { Edge, Node, NodeProps, NodeTypes, OnNodesChange } from '@xyflow/re
 import { forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force'
 import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force'
 import '@xyflow/react/dist/style.css'
-import { changedPositions, directNodeIds, moveDirectNeighbours, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
+import { changedPositions, directNodeIds, displayPosition, moveDirectNeighbours, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
 import type { MemoryPosition } from '../memoryCanvasState.ts'
 import type { MemoryEdge, MemoryNode } from '../memoryState.ts'
 
@@ -58,7 +58,7 @@ const createFlowNodes = (
       ariaLabel: node.title,
       data: { ...node, diameter },
       id: node.id,
-      position: node.position,
+      position: displayPosition(existing?.position, node.position),
       selectable: false,
       style: { height: diameter, width: diameter },
       type: 'memory',

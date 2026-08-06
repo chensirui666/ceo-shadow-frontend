@@ -30,3 +30,14 @@ test('only changed local positions are emitted for persistence', () => {
     { b: { x: 31, y: 17 } },
   )
 })
+
+test('current canvas coordinates survive a server confirmation in the same visit', () => {
+  assert.deepEqual(
+    memoryCanvasState.displayPosition({ x: 527, y: 283 }, { x: 485, y: 275 }),
+    { x: 527, y: 283 },
+  )
+  assert.deepEqual(
+    memoryCanvasState.displayPosition(undefined, { x: 485, y: 275 }),
+    { x: 485, y: 275 },
+  )
+})
