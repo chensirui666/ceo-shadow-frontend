@@ -5,6 +5,7 @@ dist/
 # Local browser/test artifacts
 .playwright-cli/
 output/
+.worktrees/
 
 # Secrets and local configuration
 .env
