@@ -1,0 +1,16 @@
+# Dependencies and generated builds
+node_modules/
+dist/
+
+# Local browser/test artifacts
+.playwright-cli/
+output/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# OS and editor files
+.DS_Store
+*.log
