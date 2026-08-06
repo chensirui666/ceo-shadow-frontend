@@ -1,4 +1,5 @@
 import type { Locale, Route } from '../appState.ts'
+import type { ActivityHour, HomeOutcome, HomeSource, HomeStatus, OperatingMode } from '../homeState.ts'
 import type { MemorySource } from '../memoryState.ts'
 import type { ConnectorId, ConnectorStatus, SettingsSection } from '../settingsState.ts'
 
@@ -71,6 +72,26 @@ type MemoryCopy = {
   mapSummary: (layer: string, source: string, keyword: string, count: number) => string
 }
 
+export type HomeCopy = {
+  recent: string
+  sources: Record<HomeSource, string>
+  source: string
+  allSources: string
+  question: string
+  reply: string
+  labelSeparator: string
+  countdown: (seconds: number) => string
+  status: Record<HomeStatus, string>
+  outcome: Record<HomeOutcome, string>
+  mode: { action: (mode: OperatingMode) => string }
+  chart: { title: string; processed: string; pending: string; failed: string; legend: (totals: Pick<ActivityHour, 'processed' | 'pending' | 'failed'>) => string; hourLabel: (hour: ActivityHour) => string; empty: string }
+  empty: { loading: string; error: string; noConnections: string; events: string; source: (source: string) => string }
+  detail: { back: string; eventInformation: string; source: string; conversation: string; sender: string; time: string; status: string; result: string; originalMessage: string; rationale: string; response: string; waiting: string; processing: string; trialNote: string; editReply: string }
+  feedback: { title: string; matched: string; adjust: string; placeholder: string; save: string; saved: string; recipientTitle: string; recipientQuestion: string; helpful: string; unresolved: string; recipientNote: string }
+  actions: { send: string; cancel: string; retry: string; goToSettings: string; clearSource: string }
+  confirmation: { title: (mode: OperatingMode) => string; body: (mode: OperatingMode) => string; confirm: (mode: OperatingMode) => string }
+}
+
 export type Translation = {
   journey: string[]
   language: { switchToChinese: string }
@@ -89,7 +110,7 @@ export type Translation = {
     openAccountMenu: string
     accountMenu: string
     signOut: string
-    home: Record<'badge' | 'title' | 'description' | 'action' | 'today' | 'empty', string>
+    home: HomeCopy
     pages: Record<string, PageCopy>
     exit: Record<'title' | 'body' | 'cancel', string>
     memory: MemoryCopy
@@ -149,12 +170,30 @@ export const translations: Record<Locale, Translation> = {
       accountMenu: 'Account menu',
       signOut: 'Sign out',
       home: {
-        badge: 'Not set up',
-        title: 'Let your work gradually become your work avatar.',
-        description: 'Your work avatar will bring together today’s results and the items that need your confirmation here.',
-        action: 'Go to Settings to get started',
-        today: 'Today',
-        empty: 'No work activity yet.',
+        recent: 'Recent 24 hours',
+        sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
+        source: 'Source',
+        allSources: 'All apps',
+        question: 'Message',
+        reply: 'Reply',
+        labelSeparator: ': ',
+        countdown: (seconds) => `${Math.floor(seconds / 60)}m ${seconds % 60}s until automatic reply`,
+        status: { waiting: 'Waiting for you', processing: 'Processing', 'needs-confirmation': 'Needs your confirmation', completed: 'Processed', 'trial-complete': 'Trial complete, not sent', 'send-failed': 'Send failed', 'connection-error': 'Connection issue' },
+        outcome: { sent: 'Sent', cancelled: 'Cancelled, Friday did not send', 'self-replied': 'You replied, Friday did not send', 'no-reply': 'No reply needed' },
+        mode: {
+          action: (mode) => ({ trial: 'Enable active mode', active: 'Pause', paused: 'Resume active mode' })[mode],
+        },
+        chart: {
+          title: '24-hour message activity', processed: 'Processed', pending: 'Pending', failed: 'Send failed',
+          legend: (totals) => `Processed ${totals.processed} · Pending ${totals.pending} · Send failed ${totals.failed}`,
+          hourLabel: (hour) => `${hour.hour}:00: Processed ${hour.processed}, Pending ${hour.pending}, Send failed ${hour.failed}`,
+          empty: 'No messages in the last 24 hours.',
+        },
+        empty: { loading: 'Loading recent events…', error: 'Recent events could not be loaded. Try again.', noConnections: 'Connect a work app before Friday can handle messages.', events: 'No messages in the last 24 hours.', source: (source) => `No work messages from ${source} in the last 24 hours.` },
+        detail: { back: 'Back to recent 24 hours', eventInformation: 'Event information', source: 'Source', conversation: 'Conversation', sender: 'Sender', time: 'Time', status: 'Status', result: 'Result', originalMessage: 'Original message', rationale: 'Why this happened', response: 'Reply', waiting: 'Waiting for you to reply.', processing: 'Generating a reply…', trialNote: 'This reply was not sent.', editReply: 'Edit reply' },
+        feedback: { title: 'Your feedback', matched: 'Matches me', adjust: 'Needs adjustment', placeholder: 'What should be different next time?', save: 'Save feedback', saved: 'Feedback recorded', recipientTitle: 'Recipient feedback', recipientQuestion: 'Did this reply resolve your question?', helpful: 'Helpful', unresolved: 'Not resolved', recipientNote: 'Tell us what information or next step is still needed.' },
+        actions: { send: 'Send', cancel: 'Cancel', retry: 'Retry', goToSettings: 'Go to Settings', clearSource: 'View all apps' },
+        confirmation: { title: (mode) => mode === 'active' ? 'Enable active mode?' : 'Switch to trial mode?', body: (mode) => mode === 'active' ? 'Future replies can be sent automatically under your rules.' : 'Future replies will no longer be sent.', confirm: (mode) => mode === 'active' ? 'Enable active mode' : 'Switch to trial mode' },
       },
       pages: {
         tasks: ['Tasks', 'Friday will organize projects, to-dos, and next steps from your work messages and meetings.', 'Back to Home'],
@@ -304,12 +343,30 @@ export const translations: Record<Locale, Translation> = {
       accountMenu: '账户菜单',
       signOut: '退出登录',
       home: {
-        badge: '尚未设置',
-        title: '让你的工作，慢慢变成你的分身。',
-        description: '你的工作分身将在这里汇总今天的处理结果和需要你确认的事项。',
-        action: '前往设置开始设置',
-        today: '今天',
-        empty: '还没有工作事件。',
+        recent: '最近 24 小时',
+        sources: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' },
+        source: '来源',
+        allSources: '全部应用',
+        question: '问题',
+        reply: '回复',
+        labelSeparator: '：',
+        countdown: (seconds) => `${Math.floor(seconds / 60)}分${seconds % 60}秒后自动回复`,
+        status: { waiting: '等待你先回复', processing: '正在处理', 'needs-confirmation': '待你确认', completed: '已处理', 'trial-complete': '测试完成，未发送', 'send-failed': '发送失败', 'connection-error': '连接异常' },
+        outcome: { sent: '已发送', cancelled: '已取消，Friday 未发送', 'self-replied': '你已回复，Friday 未发送', 'no-reply': '无需回复' },
+        mode: {
+          action: (mode) => ({ trial: '正式启用', active: '暂停', paused: '恢复正式运行' })[mode],
+        },
+        chart: {
+          title: '24 小时消息处理总览', processed: '已处理', pending: '待处理', failed: '发送失败',
+          legend: (totals) => `已处理 ${totals.processed} · 待处理 ${totals.pending} · 发送失败 ${totals.failed}`,
+          hourLabel: (hour) => `${hour.hour}:00：已处理 ${hour.processed}，待处理 ${hour.pending}，发送失败 ${hour.failed}`,
+          empty: '最近 24 小时暂无消息。',
+        },
+        empty: { loading: '正在加载最近事件…', error: '暂时无法加载最近事件，请重试。', noConnections: '连接一个工作应用后，Friday 才能开始处理消息。', events: '最近 24 小时暂无消息。', source: (source) => `最近 24 小时内没有来自${source}的工作消息。` },
+        detail: { back: '返回最近 24 小时', eventInformation: '事件信息', source: '来源应用', conversation: '会话', sender: '发送人', time: '发生时间', status: '当前状态', result: '处理结果', originalMessage: '原消息', rationale: '执行依据', response: '回复', waiting: '等待你先回复，尚未开始处理。', processing: '正在生成回复…', trialNote: '这条回复未发送。', editReply: '编辑回复' },
+        feedback: { title: '内部反馈', matched: '符合我', adjust: '需要调整', placeholder: '哪里不对、以后应怎样处理或表达？', save: '保存反馈', saved: '反馈已记录', recipientTitle: '收件人反馈', recipientQuestion: '这条回复是否解决了你的问题？', helpful: '有帮助', unresolved: '未解决', recipientNote: '请说明还需要补充什么信息或下一步。' },
+        actions: { send: '发送', cancel: '取消', retry: '重试', goToSettings: '前往设置', clearSource: '查看全部应用' },
+        confirmation: { title: (mode) => mode === 'active' ? '正式启用 Friday？' : '切回试运行？', body: (mode) => mode === 'active' ? '后续回复会按当前规则自动发送。' : '后续回复不再发送。', confirm: (mode) => mode === 'active' ? '正式启用' : '切回试运行' },
       },
       pages: {
         tasks: ['任务', 'Friday 会从工作消息和会议中整理项目、待办与下一步。', '返回首页'],

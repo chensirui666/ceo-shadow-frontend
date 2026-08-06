@@ -7,6 +7,7 @@ import { translations } from '../content/translations.ts'
 import { saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
+import HomeWorkspace from './HomeWorkspace.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
 
@@ -91,18 +92,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         {route === 'memory' ? (
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
-          <section className="home-content">
-            <article className="welcome-panel">
-              <span className="setup-badge">{copy.home.badge}</span>
-              <h2>{copy.home.title}</h2>
-              <p>{copy.home.description}</p>
-              <Button className="panel-action" onPress={openSettings}>{copy.home.action}</Button>
-            </article>
-            <section className="today-section">
-              <h2>{copy.home.today}</h2>
-              <p>{copy.home.empty}</p>
-            </section>
-          </section>
+          <HomeWorkspace locale={locale} onOpenSettings={openSettings} />
         ) : (
           <section className="empty-page">
             <p className="eyebrow">{currentLabel}</p>
