@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Modal, useOverlayState } from '@heroui/react'
 import type { Locale } from '../appState.ts'
 import { translations } from '../content/translations.ts'
@@ -10,19 +10,25 @@ import {
   startMaterialTask,
   visibleMemoryGraph,
 } from '../memoryState.ts'
-import type { MaterialKind, MaterialTask, MemoryLayer, MemorySource } from '../memoryState.ts'
+import type { MaterialKind, MaterialTask, MemoryGraphData, MemoryLayer, MemoryPosition, MemorySource } from '../memoryState.ts'
 import MemoryGraph from './MemoryGraph.tsx'
 
 type DialogMode = 'upload' | 'migration-prompt' | 'migration-file'
 
+type Props = {
+  initialGraph?: MemoryGraphData
+  locale: Locale
+  onPositionsCommit?: (positions: Record<string, MemoryPosition>) => void
+}
+
 const materialSources = memorySources.filter((source): source is Exclude<MemorySource, 'all'> => source !== 'all')
 
-export default function MemoryWorkspace({ locale }: { locale: Locale }) {
+export default function MemoryWorkspace({ initialGraph = initialMemoryGraph, locale, onPositionsCommit }: Props) {
   const copy = translations[locale].workspace.memory
   const dialogState = useOverlayState()
   const addMenu = useRef<HTMLDetailsElement>(null)
   const timers = useRef<number[]>([])
-  const [graph, setGraph] = useState(initialMemoryGraph)
+  const [graph, setGraph] = useState(initialGraph)
   const [layer, setLayer] = useState<MemoryLayer>('context')
   const [source, setSource] = useState<MemorySource>('all')
   const [keyword, setKeyword] = useState('')
@@ -63,6 +69,15 @@ export default function MemoryWorkspace({ locale }: { locale: Locale }) {
     if (!selectedFile) return
     runTask(startMaterialTask(kind, selectedFile.name, selectedFile.size))
   }
+
+  const applyPositions = useCallback((positions: Record<string, MemoryPosition>) => {
+    if (!Object.keys(positions).length) return
+    setGraph((current) => ({
+      ...current,
+      nodes: current.nodes.map((node) => positions[node.id] ? { ...node, position: positions[node.id] } : node),
+    }))
+    onPositionsCommit?.(positions)
+  }, [onPositionsCommit])
 
   const visible = visibleMemoryGraph(graph, { layer, source, keyword })
   const emptyMessage = keyword.trim()
@@ -123,7 +138,7 @@ export default function MemoryWorkspace({ locale }: { locale: Locale }) {
       <p aria-live="polite" className="sr-only">{summary}</p>
       <div className="memory-map-area">
         {visible.nodes.length
-          ? <MemoryGraph edges={visible.edges} nodes={visible.nodes} summary={summary} />
+          ? <MemoryGraph allEdges={graph.edges} edges={visible.edges} nodes={visible.nodes} onPositionsChange={applyPositions} summary={summary} />
           : <div className="memory-empty"><p>{emptyMessage}</p><button onClick={clearEmptyState} type="button">{clearEmptyLabel}</button></div>}
       </div>
 

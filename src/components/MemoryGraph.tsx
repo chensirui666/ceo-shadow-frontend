@@ -1,61 +1,224 @@
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { applyNodeChanges, Background, BackgroundVariant, Controls, Handle, Position, ReactFlow } from '@xyflow/react'
+import type { Edge, Node, NodeProps, NodeTypes, OnNodesChange } from '@xyflow/react'
+import { forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force'
+import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force'
+import '@xyflow/react/dist/style.css'
+import { changedPositions, directNodeIds, moveDirectNeighbours, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
+import type { MemoryPosition } from '../memoryCanvasState.ts'
 import type { MemoryEdge, MemoryNode } from '../memoryState.ts'
 
+type MemoryFlowNode = Node<MemoryNode & { diameter: number }, 'memory'>
+type ForceNode = SimulationNodeDatum & { id: string; radius: number }
+type ForceLink = SimulationLinkDatum<ForceNode> & { source: ForceNode | string; target: ForceNode | string }
+type DragState = {
+  forceNodes: ForceNode[]
+  frame: number | null
+  initialPositions: Record<string, MemoryPosition>
+  localIds: Set<string>
+  reducedMotion: boolean
+  released: boolean
+  root: ForceNode
+  simulation: ReturnType<typeof forceSimulation<ForceNode>>
+}
+
 type MemoryGraphProps = {
+  allEdges: MemoryEdge[]
   edges: MemoryEdge[]
   nodes: MemoryNode[]
+  onPositionsChange: (positions: Record<string, MemoryPosition>) => void
   summary: string
 }
 
-type Position = { x: number; y: number }
+const MemoryCanvasNode = memo(({ data }: NodeProps<MemoryFlowNode>) => (
+  <div
+    aria-label={data.summary ? `${data.title}: ${data.summary}` : data.title}
+    className="memory-flow-node"
+    style={{ backgroundColor: data.visual?.color ?? 'var(--memory-node-fallback)', height: data.diameter, width: data.diameter }}
+  >
+    <Handle className="memory-flow-handle" isConnectable={false} position={Position.Top} type="target" />
+    <Handle className="memory-flow-handle" isConnectable={false} position={Position.Top} type="source" />
+    <span className="memory-flow-tooltip" role="tooltip"><strong>{data.title}</strong><small>{data.summary}</small></span>
+  </div>
+))
 
-const positions: Record<string, Position> = {
-  'context-brief': { x: 485, y: 275 },
-  'context-roadmap': { x: 310, y: 164 },
-  'context-team': { x: 680, y: 156 },
-  'context-research': { x: 150, y: 300 },
-  'context-followup': { x: 760, y: 332 },
-  'context-release': { x: 414, y: 430 },
-  'context-planning': { x: 305, y: 355 },
-  'context-review': { x: 870, y: 205 },
-  'context-briefing': { x: 126, y: 146 },
-  'context-decisions': { x: 740, y: 465 },
-  'user-direction': { x: 478, y: 266 },
-  'user-collaboration': { x: 295, y: 164 },
-  'user-analysis': { x: 700, y: 175 },
-  'user-context': { x: 196, y: 375 },
-  'user-followup': { x: 784, y: 395 },
+const nodeTypes: NodeTypes = { memory: MemoryCanvasNode }
+
+const createFlowNodes = (
+  nodes: MemoryNode[],
+  degrees: Record<string, number>,
+  current: MemoryFlowNode[] = [],
+): MemoryFlowNode[] => {
+  const previous = new Map(current.map((node) => [node.id, node]))
+  return nodes.map((node) => {
+    const existing = previous.get(node.id)
+    const diameter = nodeDiameterForDegree(degrees[node.id] ?? 0)
+    return {
+      ...existing,
+      ariaLabel: node.title,
+      data: { ...node, diameter },
+      id: node.id,
+      position: node.position,
+      selectable: false,
+      style: { height: diameter, width: diameter },
+      type: 'memory',
+    }
+  })
 }
 
-const fallbackPosition = (id: string): Position => {
-  const hash = [...id].reduce((value, character) => (value * 31 + character.charCodeAt(0)) % 997, 0)
-  return { x: 154 + hash % 692, y: 106 + (hash * 7) % 346 }
-}
+const reducedMotionPreferred = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-const positionFor = (id: string): Position => positions[id] ?? fallbackPosition(id)
+export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange, summary }: MemoryGraphProps) {
+  const dragState = useRef<DragState | null>(null)
+  const degrees = useMemo(() => nodeDegrees(allEdges), [allEdges])
+  const [flowNodes, setFlowNodes] = useState<MemoryFlowNode[]>(() => createFlowNodes(nodes, degrees))
+  useEffect(() => {
+    setFlowNodes((current) => createFlowNodes(nodes, degrees, current))
+  }, [degrees, nodes])
+  useEffect(() => () => {
+    const current = dragState.current
+    if (!current) return
+    current.simulation.stop()
+    if (current.frame !== null) window.cancelAnimationFrame(current.frame)
+  }, [])
 
-const radiusFor = (tier: MemoryNode['tier']): number => (
-  tier === 'core' ? 16 : tier === 'connection' ? 10 : 6
-)
+  const flowEdges = useMemo<Edge[]>(() => edges.map((edge) => ({
+    id: `${edge.from}-${edge.to}`,
+    source: edge.from,
+    target: edge.to,
+    type: 'straight',
+  })), [edges])
 
-export default function MemoryGraph({ edges, nodes, summary }: MemoryGraphProps) {
+  const updateForcePositions = useCallback((state: DragState) => {
+    if (state.frame !== null) return
+    state.frame = window.requestAnimationFrame(() => {
+      state.frame = null
+      const positions = Object.fromEntries(state.forceNodes.map((node) => [node.id, { x: node.x ?? 0, y: node.y ?? 0 }]))
+      setFlowNodes((current) => current.map((node) => positions[node.id]
+        ? { ...node, position: positions[node.id] }
+        : node))
+    })
+  }, [])
+
+  const finishDrag = useCallback((state: DragState) => {
+    state.simulation.stop()
+    if (state.frame !== null) window.cancelAnimationFrame(state.frame)
+    const finalPositions = Object.fromEntries(state.forceNodes.map((node) => [node.id, { x: node.x ?? 0, y: node.y ?? 0 }]))
+    setFlowNodes((current) => current.map((node) => finalPositions[node.id]
+      ? { ...node, position: finalPositions[node.id] }
+      : node))
+    onPositionsChange(changedPositions(state.initialPositions, finalPositions, state.localIds))
+    if (dragState.current === state) dragState.current = null
+  }, [onPositionsChange])
+
+  const onNodesChange = useCallback<OnNodesChange<MemoryFlowNode>>((changes) => {
+    setFlowNodes((current) => applyNodeChanges(changes, current))
+  }, [])
+
   return (
     <section aria-label={summary} className="memory-graph">
-      <svg aria-hidden="true" preserveAspectRatio="xMidYMid meet" viewBox="0 0 1000 560">
-        {edges.map((edge) => {
-          const from = positionFor(edge.from)
-          const to = positionFor(edge.to)
-          return <line className="memory-edge" key={`${edge.from}-${edge.to}`} x1={from.x} x2={to.x} y1={from.y} y2={to.y} />
-        })}
-        {nodes.map((node) => {
-          const position = positionFor(node.id)
-          return (
-            <g className={`memory-node memory-node-${node.source} memory-node-${node.tier}`} key={node.id} transform={`translate(${position.x} ${position.y})`}>
-              <circle r={radiusFor(node.tier)} />
-              {node.tier === 'core' && <text x={23} y={5}>{node.title}</text>}
-            </g>
-          )
-        })}
-      </svg>
+      <ReactFlow
+        aria-label={summary}
+        className="memory-flow"
+        edges={flowEdges}
+        edgesFocusable={false}
+        elementsSelectable={false}
+        fitView
+        fitViewOptions={{ padding: 0.2 }}
+        maxZoom={2}
+        minZoom={0.4}
+        nodeOrigin={[0.5, 0.5]}
+        nodes={flowNodes}
+        nodesConnectable={false}
+        nodeTypes={nodeTypes}
+        onNodeDrag={(_, node) => {
+          const state = dragState.current
+          if (!state) return
+          if (state.reducedMotion) {
+            setFlowNodes((current) => {
+              const positions = Object.fromEntries(current.map((item) => [item.id, item.position]))
+              const rootPosition = positions[node.id]
+              if (!rootPosition) return current
+              const nextPositions = moveDirectNeighbours(positions, edges, node.id, { x: node.position.x - rootPosition.x, y: node.position.y - rootPosition.y })
+              return current.map((item) => nextPositions[item.id] === item.position ? item : { ...item, position: nextPositions[item.id] })
+            })
+            return
+          }
+          state.root.fx = node.position.x
+          state.root.fy = node.position.y
+          state.root.x = node.position.x
+          state.root.y = node.position.y
+          state.simulation.alphaTarget(.25).restart()
+        }}
+        onNodeDragStart={(_, node) => {
+          dragState.current?.simulation.stop()
+          const localIds = new Set([node.id, ...directNodeIds(edges, node.id)])
+          const localNodes = flowNodes.filter((item) => localIds.has(item.id))
+          const forceNodes: ForceNode[] = localNodes.map((item) => ({
+            id: item.id,
+            radius: item.data.diameter / 2,
+            x: item.position.x,
+            y: item.position.y,
+          }))
+          const root = forceNodes.find((item) => item.id === node.id)
+          if (!root) return
+          const forceNodeById = new Map(forceNodes.map((item) => [item.id, item]))
+          const forceEdges = edges.flatMap((edge) => {
+            const source = forceNodeById.get(edge.from)
+            const target = forceNodeById.get(edge.to)
+            return source && target ? [{ source, target }] : []
+          }) as ForceLink[]
+          const simulation = forceSimulation<ForceNode>(forceNodes)
+            .force('link', forceLink<ForceNode, ForceLink>(forceEdges).distance((edge) => {
+              const source = typeof edge.source === 'string' ? forceNodeById.get(edge.source) : edge.source
+              const target = typeof edge.target === 'string' ? forceNodeById.get(edge.target) : edge.target
+              return source && target ? source.radius + target.radius + 72 : 72
+            }))
+            .force('charge', forceManyBody().strength(-90))
+            .force('collide', forceCollide<ForceNode>((item) => item.radius + 10).strength(.85))
+            .alphaDecay(.08)
+          const state: DragState = {
+            forceNodes,
+            frame: null,
+            initialPositions: Object.fromEntries(localNodes.map((item) => [item.id, item.position])),
+            localIds,
+            reducedMotion: reducedMotionPreferred(),
+            released: false,
+            root,
+            simulation,
+          }
+          if (!state.reducedMotion) {
+            root.fx = node.position.x
+            root.fy = node.position.y
+            simulation.on('tick', () => updateForcePositions(state))
+            simulation.on('end', () => {
+              if (state.released) finishDrag(state)
+            })
+          }
+          dragState.current = state
+        }}
+        onNodeDragStop={(_, node) => {
+          const state = dragState.current
+          if (!state) return
+          if (state.reducedMotion) {
+            const finalPositions = Object.fromEntries(flowNodes.filter((item) => state.localIds.has(item.id)).map((item) => [item.id, item.position]))
+            onPositionsChange(changedPositions(state.initialPositions, finalPositions, state.localIds))
+            dragState.current = null
+            return
+          }
+          state.released = true
+          state.root.fx = node.position.x
+          state.root.fy = node.position.y
+          state.root.x = node.position.x
+          state.root.y = node.position.y
+          state.simulation.alphaTarget(0).restart()
+        }}
+        onNodesChange={onNodesChange}
+        zoomOnScroll
+      >
+        <Background color="#e4e0d7" gap={20} size={1} variant={BackgroundVariant.Lines} />
+        <Controls aria-label="Canvas controls" showInteractive={false} />
+      </ReactFlow>
     </section>
   )
 }
