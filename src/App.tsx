@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { signOut } from './appState.ts'
+import { useEffect, useState } from 'react'
+import { setDocumentLocale, signOut } from './appState.ts'
 import type { Locale, Session } from './appState.ts'
 import Login from './components/Login.tsx'
 import Workspace from './components/Workspace.tsx'
@@ -8,6 +8,10 @@ import { clearSession, loadLocale, loadSession, saveLocale, saveSession } from '
 export default function App() {
   const [session, setSession] = useState<Session | null>(() => loadSession(window.localStorage))
   const [locale, setLocale] = useState<Locale>(() => loadLocale(window.localStorage))
+
+  useEffect(() => {
+    setDocumentLocale(document.documentElement, locale)
+  }, [locale])
 
   const changeLocale = (nextLocale: Locale) => setLocale(saveLocale(window.localStorage, nextLocale))
 

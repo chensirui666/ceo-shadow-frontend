@@ -126,7 +126,7 @@ export default function Login({ locale, onAuthenticated, onLocaleChange }: Login
                 {error && <p className="form-error" id="email-error" role="alert">{error}</p>}
 
                 <Button className="primary-action" isDisabled={isSending} type="submit">{isSending ? copy.login.email.sending : copy.login.email.submit}</Button>
-                <p className="legal-copy">{copy.login.email.legalBefore} <button type="button">{copy.login.email.terms}</button> {copy.login.email.legalBetween} <button type="button">{copy.login.email.privacy}</button></p>
+                <p className="legal-copy">{copy.login.email.legalBefore} <Button type="button">{copy.login.email.terms}</Button> {copy.login.email.legalBetween} <Button type="button">{copy.login.email.privacy}</Button></p>
               </form>
             ) : (
               <form className="auth-form" onSubmit={(event) => {
@@ -159,8 +159,8 @@ export default function Login({ locale, onAuthenticated, onLocaleChange }: Login
 
                 <Button className="primary-action" isDisabled={isVerifying} type="submit">{isVerifying ? copy.login.code.verifying : copy.login.code.submit}</Button>
                 <div className="code-actions">
-                  <button type="button" onClick={editEmail}>{copy.login.code.edit}</button>
-                  <button disabled={!canResend(resendIn)} type="button" onClick={resendCode}>{canResend(resendIn) ? copy.login.code.resend : copy.login.code.resendIn(resendIn)}</button>
+                  <Button type="button" onPress={editEmail}>{copy.login.code.edit}</Button>
+                  <Button isDisabled={!canResend(resendIn)} type="button" onPress={resendCode}>{canResend(resendIn) ? copy.login.code.resend : copy.login.code.resendIn(resendIn)}</Button>
                 </div>
               </form>
             )}

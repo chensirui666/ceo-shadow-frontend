@@ -2,7 +2,7 @@ export const settingsStorageKey = 'friday-demo-settings'
 
 export const connectorIds = ['dingtalk', 'feishu'] as const
 export const connectorStatuses = ['disconnected', 'connected', 'needs-reconnect'] as const
-export const settingsSections = ['apps', 'general', 'language', 'profile'] as const
+export const settingsSections = ['apps', 'general', 'profile'] as const
 export const waitMinutes = [1, 5, 10] as const
 
 export type ConnectorId = typeof connectorIds[number]

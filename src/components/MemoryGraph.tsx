@@ -1,61 +1,119 @@
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { applyNodeChanges, Controls, Handle, Position, ReactFlow } from '@xyflow/react'
+import type { Edge, Node, NodeProps, NodeTypes, OnNodesChange } from '@xyflow/react'
+import '@xyflow/react/dist/style.css'
+import { initialMemoryPosition, moveDirectNeighbours, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
+import type { MemoryPosition } from '../memoryCanvasState.ts'
 import type { MemoryEdge, MemoryNode } from '../memoryState.ts'
 
+type MemoryFlowNode = Node<MemoryNode & { diameter: number }, 'memory'>
+
 type MemoryGraphProps = {
+  allEdges: MemoryEdge[]
   edges: MemoryEdge[]
+  moveVisibleNeighbours: (draggedId: string, delta: MemoryPosition) => void
   nodes: MemoryNode[]
+  positions: Record<string, MemoryPosition>
+  setNodePosition: (id: string, position: MemoryPosition) => void
   summary: string
 }
 
-type Position = { x: number; y: number }
+const MemoryCanvasNode = memo(({ data }: NodeProps<MemoryFlowNode>) => (
+  <div
+    aria-label={data.title}
+    className={`memory-flow-node memory-flow-node-${data.source} memory-flow-node-${data.tier}`}
+    style={{ height: data.diameter, width: data.diameter }}
+  >
+    <Handle className="memory-flow-handle" isConnectable={false} position={Position.Top} type="target" />
+    <Handle className="memory-flow-handle" isConnectable={false} position={Position.Top} type="source" />
+    {data.tier === 'core' && <span className="memory-flow-label">{data.title}</span>}
+  </div>
+))
 
-const positions: Record<string, Position> = {
-  'context-brief': { x: 485, y: 275 },
-  'context-roadmap': { x: 310, y: 164 },
-  'context-team': { x: 680, y: 156 },
-  'context-research': { x: 150, y: 300 },
-  'context-followup': { x: 760, y: 332 },
-  'context-release': { x: 414, y: 430 },
-  'context-planning': { x: 305, y: 355 },
-  'context-review': { x: 870, y: 205 },
-  'context-briefing': { x: 126, y: 146 },
-  'context-decisions': { x: 740, y: 465 },
-  'user-direction': { x: 478, y: 266 },
-  'user-collaboration': { x: 295, y: 164 },
-  'user-analysis': { x: 700, y: 175 },
-  'user-context': { x: 196, y: 375 },
-  'user-followup': { x: 784, y: 395 },
+const nodeTypes: NodeTypes = { memory: MemoryCanvasNode }
+
+const createFlowNodes = (
+  nodes: MemoryNode[],
+  degrees: Record<string, number>,
+  positions: Record<string, MemoryPosition>,
+  current: MemoryFlowNode[] = [],
+): MemoryFlowNode[] => {
+  const previous = new Map(current.map((node) => [node.id, node]))
+  return nodes.map((node) => {
+    const existing = previous.get(node.id)
+    const diameter = nodeDiameterForDegree(degrees[node.id] ?? 0)
+    return {
+      ...existing,
+      ariaLabel: node.title,
+      data: { ...node, diameter },
+      id: node.id,
+      position: positions[node.id] ?? existing?.position ?? initialMemoryPosition(node.id),
+      selectable: false,
+      style: { height: diameter, width: diameter },
+      type: 'memory',
+    }
+  })
 }
 
-const fallbackPosition = (id: string): Position => {
-  const hash = [...id].reduce((value, character) => (value * 31 + character.charCodeAt(0)) % 997, 0)
-  return { x: 154 + hash % 692, y: 106 + (hash * 7) % 346 }
-}
+export default function MemoryGraph({ allEdges, edges, moveVisibleNeighbours, nodes, positions, setNodePosition, summary }: MemoryGraphProps) {
+  const previousPosition = useRef<MemoryPosition | null>(null)
+  const degrees = useMemo(() => nodeDegrees(allEdges), [allEdges])
+  const [flowNodes, setFlowNodes] = useState<MemoryFlowNode[]>(() => createFlowNodes(nodes, degrees, positions))
+  useEffect(() => {
+    setFlowNodes((current) => createFlowNodes(nodes, degrees, positions, current))
+  }, [degrees, nodes, positions])
+  const flowEdges = useMemo<Edge[]>(() => edges.map((edge) => ({
+    id: `${edge.from}-${edge.to}`,
+    source: edge.from,
+    target: edge.to,
+    type: 'straight',
+  })), [edges])
 
-const positionFor = (id: string): Position => positions[id] ?? fallbackPosition(id)
+  const onNodesChange = useCallback<OnNodesChange<MemoryFlowNode>>((changes) => {
+    setFlowNodes((current) => applyNodeChanges(changes, current))
+    changes.forEach((change) => {
+      if (change.type === 'position' && change.position) setNodePosition(change.id, change.position)
+    })
+  }, [setNodePosition])
 
-const radiusFor = (tier: MemoryNode['tier']): number => (
-  tier === 'core' ? 16 : tier === 'connection' ? 10 : 6
-)
-
-export default function MemoryGraph({ edges, nodes, summary }: MemoryGraphProps) {
   return (
     <section aria-label={summary} className="memory-graph">
-      <svg aria-hidden="true" preserveAspectRatio="xMidYMid meet" viewBox="0 0 1000 560">
-        {edges.map((edge) => {
-          const from = positionFor(edge.from)
-          const to = positionFor(edge.to)
-          return <line className="memory-edge" key={`${edge.from}-${edge.to}`} x1={from.x} x2={to.x} y1={from.y} y2={to.y} />
-        })}
-        {nodes.map((node) => {
-          const position = positionFor(node.id)
-          return (
-            <g className={`memory-node memory-node-${node.source} memory-node-${node.tier}`} key={node.id} transform={`translate(${position.x} ${position.y})`}>
-              <circle r={radiusFor(node.tier)} />
-              {node.tier === 'core' && <text x={23} y={5}>{node.title}</text>}
-            </g>
-          )
-        })}
-      </svg>
+      <ReactFlow
+        aria-label={summary}
+        className="memory-flow"
+        edges={flowEdges}
+        edgesFocusable={false}
+        elementsSelectable={false}
+        fitView
+        fitViewOptions={{ padding: 0.2 }}
+        maxZoom={2}
+        minZoom={0.4}
+        nodeOrigin={[0.5, 0.5]}
+        nodes={flowNodes}
+        nodesConnectable={false}
+        nodeTypes={nodeTypes}
+        onNodeDrag={(_, node) => {
+          const previous = previousPosition.current
+          if (!previous) return
+          setFlowNodes((current) => {
+            const nextPositions = moveDirectNeighbours(
+              Object.fromEntries(current.map((item) => [item.id, item.position])),
+              edges,
+              node.id,
+              { x: node.position.x - previous.x, y: node.position.y - previous.y },
+            )
+            return current.map((item) => nextPositions[item.id] === item.position ? item : { ...item, position: nextPositions[item.id] })
+          })
+          moveVisibleNeighbours(node.id, { x: node.position.x - previous.x, y: node.position.y - previous.y })
+          previousPosition.current = node.position
+        }}
+        onNodeDragStart={(_, node) => { previousPosition.current = node.position }}
+        onNodeDragStop={() => { previousPosition.current = null }}
+        onNodesChange={onNodesChange}
+        zoomOnScroll
+      >
+        <Controls aria-label="Canvas controls" showInteractive={false} />
+      </ReactFlow>
     </section>
   )
 }

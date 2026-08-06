@@ -31,4 +31,8 @@ export const resolveLocale = (locale?: unknown): Locale => (
   locales.includes(locale as Locale) ? locale as Locale : 'en'
 )
 
+export const setDocumentLocale = (root: Pick<HTMLElement, 'lang'>, locale: Locale): void => {
+  root.lang = locale === 'zh' ? 'zh-CN' : 'en'
+}
+
 export const signOut = () => ({ user: null, route: 'sign-in' as const })

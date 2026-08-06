@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Button, Dropdown, Modal, useOverlayState } from '@heroui/react'
+import { Button as AriaButton } from 'react-aria-components'
 import { resolveRoute } from '../appState.ts'
 import type { Locale, Route, Session } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import { saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
-import LanguageToggle from './LanguageToggle.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
 
@@ -54,17 +54,17 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         <span className="workspace-brand">Friday</span>
         <nav aria-label={copy.primaryNavigation} className="workspace-nav">
           {pages.slice(0, 4).map((page) => (
-            <button className={route === page.id ? 'nav-item nav-item-active' : 'nav-item'} key={page.id} onClick={() => goTo(page.id)} type="button">
+            <Button className={route === page.id ? 'nav-item nav-item-active' : 'nav-item'} key={page.id} onPress={() => goTo(page.id)} type="button">
               <Icon name={page.icon} />
               <span>{copy.nav[page.id]}</span>
-            </button>
+            </Button>
           ))}
         </nav>
         <div className="workspace-rail-bottom">
-          <button className={settingsOpen ? 'nav-item nav-item-active' : 'nav-item'} onClick={openSettings} type="button">
+          <Button className={settingsOpen ? 'nav-item nav-item-active' : 'nav-item'} onPress={openSettings} type="button">
             <Icon name="settings" />
             <span>{copy.nav.settings}</span>
-          </button>
+          </Button>
           <div className="rail-account">
             <span aria-hidden="true" className="avatar-fallback">{name.slice(0, 1).toUpperCase()}</span>
             <span>{session.email}</span>
@@ -73,15 +73,12 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       </aside>
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
-        <header className="workspace-header">
+        <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
           <h1>{route === 'home' ? copy.greeting(name) : currentLabel}</h1>
           <div className="workspace-tools">
-            <LanguageToggle copy={translations[locale]} locale={locale} onChange={onLocaleChange} />
-            <button className="icon-button" disabled title={copy.unavailableNotifications} type="button"><Icon name="bell" /><span className="sr-only">{copy.unavailableNotifications}</span></button>
+            <Button aria-label={copy.unavailableNotifications} className="icon-button" isDisabled isIconOnly type="button"><Icon name="bell" /><span className="sr-only">{copy.unavailableNotifications}</span></Button>
             <Dropdown>
-              <Dropdown.Trigger aria-label={copy.openAccountMenu} className="account-menu-trigger">
-                <Icon name="user" />
-              </Dropdown.Trigger>
+              <AriaButton aria-label={copy.openAccountMenu} className="account-menu-trigger" type="button"><Icon name="user" /></AriaButton>
               <Dropdown.Popover className="account-menu-popover" placement="bottom right">
                 <Dropdown.Menu aria-label={copy.accountMenu} className="account-menu" onAction={(key) => key === 'sign-out' && exitDialog.open()}>
                   <Dropdown.Item className="account-menu-item" id="sign-out" textValue={copy.signOut}>{copy.signOut}</Dropdown.Item>
@@ -116,22 +113,20 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         )}
       </section>
 
-      <Modal state={exitDialog}>
-        <Modal.Backdrop className="exit-backdrop">
-          <Modal.Container className="exit-container" placement="center">
-            <Modal.Dialog className="exit-dialog">
-              <Modal.Header><Modal.Heading className="exit-title">{copy.exit.title}</Modal.Heading></Modal.Header>
-              <Modal.Body className="exit-body">{copy.exit.body}</Modal.Body>
-              <Modal.Footer className="exit-footer">
-                <Button className="modal-cancel" onPress={exitDialog.close}>{copy.exit.cancel}</Button>
-                <Button className="modal-confirm" onPress={onSignOut}>{copy.signOut}</Button>
-              </Modal.Footer>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+      <Modal.Backdrop className="exit-backdrop" isOpen={exitDialog.isOpen} onOpenChange={exitDialog.setOpen}>
+        <Modal.Container className="exit-container" placement="center">
+          <Modal.Dialog className="exit-dialog">
+            <Modal.Header><Modal.Heading className="exit-title">{copy.exit.title}</Modal.Heading></Modal.Header>
+            <Modal.Body className="exit-body">{copy.exit.body}</Modal.Body>
+            <Modal.Footer className="exit-footer">
+              <Button className="modal-cancel" onPress={exitDialog.close}>{copy.exit.cancel}</Button>
+              <Button className="modal-confirm" onPress={onSignOut}>{copy.signOut}</Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
 
-      {settingsOpen && <SettingsWorkspace locale={locale} onClose={() => setSettingsOpen(false)} onNavigate={goTo} />}
+      {settingsOpen && <SettingsWorkspace locale={locale} onClose={() => setSettingsOpen(false)} onLocaleChange={onLocaleChange} onNavigate={goTo} />}
     </main>
   )
 }

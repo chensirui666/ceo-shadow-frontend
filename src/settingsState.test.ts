@@ -60,6 +60,7 @@ test('saveSettings persists normalized preferences for a later load', () => {
   assert.deepEqual(settingsState.loadSettings(storage), saved)
 })
 
-test('settings navigation includes a dedicated language category', () => {
-  assert.deepEqual(settingsState.settingsSections, ['apps', 'general', 'language', 'profile'])
+test('settings navigation keeps language inside General and recovers old language routes', () => {
+  assert.deepEqual(settingsState.settingsSections, ['apps', 'general', 'profile'])
+  assert.equal(settingsState.normalizeSettings({ lastSection: 'language' }).lastSection, 'apps')
 })

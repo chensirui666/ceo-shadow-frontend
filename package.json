@@ -13,6 +13,8 @@
   "dependencies": {
     "@heroui/react": "^3.2.3",
     "@heroui/styles": "^3.2.3",
+    "@xyflow/react": "^12.11.2",
+    "lucide-react": "^1.28.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

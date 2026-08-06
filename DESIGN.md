@@ -153,7 +153,7 @@ become the dominant visual element.
 
 Use `editorial` only for a welcome message, a setup invitation, or an empty
 state headline. It is an emotional accent, not a data-display font. Do not use
-it for a task title, a draft, an event, a table, or a setting.
+it for a task title, a reply, an event, a table, or a setting.
 
 ## Layout
 
@@ -201,10 +201,11 @@ supporting information. Data-heavy lists may use the white canvas directly
 with row dividers instead of cards within cards. Avoid nesting more than one
 card level.
 
-**Status:** Trial uses `status-trial` and must say that a result is a draft or
-trial outcome. Active uses `status-active` only when the channel is healthy
+**Status:** Trial uses `status-trial` and must say that a result has not been
+sent. Active uses `status-active` only when the channel is healthy
 and work is actually enabled. A disconnected or failed state must use explicit
-warning/critical language and a clear recovery action.
+warning/critical language and explain what happened; recovery actions belong
+only on the page responsible for recovery.
 
 **Promotional or onboarding banner:** A dark, softly blurred human-work image
 may appear in a setup invitation or an optional product tip. Keep text and CTA
@@ -227,5 +228,5 @@ names are never exposed here.
 - Do use empty space around sections, but keep list rows and controls compact.
 - Don't use gradients, glass effects, oversized headings, or decorative charts.
 - Don't use a status color to make a promise the system has not fulfilled.
-- Don't place a marketing banner above a user’s urgent draft or pending action.
+- Don't place a marketing banner above a user’s urgent reply awaiting a decision.
 - Don't reproduce reference-product copy, people, photography, or visual marks.

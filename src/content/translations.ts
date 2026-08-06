@@ -1,13 +1,12 @@
 import type { Locale, Route } from '../appState.ts'
 import type { MemorySource } from '../memoryState.ts'
-import type { ConnectorStatus, SettingsSection } from '../settingsState.ts'
+import type { ConnectorId, ConnectorStatus, SettingsSection } from '../settingsState.ts'
 
 type PageCopy = [string, string, string]
 
 type SettingsCopy = {
   title: string
   close: string
-  back: string
   saved: string
   nav: Record<SettingsSection, string>
   discard: { title: string; body: string; cancel: string; confirm: string }
@@ -15,25 +14,9 @@ type SettingsCopy = {
     title: string
     subtitle: string
     demo: string
+    description: Record<ConnectorId, string>
     status: Record<ConnectorStatus | 'connecting', string>
     action: { connect: (name: string) => string; reconnect: (name: string) => string; disconnect: (name: string) => string }
-    detail: {
-      verified: string
-      uses: (name: string) => string
-      usesItems: string[]
-      workScope: string
-      groupScope: string
-      directScope: string
-      dataScope: string
-      dataScopeValue: string
-      memory: string
-      memoryValue: string
-      mode: string
-      modeValue: string
-      manageOnHome: string
-      disconnected: (name: string) => string
-      reconnect: (name: string) => string
-    }
     disconnect: { title: (name: string) => string; body: (name: string) => string; cancel: string; confirm: (name: string) => string }
   }
   general: {
@@ -42,6 +25,8 @@ type SettingsCopy = {
     group: { title: string; description: string; summary: (enabled: boolean) => string; direct: string; everyone: string; confirmation: { title: string; body: string; cancel: string; confirm: string } }
     rhythm: { title: string; description: string; summary: (minutes: number, quiet: string | null) => string; wait: string; waitOptions: (minutes: number) => string; quiet: string; quietStart: string; quietEnd: string; helper: string }
     notifications: { title: string; description: string; summary: (count: number) => string; handoff: string; handoffDescription: string; reconnect: string; reconnectDescription: string; sendFailed: string; sendFailedDescription: string }
+    preferences: { title: string }
+    language: { title: string; description: string; english: string; chinese: string }
     save: string
   }
   profile: {
@@ -70,9 +55,8 @@ type SettingsCopy = {
 }
 
 type MemoryCopy = {
-  description: string
   layersLabel: string
-  layers: Record<'context' | 'user', { label: string; description: string }>
+  layers: Record<'context' | 'user', { label: string }>
   sources: Record<MemorySource, string>
   sourceLabel: string
   searchLabel: string
@@ -184,11 +168,10 @@ export const translations: Record<Locale, Translation> = {
         cancel: 'Cancel',
       },
       memory: {
-        description: 'All work information enters context first, then becomes user Memory.',
         layersLabel: 'Memory layer',
         layers: {
-          context: { label: 'Context', description: 'All work information gathers here first.' },
-          user: { label: 'User', description: 'Friday’s lasting understanding distilled from context.' },
+          context: { label: 'Context' },
+          user: { label: 'User' },
         },
         sources: { all: 'All sources', dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams', file: 'File', conversation: 'Conversation' },
         sourceLabel: 'Source',
@@ -197,7 +180,7 @@ export const translations: Record<Locale, Translation> = {
         add: 'Add material',
         upload: 'Upload file',
         migration: 'Migrate data',
-        uploadModal: { title: 'Upload file', description: 'Add a work document. Friday will add it to Memory after organizing it.', choose: 'Choose file', cancel: 'Cancel', submit: 'Start adding' },
+        uploadModal: { title: 'Upload file', description: 'In this local demo, choosing a work document only simulates a Memory result. The file is not uploaded or read.', choose: 'Choose file', cancel: 'Cancel', submit: 'Start adding' },
         migrationModal: {
           title: 'Migrate data',
           description: 'First, use this prompt in your conversation tool to organize work content into Markdown.',
@@ -208,14 +191,13 @@ export const translations: Record<Locale, Translation> = {
           choose: 'Choose Markdown file',
           submit: 'Start migration',
         },
-        status: { processing: 'Organizing your new material. It will join Memory when complete.', completed: 'Added to Memory', failed: 'This material could not be added to Memory.', retry: 'Retry' },
+        status: { processing: 'Simulating a local Memory result…', completed: 'Local simulated result added to the map', failed: 'This local demo could not simulate a result', retry: 'Retry' },
         empty: { layer: 'There is no work memory ready to show yet.', source: 'This source has not formed Memory ready to show.', search: 'No related Memory found.', clearSource: 'Clear source filter', clearSearch: 'Clear search' },
         mapSummary: (layer, source, keyword, count) => `Showing the ${layer} Memory relationship map for ${source}${keyword ? `, searching for ${keyword}` : ''}, with ${count} visible Memory items.`,
       },
       settings: {
         title: 'Settings',
         close: 'Close Settings',
-        back: 'Settings',
         saved: 'Saved',
         nav: { apps: 'Connected apps', general: 'General', profile: 'How Friday works for you' },
         discard: { title: 'Discard changes?', body: 'You have changes that have not been saved.', cancel: 'Keep editing', confirm: 'Discard changes' },
@@ -223,25 +205,9 @@ export const translations: Record<Locale, Translation> = {
           title: 'Connected apps',
           subtitle: 'Choose where Friday can work with you.',
           demo: 'Demo only: changes stay in this browser. Friday does not start live authorization or process messages.',
+          description: { dingtalk: 'Work messages and relevant updates', feishu: 'Team messages and shared documents' },
           status: { disconnected: 'Not connected', connected: 'Connected', 'needs-reconnect': 'Reconnect needed', connecting: 'Connecting…' },
           action: { connect: (name) => `Connect ${name}`, reconnect: (name) => `Reconnect ${name}`, disconnect: (name) => `Disconnect ${name}` },
-          detail: {
-            verified: 'Last checked: just now',
-            uses: (name) => `Friday uses ${name} to:`,
-            usesItems: ['Handle work messages clearly directed to you', 'Read authorised related material to understand context', 'Carry work outcomes into Friday'],
-            workScope: 'Work scope',
-            groupScope: 'Group chats: only when a colleague clearly @mentions you',
-            directScope: 'Direct messages: handled according to the current work mode',
-            dataScope: 'Data scope',
-            dataScopeValue: 'Work messages and their authorised related material',
-            memory: 'Saved Memory',
-            memoryValue: 'Retained',
-            mode: 'Current operating mode',
-            modeValue: 'Active',
-            manageOnHome: 'Manage on Home',
-            disconnected: (name) => `Friday is not connected to ${name} yet.`,
-            reconnect: (name) => `Friday cannot continue using ${name} right now. Reconnect to continue.`,
-          },
           disconnect: { title: (name) => `Disconnect ${name}?`, body: (name) => `Friday will stop reading and handling new ${name} content. Existing Memory from ${name} stays available and can be managed separately in Memory.`, cancel: 'Cancel', confirm: (name) => `Disconnect ${name}` },
         },
         general: {
@@ -250,6 +216,8 @@ export const translations: Record<Locale, Translation> = {
           group: { title: 'Group chat handling', description: 'Decide which group messages Friday can consider.', summary: (enabled) => enabled ? '@ me and @everyone' : 'Only @ me', direct: 'Messages that @mention you are always considered.', everyone: 'Handle @everyone in group chats', confirmation: { title: 'Let Friday respond to @everyone?', body: 'Friday cannot know whether @everyone is intended for you. Only clear work requests will be considered.', cancel: 'Cancel', confirm: 'Enable anyway' } },
           rhythm: { title: 'Work rhythm', description: 'Give yourself time to reply before Friday steps in.', summary: (minutes, quiet) => `Wait ${minutes} min${quiet ? ` · Quiet ${quiet}` : ''}`, wait: 'Wait for me first', waitOptions: (minutes) => `${minutes} minute${minutes === 1 ? '' : 's'}`, quiet: 'Quiet hours', quietStart: 'Start', quietEnd: 'End', helper: 'If you reply first, Friday stays quiet. During quiet hours it may draft, but does not automatically send.' },
           notifications: { title: 'Notifications', description: 'Only alert me when an action is needed.', summary: (count) => `${count} enabled`, handoff: 'I need to take over', handoffDescription: 'Friday needs your judgment, reply, or action.', reconnect: 'A connection needs attention', reconnectDescription: 'A connected app needs to be reconnected or authorised again.', sendFailed: 'A reply did not send', sendFailedDescription: 'Friday produced a result but could not complete its active send.' },
+          preferences: { title: 'Personal preferences' },
+          language: { title: 'Language', description: 'Choose the language Friday uses throughout the workspace.', english: 'English', chinese: '中文' },
           save: 'Save changes',
         },
         profile: {
@@ -355,11 +323,10 @@ export const translations: Record<Locale, Translation> = {
         cancel: '取消',
       },
       memory: {
-        description: '所有工作信息先进入上下文，再沉淀为用户 Memory。',
         layersLabel: '记忆层',
         layers: {
-          context: { label: '上下文', description: '所有工作信息先在这里汇聚。' },
-          user: { label: '用户', description: 'Friday 从上下文中沉淀出的长期工作理解。' },
+          context: { label: '上下文' },
+          user: { label: '用户' },
         },
         sources: { all: '全部来源', dingtalk: '钉钉', feishu: '飞书', teams: 'Teams', file: '文件', conversation: '对话' },
         sourceLabel: '来源',
@@ -368,7 +335,7 @@ export const translations: Record<Locale, Translation> = {
         add: '添加资料',
         upload: '上传文件',
         migration: '数据迁移',
-        uploadModal: { title: '上传文件', description: '添加一份工作资料，Friday 会在整理后将其加入 Memory。', choose: '选择文件', cancel: '取消', submit: '开始添加' },
+        uploadModal: { title: '上传文件', description: '仅在本地演示：选择工作资料只会模拟一条 Memory 结果，文件不会上传或读取。', choose: '选择文件', cancel: '取消', submit: '开始添加' },
         migrationModal: {
           title: '数据迁移',
           description: '先在你的对话工具中使用这段 Prompt，将工作相关内容整理成 Markdown。',
@@ -379,14 +346,13 @@ export const translations: Record<Locale, Translation> = {
           choose: '选择 Markdown 文件',
           submit: '开始迁移',
         },
-        status: { processing: '正在整理新资料，完成后会加入 Memory。', completed: '已加入 Memory', failed: '这份资料暂时未能加入 Memory', retry: '重试' },
+        status: { processing: '正在模拟本地 Memory 结果…', completed: '本地模拟结果已加入关系图', failed: '本地演示暂时无法模拟结果', retry: '重试' },
         empty: { layer: '还没有可呈现的工作记忆', source: '这个来源还没有形成可呈现的 Memory', search: '没有找到相关的 Memory', clearSource: '清除筛选', clearSearch: '清除搜索' },
         mapSummary: (layer, source, keyword, count) => `正在显示${layer}层，${source}的 Memory 关系地图${keyword ? `，搜索：${keyword}` : ''}，共${count}项可见 Memory。`,
       },
       settings: {
         title: '设置',
         close: '关闭设置',
-        back: '设置',
         saved: '已保存',
         nav: { apps: '已连接的应用', general: '通用', profile: 'Friday 如何为你工作' },
         discard: { title: '放弃更改？', body: '你有尚未保存的更改。', cancel: '继续编辑', confirm: '放弃更改' },
@@ -394,25 +360,9 @@ export const translations: Record<Locale, Translation> = {
           title: '已连接的应用',
           subtitle: '选择 Friday 可以在哪里与你一起工作。',
           demo: '仅为演示：更改只保留在此浏览器中。Friday 不会开始真实授权或处理消息。',
+          description: { dingtalk: '工作消息与相关动态', feishu: '团队消息与共享文档' },
           status: { disconnected: '未连接', connected: '已连接', 'needs-reconnect': '需要重新连接', connecting: '正在连接…' },
           action: { connect: (name) => `连接${name}`, reconnect: (name) => `重新连接${name}`, disconnect: (name) => `断开${name}` },
-          detail: {
-            verified: '上次验证：刚刚',
-            uses: (name) => `Friday 会使用${name}来：`,
-            usesItems: ['处理明确指向你的工作消息', '阅读已授权的关联资料，以理解上下文', '将工作结果沉淀到 Friday'],
-            workScope: '工作范围',
-            groupScope: '群聊：仅在同事明确 @ 你时处理',
-            directScope: '私聊：按当前工作状态处理',
-            dataScope: '数据范围',
-            dataScopeValue: '工作消息与其已授权的关联资料',
-            memory: '已沉淀的 Memory',
-            memoryValue: '保留',
-            mode: '当前运行状态',
-            modeValue: '正式状态',
-            manageOnHome: '在 Home 中管理',
-            disconnected: (name) => `Friday 尚未连接${name}。`,
-            reconnect: (name) => `Friday 暂时无法继续使用${name}。请重新连接后再试。`,
-          },
           disconnect: { title: (name) => `断开${name}？`, body: (name) => `Friday 将停止读取和处理新的${name}内容。此前从${name}沉淀的 Memory 会保留；你可以稍后在 Memory 中单独管理它。`, cancel: '取消', confirm: (name) => `断开${name}` },
         },
         general: {
@@ -421,6 +371,8 @@ export const translations: Record<Locale, Translation> = {
           group: { title: '群聊处理条件', description: '决定 Friday 可以考虑哪些群聊消息。', summary: (enabled) => enabled ? '@ 我和 @所有人' : '仅 @ 我', direct: '群聊中明确 @ 你的消息始终会被考虑。', everyone: '处理群聊中的 @所有人', confirmation: { title: '让 Friday 响应 @所有人？', body: 'Friday 无法确认 @所有人 是否只针对你。只有明确的工作请求才会被处理。', cancel: '取消', confirm: '仍然开启' } },
           rhythm: { title: '工作节奏', description: '在 Friday 介入前，先给你留出亲自回复的时间。', summary: (minutes, quiet) => `等待 ${minutes} 分钟${quiet ? ` · 免打扰 ${quiet}` : ''}`, wait: '先等我处理', waitOptions: (minutes) => `${minutes} 分钟`, quiet: '免打扰时段', quietStart: '开始', quietEnd: '结束', helper: '如果你已亲自回复，Friday 会保持安静。免打扰时段内它仍可生成草稿，但不会自动发送。' },
           notifications: { title: '通知', description: '只在需要你采取行动时提醒。', summary: (count) => `${count} 项已开启`, handoff: '需要我接管', handoffDescription: 'Friday 需要你亲自判断、回复或处理。', reconnect: '连接需要处理', reconnectDescription: '已连接应用需要重新连接或再次授权。', sendFailed: '回复未成功发送', sendFailedDescription: 'Friday 已产生结果，但未能完成正式发送。' },
+          preferences: { title: '个人偏好' },
+          language: { title: '语言', description: '选择 Friday 在整个工作台中使用的语言。', english: 'English', chinese: '中文' },
           save: '保存更改',
         },
         profile: {

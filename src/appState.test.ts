@@ -35,6 +35,19 @@ test('resolveLocale defaults to English and accepts the supported Chinese locale
   assert.equal(appState.resolveLocale('fr'), 'en')
 })
 
+test('setDocumentLocale aligns the document language with the selected locale', () => {
+  const root = { lang: '' }
+  const setDocumentLocale = Reflect.get(appState, 'setDocumentLocale')
+
+  assert.equal(typeof setDocumentLocale, 'function')
+  if (typeof setDocumentLocale === 'function') {
+    setDocumentLocale(root, 'zh')
+    assert.equal(root.lang, 'zh-CN')
+    setDocumentLocale(root, 'en')
+    assert.equal(root.lang, 'en')
+  }
+})
+
 test('signOut removes visible user state and returns to sign-in', () => {
   assert.deepEqual(appState.signOut(), {
     user: null,

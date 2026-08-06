@@ -13,8 +13,9 @@ export default function SettingsConfirmation({ body, cancelLabel, confirmLabel, 
     <h3>{title}</h3>
     <p>{body}</p>
     <div className="settings-actions">
-      <button className="settings-button settings-button-secondary" onClick={onCancel} type="button">{cancelLabel}</button>
-      <button className={destructive ? 'settings-button settings-button-danger' : 'settings-button settings-button-dark'} onClick={onConfirm} type="button">{confirmLabel}</button>
+      <Button className="settings-button settings-button-secondary" onPress={onCancel} type="button">{cancelLabel}</Button>
+      <Button className={destructive ? 'settings-button settings-button-danger' : 'settings-button settings-button-dark'} onPress={onConfirm} type="button">{confirmLabel}</Button>
     </div>
   </section>
 }
+import { Button } from '@heroui/react'

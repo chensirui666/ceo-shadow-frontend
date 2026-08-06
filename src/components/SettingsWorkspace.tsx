@@ -1,30 +1,35 @@
-import { useEffect, useState } from 'react'
+import { Button, Modal } from '@heroui/react'
+import { Cable, SlidersHorizontal, UserRound } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { useState } from 'react'
 import type { Locale, Route } from '../appState.ts'
 import { translations } from '../content/translations.ts'
-import { connectorIds, loadSettings, saveSettings } from '../settingsState.ts'
+import { connectorIds, loadSettings, saveSettings, settingsSections } from '../settingsState.ts'
 import type { ConnectorId, FridaySettings, SettingsSection } from '../settingsState.ts'
 import SettingsAppsPanel from './SettingsAppsPanel.tsx'
-import type { AppsView } from './SettingsAppsPanel.tsx'
 import SettingsConfirmation from './SettingsConfirmation.tsx'
 import SettingsGeneralPanel from './SettingsGeneralPanel.tsx'
-import type { GeneralView } from './SettingsGeneralPanel.tsx'
 import SettingsProfilePanel from './SettingsProfilePanel.tsx'
-import type { ProfileView } from './SettingsProfilePanel.tsx'
 
 type SettingsWorkspaceProps = {
   locale: Locale
   onClose: () => void
+  onLocaleChange: (locale: Locale) => void
   onNavigate: (route: Route) => void
 }
 
-type SettingsView = AppsView | GeneralView | ProfileView
 type Confirmation = 'discard' | 'everyone' | ConnectorId | null
 
-export default function SettingsWorkspace({ locale, onClose, onNavigate }: SettingsWorkspaceProps) {
+const settingsNavIcons: Record<SettingsSection, LucideIcon> = {
+  apps: Cable,
+  general: SlidersHorizontal,
+  profile: UserRound,
+}
+
+export default function SettingsWorkspace({ locale, onClose, onLocaleChange, onNavigate }: SettingsWorkspaceProps) {
   const [saved, setSaved] = useState<FridaySettings>(() => loadSettings(window.localStorage))
   const [draft, setDraft] = useState<FridaySettings>(saved)
   const [section, setSection] = useState<SettingsSection>(saved.lastSection)
-  const [view, setView] = useState<SettingsView>('overview')
   const [confirmation, setConfirmation] = useState<Confirmation>(null)
   const [pendingRoute, setPendingRoute] = useState<Route | null>(null)
   const [busyConnector, setBusyConnector] = useState<ConnectorId | null>(null)
@@ -32,26 +37,19 @@ export default function SettingsWorkspace({ locale, onClose, onNavigate }: Setti
   const copy = translations[locale].workspace.settings
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved)
 
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      event.preventDefault()
-      if (dirty) setConfirmation('discard')
-      else onClose()
-    }
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [dirty, onClose])
-
   const updateDraft = (update: (current: FridaySettings) => FridaySettings) => setDraft((current) => update(current))
-  const moveToView = (nextView: SettingsView) => { setView(nextView); setConfirmation(null); setNotice('') }
   const leave = (route?: Route) => { onClose(); if (route) onNavigate(route) }
+
+  const requestClose = (route?: Route) => {
+    if (!dirty) return leave(route)
+    setPendingRoute(route ?? null)
+    setConfirmation('discard')
+  }
 
   const saveDraft = () => {
     const next = saveSettings(window.localStorage, draft)
     setSaved(next)
     setDraft(next)
-    setView('overview')
     setConfirmation(null)
     setNotice(copy.saved)
   }
@@ -61,13 +59,8 @@ export default function SettingsWorkspace({ locale, onClose, onNavigate }: Setti
     setSaved(nextSaved)
     setDraft((current) => ({ ...current, lastSection: nextSection }))
     setSection(nextSection)
-    moveToView('overview')
-  }
-
-  const requestClose = (route?: Route) => {
-    if (!dirty) return leave(route)
-    setPendingRoute(route ?? null)
-    setConfirmation('discard')
+    setConfirmation(null)
+    setNotice('')
   }
 
   const connect = (app: ConnectorId) => {
@@ -86,7 +79,6 @@ export default function SettingsWorkspace({ locale, onClose, onNavigate }: Setti
     setSaved(nextSaved)
     setDraft((current) => ({ ...current, connectors: nextSaved.connectors }))
     setConfirmation(null)
-    setView('overview')
     setNotice(copy.saved)
   }
 
@@ -96,15 +88,17 @@ export default function SettingsWorkspace({ locale, onClose, onNavigate }: Setti
   const connectorConfirmation = pendingConnector ? <SettingsConfirmation body={copy.apps.disconnect.body(pendingConnector === 'dingtalk' ? 'DingTalk' : 'Feishu')} cancelLabel={copy.apps.disconnect.cancel} confirmLabel={copy.apps.disconnect.confirm(pendingConnector === 'dingtalk' ? 'DingTalk' : 'Feishu')} destructive onCancel={() => setConfirmation(null)} onConfirm={() => disconnect(pendingConnector)} title={copy.apps.disconnect.title(pendingConnector === 'dingtalk' ? 'DingTalk' : 'Feishu')} /> : null
 
   const content = section === 'apps'
-    ? <SettingsAppsPanel busyConnector={busyConnector} confirmation={discardConfirmation ?? connectorConfirmation} copy={copy} notice={notice} onConnect={connect} onRequestClose={requestClose} onRequestDisconnect={setConfirmation} onViewChange={moveToView} saved={saved} view={view as AppsView} />
+    ? <SettingsAppsPanel busyConnector={busyConnector} confirmation={discardConfirmation ?? connectorConfirmation} copy={copy} notice={notice} onConnect={connect} onRequestDisconnect={setConfirmation} saved={saved} />
     : section === 'general'
-      ? <SettingsGeneralPanel confirmation={discardConfirmation ?? everyoneConfirmation} copy={copy} draft={draft} notice={notice} onRequestEveryone={() => setConfirmation('everyone')} onSave={saveDraft} onUpdateDraft={updateDraft} onViewChange={moveToView} saved={saved} view={view as GeneralView} />
-      : <SettingsProfilePanel confirmation={discardConfirmation} copy={copy} draft={draft} notice={notice} onRequestClose={requestClose} onSave={saveDraft} onUpdateDraft={updateDraft} onViewChange={moveToView} view={view as ProfileView} />
+      ? <SettingsGeneralPanel confirmation={discardConfirmation ?? everyoneConfirmation} copy={copy} draft={draft} locale={locale} notice={notice} onLocaleChange={onLocaleChange} onRequestEveryone={() => setConfirmation('everyone')} onSave={saveDraft} onUpdateDraft={updateDraft} />
+      : <SettingsProfilePanel confirmation={discardConfirmation} copy={copy} draft={draft} notice={notice} onRequestClose={requestClose} onSave={saveDraft} onUpdateDraft={updateDraft} />
 
-  return <div aria-hidden="false" className="settings-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) requestClose() }}>
-    <section aria-labelledby="settings-workspace-title" aria-modal="true" className="settings-workspace" role="dialog">
-      <aside className="settings-sidebar"><p>SETTINGS</p><nav aria-label={copy.title}>{(['apps', 'general', 'profile'] as const).map((item) => <button className={section === item ? 'settings-nav-item settings-nav-active' : 'settings-nav-item'} key={item} onClick={() => selectSection(item)} type="button">{copy.nav[item]}</button>)}</nav></aside>
-      <main className="settings-content"><button aria-label={copy.close} className="settings-close" onClick={() => requestClose()} type="button">×</button><div className="settings-content-inner" id="settings-workspace-title">{content}</div></main>
-    </section>
-  </div>
+  return <Modal.Backdrop className="settings-overlay" isOpen onOpenChange={(isOpen) => { if (!isOpen) requestClose() }}>
+    <Modal.Container className="settings-modal-container" placement="center" size="cover">
+      <Modal.Dialog aria-labelledby="settings-workspace-title" className="settings-workspace">
+        <aside className="settings-sidebar"><p>{copy.title}</p><nav aria-label={copy.title}>{settingsSections.map((item) => { const NavIcon = settingsNavIcons[item]; return <Button className={section === item ? 'settings-nav-item settings-nav-active' : 'settings-nav-item'} fullWidth key={item} onPress={() => selectSection(item)} type="button" variant="tertiary"><NavIcon aria-hidden="true" /><span>{copy.nav[item]}</span></Button> })}</nav></aside>
+        <main className="settings-content"><Button aria-label={copy.close} className="settings-close" isIconOnly onPress={() => requestClose()} type="button">×</Button><div className="settings-content-inner" id="settings-workspace-title">{content}</div></main>
+      </Modal.Dialog>
+    </Modal.Container>
+  </Modal.Backdrop>
 }
