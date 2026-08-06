@@ -7,6 +7,7 @@ import { saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
 import LanguageToggle from './LanguageToggle.tsx'
+import HomeWorkspace from './HomeWorkspace.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
 
@@ -74,7 +75,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
         <header className="workspace-header">
-          <h1>{route === 'home' ? copy.greeting(name) : currentLabel}</h1>
+          <h1>{currentLabel}</h1>
           <div className="workspace-tools">
             <LanguageToggle copy={translations[locale]} locale={locale} onChange={onLocaleChange} />
             <button className="icon-button" disabled title={copy.unavailableNotifications} type="button"><Icon name="bell" /><span className="sr-only">{copy.unavailableNotifications}</span></button>
@@ -94,18 +95,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         {route === 'memory' ? (
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
-          <section className="home-content">
-            <article className="welcome-panel">
-              <span className="setup-badge">{copy.home.badge}</span>
-              <h2>{copy.home.title}</h2>
-              <p>{copy.home.description}</p>
-              <Button className="panel-action" onPress={openSettings}>{copy.home.action}</Button>
-            </article>
-            <section className="today-section">
-              <h2>{copy.home.today}</h2>
-              <p>{copy.home.empty}</p>
-            </section>
-          </section>
+          <HomeWorkspace locale={locale} onOpenSettings={openSettings} />
         ) : (
           <section className="empty-page">
             <p className="eyebrow">{currentLabel}</p>

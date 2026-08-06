@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { createServer } from 'vite'
 
 const { translations } = await import('./content/translations.ts')
-const vite = await createServer({ root: process.cwd(), appType: 'custom', server: { middlewareMode: true } })
+const vite = await createServer({ root: process.cwd(), appType: 'custom', server: { hmr: { port: 24679 }, middlewareMode: true } })
 after(() => vite.close())
 
 test('activity chart exposes a textual legend and exact counts for a focusable hour', async () => {

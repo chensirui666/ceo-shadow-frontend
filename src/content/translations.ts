@@ -263,7 +263,7 @@ export const translations: Record<Locale, Translation> = {
         close: 'Close Settings',
         back: 'Settings',
         saved: 'Saved',
-        nav: { apps: 'Connected apps', general: 'General', profile: 'How Friday works for you' },
+        nav: { apps: 'Connected apps', general: 'General', language: 'Language', profile: 'How Friday works for you' },
         discard: { title: 'Discard changes?', body: 'You have changes that have not been saved.', cancel: 'Keep editing', confirm: 'Discard changes' },
         apps: {
           title: 'Connected apps',
@@ -457,7 +457,7 @@ export const translations: Record<Locale, Translation> = {
         close: '关闭设置',
         back: '设置',
         saved: '已保存',
-        nav: { apps: '已连接的应用', general: '通用', profile: 'Friday 如何为你工作' },
+        nav: { apps: '已连接的应用', general: '通用', language: '语言', profile: 'Friday 如何为你工作' },
         discard: { title: '放弃更改？', body: '你有尚未保存的更改。', cancel: '继续编辑', confirm: '放弃更改' },
         apps: {
           title: '已连接的应用',
