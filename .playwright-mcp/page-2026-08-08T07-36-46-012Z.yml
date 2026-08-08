@@ -1,0 +1,67 @@
+- main [ref=e3]:
+  - generic [ref=e5]:
+    - button "Notifications are unavailable" [disabled]
+    - button "Open account menu" [ref=e6] [cursor=pointer]
+  - complementary [ref=e10]:
+    - generic [ref=e11]: Friday
+    - navigation "Primary navigation" [ref=e12]:
+      - button "Home" [ref=e13] [cursor=pointer]
+      - button "Tasks" [ref=e15] [cursor=pointer]
+      - button "Memory" [ref=e17] [cursor=pointer]
+      - button "Feedback" [ref=e19] [cursor=pointer]
+    - button "Settings" [ref=e22] [cursor=pointer]
+  - region "Memory content" [ref=e229]:
+    - heading "Memory" [level=1] [ref=e230]
+    - generic [ref=e231]:
+      - generic [ref=e232]:
+        - tablist [ref=e235]:
+          - tab "Context" [ref=e236] [cursor=pointer]
+          - tab "User" [active] [selected] [ref=e237] [cursor=pointer]
+        - generic [ref=e238]:
+          - group [ref=e240]:
+            - searchbox "Search current Memory" [ref=e241]
+          - generic [ref=e242]:
+            - button [ref=e243] [cursor=pointer]:
+              - generic [ref=e244]: All sources
+            - combobox [ref=e248]
+          - button "Add material" [ref=e249] [cursor=pointer]
+      - paragraph [ref=e250]: Showing the User Memory relationship map for All sources, with 4 visible Memory items.
+      - region "Showing the User Memory relationship map for All sources, with 4 visible Memory items." [ref=e286]:
+        - application "Showing the User Memory relationship map for All sources, with 4 visible Memory items." [ref=e287]:
+          - generic [ref=e255]:
+            - generic:
+              - generic:
+                - img:
+                  - img "Edge from user-direction to user-collaboration"
+                - img:
+                  - img "Edge from user-collaboration to user-context"
+                - img:
+                  - img "Edge from user-collaboration to user-followup"
+              - generic:
+                - group "产品判断优先" [ref=e288]:
+                  - 'generic "产品判断优先: 优先确认用户价值与关键取舍。" [ref=e289]':
+                    - tooltip "产品判断优先 优先确认用户价值与关键取舍。":
+                      - strong: 产品判断优先
+                      - generic: 优先确认用户价值与关键取舍。
+                - group "协作方式" [ref=e290]:
+                  - 'generic "协作方式: 偏好清晰的结论与下一步。" [ref=e291]':
+                    - tooltip "协作方式 偏好清晰的结论与下一步。":
+                      - strong: 协作方式
+                      - generic: 偏好清晰的结论与下一步。
+                - group "工作背景" [ref=e292]:
+                  - 'generic "工作背景: 长期有效的项目与职责。" [ref=e293]':
+                    - tooltip "工作背景 长期有效的项目与职责。":
+                      - strong: 工作背景
+                      - generic: 长期有效的项目与职责。
+                - group "跟进偏好" [ref=e294]:
+                  - 'generic "跟进偏好: 将讨论沉淀为可执行事项。" [ref=e295]':
+                    - tooltip "跟进偏好 将讨论沉淀为可执行事项。":
+                      - strong: 跟进偏好
+                      - generic: 将讨论沉淀为可执行事项。
+          - generic "Canvas controls" [ref=e276]:
+            - button "Zoom In" [ref=e277] [cursor=pointer]
+            - button "Zoom Out" [disabled]
+            - button "Fit View" [ref=e280] [cursor=pointer]
+          - link "React Flow attribution" [ref=e284] [cursor=pointer]:
+            - /url: https://reactflow.dev/attribution
+            - text: React Flow

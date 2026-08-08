@@ -51,6 +51,24 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
 
   return (
     <main className="workspace-shell">
+      <header aria-hidden={settingsOpen} className="workspace-global-bar" inert={settingsOpen || undefined}>
+        <div className="workspace-tools">
+          <Button aria-label={copy.unavailableNotifications} className="icon-button" isDisabled isIconOnly type="button"><Icon name="bell" /><span className="sr-only">{copy.unavailableNotifications}</span></Button>
+          <Dropdown>
+            <AriaButton aria-label={copy.openAccountMenu} className="account-menu-trigger" type="button"><Icon name="user" /></AriaButton>
+            <Dropdown.Popover className="account-menu-popover" placement="bottom right">
+              <div className="account-profile">
+                <span aria-hidden="true" className="avatar-fallback">{name.slice(0, 1).toUpperCase()}</span>
+                <span className="account-profile-email">{session.email}</span>
+              </div>
+              <Dropdown.Menu aria-label={copy.accountMenu} className="account-menu" onAction={(key) => key === 'sign-out' && exitDialog.open()}>
+                <Dropdown.Item className="account-menu-item" id="sign-out" textValue={copy.signOut}>{copy.signOut}</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
+        </div>
+      </header>
+
       <aside aria-hidden={settingsOpen} className="workspace-rail" inert={settingsOpen || undefined}>
         <span className="workspace-brand">Friday</span>
         <nav aria-label={copy.primaryNavigation} className="workspace-nav">
@@ -66,27 +84,12 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
             <Icon name="settings" />
             <span>{copy.nav.settings}</span>
           </Button>
-          <div className="rail-account">
-            <span aria-hidden="true" className="avatar-fallback">{name.slice(0, 1).toUpperCase()}</span>
-            <span>{session.email}</span>
-          </div>
         </div>
       </aside>
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
         <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
           <h1>{route === 'home' ? copy.greeting(name) : currentLabel}</h1>
-          <div className="workspace-tools">
-            <Button aria-label={copy.unavailableNotifications} className="icon-button" isDisabled isIconOnly type="button"><Icon name="bell" /><span className="sr-only">{copy.unavailableNotifications}</span></Button>
-            <Dropdown>
-              <AriaButton aria-label={copy.openAccountMenu} className="account-menu-trigger" type="button"><Icon name="user" /></AriaButton>
-              <Dropdown.Popover className="account-menu-popover" placement="bottom right">
-                <Dropdown.Menu aria-label={copy.accountMenu} className="account-menu" onAction={(key) => key === 'sign-out' && exitDialog.open()}>
-                  <Dropdown.Item className="account-menu-item" id="sign-out" textValue={copy.signOut}>{copy.signOut}</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
-          </div>
         </header>
 
         {route === 'memory' ? (

@@ -1,0 +1,109 @@
+- main [ref=e3]:
+  - generic [ref=e5]:
+    - button "Notifications are unavailable" [disabled]
+    - button "Open account menu" [ref=e6] [cursor=pointer]
+  - complementary [ref=e10]:
+    - generic [ref=e11]: Friday
+    - navigation "Primary navigation" [ref=e12]:
+      - button "Home" [ref=e13] [cursor=pointer]
+      - button "Tasks" [ref=e15] [cursor=pointer]
+      - button "Memory" [ref=e17] [cursor=pointer]
+      - button "Feedback" [ref=e19] [cursor=pointer]
+    - button "Settings" [ref=e22] [cursor=pointer]
+  - region "Memory content" [ref=e229]:
+    - heading "Memory" [level=1] [ref=e230]
+    - generic [ref=e231]:
+      - generic [ref=e232]:
+        - tablist [ref=e235]:
+          - tab "Context" [active] [selected] [ref=e236] [cursor=pointer]
+          - tab "User" [ref=e237] [cursor=pointer]
+        - generic [ref=e238]:
+          - group [ref=e240]:
+            - searchbox "Search current Memory" [ref=e241]
+          - generic [ref=e242]:
+            - button [ref=e243] [cursor=pointer]:
+              - generic [ref=e244]: All sources
+            - combobox [ref=e248]
+          - button "Add material" [ref=e249] [cursor=pointer]
+      - paragraph [ref=e250]: Showing the Context Memory relationship map for All sources, with 10 visible Memory items.
+      - region "Showing the Context Memory relationship map for All sources, with 10 visible Memory items." [ref=e296]:
+        - application "Showing the Context Memory relationship map for All sources, with 10 visible Memory items." [ref=e297]:
+          - generic [ref=e255]:
+            - generic:
+              - generic:
+                - img:
+                  - img "Edge from context-brief to context-roadmap"
+                - img:
+                  - img "Edge from context-brief to context-team"
+                - img:
+                  - img "Edge from context-roadmap to context-research"
+                - img:
+                  - img "Edge from context-roadmap to context-planning"
+                - img:
+                  - img "Edge from context-team to context-followup"
+                - img:
+                  - img "Edge from context-team to context-review"
+                - img:
+                  - img "Edge from context-research to context-briefing"
+                - img:
+                  - img "Edge from context-followup to context-decisions"
+                - img:
+                  - img "Edge from context-brief to context-release"
+              - generic:
+                - group "本周产品节奏" [ref=e298]:
+                  - 'generic "本周产品节奏: 需要推进发布准备与关键判断。" [ref=e299]':
+                    - tooltip "本周产品节奏 需要推进发布准备与关键判断。":
+                      - strong: 本周产品节奏
+                      - generic: 需要推进发布准备与关键判断。
+                - group "产品路线图" [ref=e300]:
+                  - 'generic "产品路线图: 已确认的阶段目标与优先级。" [ref=e301]':
+                    - tooltip "产品路线图 已确认的阶段目标与优先级。":
+                      - strong: 产品路线图
+                      - generic: 已确认的阶段目标与优先级。
+                - group "协作分工" [ref=e302]:
+                  - 'generic "协作分工: 团队当前的职责与配合方式。" [ref=e303]':
+                    - tooltip "协作分工 团队当前的职责与配合方式。":
+                      - strong: 协作分工
+                      - generic: 团队当前的职责与配合方式。
+                - group "用户研究摘要" [ref=e304]:
+                  - 'generic "用户研究摘要: 访谈结论与待验证的问题。" [ref=e305]':
+                    - tooltip "用户研究摘要 访谈结论与待验证的问题。":
+                      - strong: 用户研究摘要
+                      - generic: 访谈结论与待验证的问题。
+                - group "项目跟进" [ref=e306]:
+                  - 'generic "项目跟进: 工作对话中形成的下一步。" [ref=e307]':
+                    - tooltip "项目跟进 工作对话中形成的下一步。":
+                      - strong: 项目跟进
+                      - generic: 工作对话中形成的下一步。
+                - group "发布准备" [ref=e308]:
+                  - 'generic "发布准备: 需要同步的发布事项。" [ref=e309]':
+                    - tooltip "发布准备 需要同步的发布事项。":
+                      - strong: 发布准备
+                      - generic: 需要同步的发布事项。
+                - group "季度规划" [ref=e310]:
+                  - 'generic "季度规划: 正在讨论的工作重点。" [ref=e311]':
+                    - tooltip "季度规划 正在讨论的工作重点。":
+                      - strong: 季度规划
+                      - generic: 正在讨论的工作重点。
+                - group "评审记录" [ref=e312]:
+                  - 'generic "评审记录: 跨团队评审中的明确结论。" [ref=e313]':
+                    - tooltip "评审记录 跨团队评审中的明确结论。":
+                      - strong: 评审记录
+                      - generic: 跨团队评审中的明确结论。
+                - group "项目背景" [ref=e314]:
+                  - 'generic "项目背景: 工作资料中的项目上下文。" [ref=e315]':
+                    - tooltip "项目背景 工作资料中的项目上下文。":
+                      - strong: 项目背景
+                      - generic: 工作资料中的项目上下文。
+                - group "已确认决策" [ref=e316]:
+                  - 'generic "已确认决策: 日常沟通里明确的选择。" [ref=e317]':
+                    - tooltip "已确认决策 日常沟通里明确的选择。":
+                      - strong: 已确认决策
+                      - generic: 日常沟通里明确的选择。
+          - generic "Canvas controls" [ref=e276]:
+            - button "Zoom In" [ref=e277] [cursor=pointer]
+            - button "Zoom Out" [disabled]
+            - button "Fit View" [ref=e280] [cursor=pointer]
+          - link "React Flow attribution" [ref=e284] [cursor=pointer]:
+            - /url: https://reactflow.dev/attribution
+            - text: React Flow

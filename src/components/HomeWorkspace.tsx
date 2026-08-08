@@ -4,7 +4,7 @@ import type { Locale } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import type { HomeCopy } from '../content/translations.ts'
 import { homeService } from '../homeService.ts'
-import { activityHours, modeChangeNeedsConfirmation, selectHomeEvents } from '../homeState.ts'
+import { activityHours, modeChangeNeedsConfirmation, progressWaitingEvents, selectHomeEvents } from '../homeState.ts'
 import type { HomeSource, HomeSnapshot, OperatingMode, OwnerFeedback } from '../homeState.ts'
 import HomeActivityChart from './HomeActivityChart.tsx'
 import HomeEventDetail from './HomeEventDetail.tsx'
@@ -78,7 +78,12 @@ export default function HomeWorkspace({ locale, onOpenSettings }: HomeWorkspaceP
   useEffect(() => { void load() }, [])
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1_000)
+    const timer = window.setInterval(() => {
+      const next = new Date()
+      setNow(next)
+      // ponytail: local-demo progression; the real service must provide authoritative event states.
+      setSnapshot((current) => current && progressWaitingEvents(current, next))
+    }, 1_000)
     return () => window.clearInterval(timer)
   }, [])
 
@@ -121,7 +126,7 @@ export default function HomeWorkspace({ locale, onOpenSettings }: HomeWorkspaceP
   if (!snapshot.connectedSources.length) return <section className="home-state"><p>{copy.empty.noConnections}</p><Button onPress={onOpenSettings}>{copy.actions.goToSettings}</Button></section>
 
   const selectedEvent = snapshot.events.find((event) => event.id === selectedEventId)
-  if (selectedEvent) return <HomeEventDetail busy={busy} copy={copy} event={selectedEvent} onBack={returnToList} onResolve={(decision, reply) => resolveEvent(selectedEvent.id, decision, reply)} onSubmitFeedback={(feedback) => submitFeedback(selectedEvent.id, feedback)} sourceName={copy.sources[selectedEvent.source]} />
+  if (selectedEvent) return <HomeEventDetail busy={busy} copy={copy} event={selectedEvent} now={now} onBack={returnToList} onResolve={(decision, reply) => resolveEvent(selectedEvent.id, decision, reply)} onSubmitFeedback={(feedback) => submitFeedback(selectedEvent.id, feedback)} sourceName={copy.sources[selectedEvent.source]} />
 
   const events = selectHomeEvents(snapshot, source)
 

@@ -73,3 +73,15 @@ test('source row keeps the pause action with filtering and omits the trial short
   assert.match(html, />Pause</)
   assert.doesNotMatch(html, /Switch to trial mode/)
 })
+
+test('workspace keeps global controls outside the white canvas and removes the rail account', async () => {
+  const { default: Workspace } = await vite.ssrLoadModule('/src/components/Workspace.tsx')
+  const html = renderToStaticMarkup(createElement(Workspace, {
+    locale: 'en', onLocaleChange: () => {}, onSignOut: () => {}, session: { email: 'sirui@example.com', route: 'home' },
+  }))
+
+  const globalBarIndex = html.indexOf('workspace-global-bar')
+  const canvasIndex = html.indexOf('workspace-canvas')
+  assert.ok(globalBarIndex >= 0 && globalBarIndex < canvasIndex)
+  assert.doesNotMatch(html, /rail-account/)
+})

@@ -146,7 +146,7 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
         edgesFocusable={false}
         elementsSelectable={false}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
+        fitViewOptions={{ padding: 2 }}
         maxZoom={2}
         minZoom={0.4}
         nodeOrigin={[0.5, 0.5]}

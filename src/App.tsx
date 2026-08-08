@@ -28,5 +28,5 @@ export default function App() {
 
   return session
     ? <Workspace locale={locale} onLocaleChange={changeLocale} onSignOut={logout} session={session} />
-    : <Login locale={locale} onAuthenticated={authenticate} onLocaleChange={changeLocale} />
+    : <Login locale={locale} onAuthenticated={authenticate} />
 }

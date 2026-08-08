@@ -86,18 +86,17 @@ export type HomeCopy = {
   mode: { action: (mode: OperatingMode) => string }
   chart: { title: string; processed: string; pending: string; failed: string; legend: (totals: Pick<ActivityHour, 'processed' | 'pending' | 'failed'>) => string; hourLabel: (hour: ActivityHour) => string; empty: string }
   empty: { loading: string; error: string; noConnections: string; events: string; source: (source: string) => string }
-  detail: { back: string; eventInformation: string; source: string; conversation: string; sender: string; time: string; status: string; result: string; originalMessage: string; rationale: string; response: string; waiting: string; processing: string; trialNote: string; editReply: string }
-  feedback: { title: string; matched: string; adjust: string; placeholder: string; save: string; saved: string; recipientTitle: string; recipientQuestion: string; helpful: string; unresolved: string; recipientNote: string }
+  detail: { back: string; eventInformation: string; source: string; conversation: string; sender: string; time: string; status: string; result: string; originalMessage: string; rationale: string; response: string; waiting: string; processing: string; needsConfirmation: string; trialNote: string; editReply: string }
+  feedback: { title: string; matched: string; adjust: string; placeholder: string; save: string; saved: string; recipientTitle: string; recipientQuestion: string; helpful: string; unresolved: string; recipientPending: string }
   actions: { send: string; cancel: string; retry: string; goToSettings: string; clearSource: string }
   confirmation: { title: (mode: OperatingMode) => string; body: (mode: OperatingMode) => string; confirm: (mode: OperatingMode) => string }
 }
 
 export type Translation = {
   journey: string[]
-  language: { switchToChinese: string }
   login: {
-    email: Record<'eyebrow' | 'title' | 'subtitle' | 'demoLabel' | 'demo' | 'demoEnding' | 'label' | 'sending' | 'submit' | 'legalBefore' | 'terms' | 'legalBetween' | 'privacy', string>
-    code: Record<'eyebrow' | 'title' | 'demoLabel' | 'demo' | 'demoEnding' | 'label' | 'verifying' | 'submit' | 'edit' | 'resend', string> & { subtitle: (email: string) => string; resendIn: (seconds: number) => string }
+    email: Record<'eyebrow' | 'title' | 'demoLabel' | 'demo' | 'demoEnding' | 'label' | 'sending' | 'submit' | 'legalBefore' | 'terms' | 'legalBetween' | 'privacy', string>
+    code: Record<'eyebrow' | 'title' | 'demoLabel' | 'demo' | 'demoEnding' | 'label' | 'verifying' | 'submit' | 'edit' | 'resend', string> & { resendIn: (seconds: number) => string }
     errors: Record<'invalidEmail' | 'sendFailed' | 'invalidCode' | 'incompleteCode', string>
     authVisualLabel: string
   }
@@ -121,16 +120,14 @@ export type Translation = {
 export const translations: Record<Locale, Translation> = {
   en: {
     journey: ['Sign in', 'Build work memory', 'Confirm work style', 'Trial'],
-    language: { switchToChinese: 'Switch to Chinese' },
     login: {
       email: {
         eyebrow: 'Welcome to Friday',
         title: 'Sign in to Friday',
-        subtitle: 'Use your work email to continue.',
         demoLabel: 'Demo mode',
         demo: 'This local demo does not send a real code. Enter any email, then use',
         demoEnding: '.',
-        label: 'Work email',
+        label: 'WORK EMAIL',
         sending: 'Sending…',
         submit: 'Get code',
         legalBefore: 'By continuing, you agree to the',
@@ -141,7 +138,6 @@ export const translations: Record<Locale, Translation> = {
       code: {
         eyebrow: 'Verify your identity',
         title: 'Enter your code.',
-        subtitle: (email: string) => `A verification code was sent to ${email}.`,
         demoLabel: 'Demo mode',
         demo: 'This local demo accepts',
         demoEnding: '.',
@@ -190,8 +186,8 @@ export const translations: Record<Locale, Translation> = {
           empty: 'No messages in the last 24 hours.',
         },
         empty: { loading: 'Loading recent events…', error: 'Recent events could not be loaded. Try again.', noConnections: 'Connect a work app before Friday can handle messages.', events: 'No messages in the last 24 hours.', source: (source) => `No work messages from ${source} in the last 24 hours.` },
-        detail: { back: 'Back to recent 24 hours', eventInformation: 'Event information', source: 'Source', conversation: 'Conversation', sender: 'Sender', time: 'Time', status: 'Status', result: 'Result', originalMessage: 'Original message', rationale: 'Why this happened', response: 'Reply', waiting: 'Waiting for you to reply.', processing: 'Generating a reply…', trialNote: 'This reply was not sent.', editReply: 'Edit reply' },
-        feedback: { title: 'Your feedback', matched: 'Matches me', adjust: 'Needs adjustment', placeholder: 'What should be different next time?', save: 'Save feedback', saved: 'Feedback recorded', recipientTitle: 'Recipient feedback', recipientQuestion: 'Did this reply resolve your question?', helpful: 'Helpful', unresolved: 'Not resolved', recipientNote: 'Tell us what information or next step is still needed.' },
+        detail: { back: 'Back to recent 24 hours', eventInformation: 'Event information', source: 'Source', conversation: 'Conversation', sender: 'Sender', time: 'Time', status: 'Status', result: 'Result', originalMessage: 'Original message', rationale: 'Why this happened', response: 'Reply', waiting: 'Waiting for you to reply.', processing: 'Generating a reply…', needsConfirmation: 'Your judgment is needed.', trialNote: 'This reply was not sent.', editReply: 'Edit reply' },
+        feedback: { title: 'Your feedback', matched: 'Matches me', adjust: 'Needs adjustment', placeholder: 'What should be different next time?', save: 'Save feedback', saved: 'Feedback recorded', recipientTitle: 'Recipient feedback', recipientQuestion: 'Did this reply resolve your question?', helpful: 'Helpful', unresolved: 'Not resolved', recipientPending: 'Recipient feedback will appear here when it is available.' },
         actions: { send: 'Send', cancel: 'Cancel', retry: 'Retry', goToSettings: 'Go to Settings', clearSource: 'View all apps' },
         confirmation: { title: (mode) => mode === 'active' ? 'Enable active mode?' : 'Switch to trial mode?', body: (mode) => mode === 'active' ? 'Future replies can be sent automatically under your rules.' : 'Future replies will no longer be sent.', confirm: (mode) => mode === 'active' ? 'Enable active mode' : 'Switch to trial mode' },
       },
@@ -294,12 +290,10 @@ export const translations: Record<Locale, Translation> = {
   },
   zh: {
     journey: ['登录', '建立工作记忆', '确认工作方式', '试运行'],
-    language: { switchToChinese: '切换到 English' },
     login: {
       email: {
         eyebrow: '欢迎使用 Friday',
         title: '登录 Friday',
-        subtitle: '使用工作邮箱继续。',
         demoLabel: '演示模式',
         demo: '本地演示不会发送真实验证码。请输入任意邮箱后使用',
         demoEnding: '。',
@@ -314,7 +308,6 @@ export const translations: Record<Locale, Translation> = {
       code: {
         eyebrow: '验证身份',
         title: '输入验证码。',
-        subtitle: (email: string) => `验证码已发送至 ${email}。`,
         demoLabel: '演示模式',
         demo: '本地演示可使用',
         demoEnding: '。',
@@ -363,8 +356,8 @@ export const translations: Record<Locale, Translation> = {
           empty: '最近 24 小时暂无消息。',
         },
         empty: { loading: '正在加载最近事件…', error: '暂时无法加载最近事件，请重试。', noConnections: '连接一个工作应用后，Friday 才能开始处理消息。', events: '最近 24 小时暂无消息。', source: (source) => `最近 24 小时内没有来自${source}的工作消息。` },
-        detail: { back: '返回最近 24 小时', eventInformation: '事件信息', source: '来源应用', conversation: '会话', sender: '发送人', time: '发生时间', status: '当前状态', result: '处理结果', originalMessage: '原消息', rationale: '执行依据', response: '回复', waiting: '等待你先回复，尚未开始处理。', processing: '正在生成回复…', trialNote: '这条回复未发送。', editReply: '编辑回复' },
-        feedback: { title: '内部反馈', matched: '符合我', adjust: '需要调整', placeholder: '哪里不对、以后应怎样处理或表达？', save: '保存反馈', saved: '反馈已记录', recipientTitle: '收件人反馈', recipientQuestion: '这条回复是否解决了你的问题？', helpful: '有帮助', unresolved: '未解决', recipientNote: '请说明还需要补充什么信息或下一步。' },
+        detail: { back: '返回最近 24 小时', eventInformation: '事件信息', source: '来源应用', conversation: '会话', sender: '发送人', time: '发生时间', status: '当前状态', result: '处理结果', originalMessage: '原消息', rationale: '执行依据', response: '回复', waiting: '等待你先回复，尚未开始处理。', processing: '正在生成回复…', needsConfirmation: '需要你判断。', trialNote: '这条回复未发送。', editReply: '编辑回复' },
+        feedback: { title: '内部反馈', matched: '符合我', adjust: '需要调整', placeholder: '哪里不对、以后应怎样处理或表达？', save: '保存反馈', saved: '反馈已记录', recipientTitle: '收件人反馈', recipientQuestion: '这条回复是否解决了你的问题？', helpful: '有帮助', unresolved: '未解决', recipientPending: '收件人反馈可用后会在这里展示。' },
         actions: { send: '发送', cancel: '取消', retry: '重试', goToSettings: '前往设置', clearSource: '查看全部应用' },
         confirmation: { title: (mode) => mode === 'active' ? '正式启用 Friday？' : '切回试运行？', body: (mode) => mode === 'active' ? '后续回复会按当前规则自动发送。' : '后续回复不再发送。', confirm: (mode) => mode === 'active' ? '正式启用' : '切回试运行' },
       },

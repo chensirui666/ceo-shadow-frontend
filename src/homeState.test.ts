@@ -33,6 +33,24 @@ test('a confirmation decision updates one event into completed with its distinct
   assert.equal(cancelled.events.find((event) => event.id === 'needs-confirmation')?.outcome, 'cancelled')
 })
 
+test('an expired waiting event progresses to processing in the local demo', () => {
+  const snapshot = {
+    mode: 'active',
+    connectedSources: ['feishu'],
+    events: [{
+      id: 'waiting', source: 'feishu', sender: '刘晨', receivedAt: '2026-08-06T10:39:00.000Z',
+      status: 'waiting', question: '下周的上线时间能确定吗？', reply: '目前计划在下周三完成上线。',
+      rationale: '等待你先回复，尚未开始处理。', waitUntil: '2026-08-06T10:44:00.000Z',
+    }],
+  } satisfies import('./homeState.ts').HomeSnapshot
+
+  const advanced = homeState.progressWaitingEvents(snapshot, new Date('2026-08-06T10:44:00.000Z'))
+
+  assert.equal(snapshot.events[0].status, 'waiting')
+  assert.equal(advanced.events[0].status, 'processing')
+  assert.equal(advanced.events[0].waitUntil, undefined)
+})
+
 test('mode confirmation and owner feedback preserve the current event result', () => {
   const snapshot = homeState.createDemoHomeSnapshot(new Date('2026-08-06T12:00:00.000Z'))
   const updated = homeState.recordOwnerFeedback(snapshot, 'trial-complete', { kind: 'adjust', note: '承诺时间前先确认资源。' })

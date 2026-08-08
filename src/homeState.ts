@@ -67,6 +67,16 @@ export const modeChangeNeedsConfirmation = (from: OperatingMode, to: OperatingMo
 
 export const setOperatingMode = (snapshot: HomeSnapshot, mode: OperatingMode): HomeSnapshot => ({ ...snapshot, mode })
 
+export const progressWaitingEvents = (snapshot: HomeSnapshot, now: Date): HomeSnapshot => {
+  let progressed = false
+  const events = snapshot.events.map((event) => {
+    if (event.status !== 'waiting' || !event.waitUntil || new Date(event.waitUntil).getTime() > now.getTime()) return event
+    progressed = true
+    return { ...event, status: 'processing' as const, rationale: '正在整理上下文并生成回复。', waitUntil: undefined }
+  })
+  return progressed ? { ...snapshot, events } : snapshot
+}
+
 export const resolveConfirmation = (snapshot: HomeSnapshot, eventId: string, decision: 'send' | 'cancel', reply: string): HomeSnapshot => ({
   ...snapshot,
   events: snapshot.events.map((event) => event.id !== eventId || event.status !== 'needs-confirmation' ? event : {

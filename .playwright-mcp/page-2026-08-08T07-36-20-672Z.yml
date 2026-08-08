@@ -1,0 +1,130 @@
+- main [ref=e3]:
+  - generic [ref=e5]:
+    - button "Notifications are unavailable" [disabled]
+    - button "Open account menu" [ref=e6] [cursor=pointer]
+  - complementary [ref=e10]:
+    - generic [ref=e11]: Friday
+    - navigation "Primary navigation" [ref=e12]:
+      - button "Home" [active] [ref=e13] [cursor=pointer]
+      - button "Tasks" [ref=e15] [cursor=pointer]
+      - button "Memory" [ref=e17] [cursor=pointer]
+      - button "Feedback" [ref=e19] [cursor=pointer]
+    - button "Settings" [ref=e22] [cursor=pointer]
+  - region "Home content" [ref=e85]:
+    - heading "Welcome back, layout" [level=1] [ref=e86]
+    - generic [ref=e87]:
+      - region [ref=e88]:
+        - generic [ref=e89]:
+          - heading "Recent 24 hours" [level=2] [ref=e90]
+          - generic [ref=e91]: Processed 3 · Pending 3 · Send failed 1
+        - generic "24-hour message activity" [ref=e92]:
+          - generic [ref=e93]: Processed 3
+          - generic [ref=e94]: Pending 3
+          - generic [ref=e95]: Send failed 1
+        - generic [ref=e96]:
+          - 'img "08:00: Processed 0, Pending 0, Send failed 0" [ref=e97]':
+            - generic [ref=e99]: "08"
+          - 'img "09:00: Processed 0, Pending 0, Send failed 0" [ref=e100]':
+            - generic [ref=e102]: "09"
+          - 'img "10:00: Processed 0, Pending 0, Send failed 0" [ref=e103]':
+            - generic [ref=e105]: "10"
+          - 'img "11:00: Processed 0, Pending 0, Send failed 0" [ref=e106]':
+            - generic [ref=e108]: "11"
+          - 'img "12:00: Processed 0, Pending 0, Send failed 0" [ref=e109]':
+            - generic [ref=e111]: "12"
+          - 'img "13:00: Processed 0, Pending 0, Send failed 0" [ref=e112]':
+            - generic [ref=e114]: "13"
+          - 'img "14:00: Processed 0, Pending 0, Send failed 0" [ref=e115]':
+            - generic [ref=e117]: "14"
+          - 'img "15:00: Processed 0, Pending 0, Send failed 0" [ref=e118]':
+            - generic [ref=e120]: "15"
+          - 'img "16:00: Processed 0, Pending 0, Send failed 0" [ref=e121]':
+            - generic [ref=e123]: "16"
+          - 'img "17:00: Processed 0, Pending 0, Send failed 0" [ref=e124]':
+            - generic [ref=e126]: "17"
+          - 'img "18:00: Processed 0, Pending 0, Send failed 0" [ref=e127]':
+            - generic [ref=e129]: "18"
+          - 'img "19:00: Processed 0, Pending 0, Send failed 0" [ref=e130]':
+            - generic [ref=e132]: "19"
+          - 'img "20:00: Processed 0, Pending 0, Send failed 0" [ref=e133]':
+            - generic [ref=e135]: "20"
+          - 'img "21:00: Processed 0, Pending 0, Send failed 0" [ref=e136]':
+            - generic [ref=e138]: "21"
+          - 'img "22:00: Processed 0, Pending 0, Send failed 0" [ref=e139]':
+            - generic [ref=e141]: "22"
+          - 'img "23:00: Processed 0, Pending 0, Send failed 0" [ref=e142]':
+            - generic [ref=e144]: "23"
+          - 'img "00:00: Processed 0, Pending 0, Send failed 0" [ref=e145]':
+            - generic [ref=e147]: "00"
+          - 'img "01:00: Processed 0, Pending 0, Send failed 0" [ref=e148]':
+            - generic [ref=e150]: "01"
+          - 'img "02:00: Processed 0, Pending 0, Send failed 1" [ref=e151]':
+            - generic [ref=e154]: "02"
+          - 'img "03:00: Processed 1, Pending 0, Send failed 0" [ref=e155]':
+            - generic [ref=e158]: "03"
+          - 'img "04:00: Processed 0, Pending 0, Send failed 0" [ref=e159]':
+            - generic [ref=e161]: "04"
+          - 'img "05:00: Processed 1, Pending 0, Send failed 0" [ref=e162]':
+            - generic [ref=e165]: "05"
+          - 'img "06:00: Processed 1, Pending 1, Send failed 0" [ref=e166]':
+            - generic [ref=e170]: "06"
+          - 'img "07:00: Processed 0, Pending 2, Send failed 0" [ref=e171]':
+            - generic [ref=e174]: "07"
+      - generic [ref=e175]:
+        - generic [ref=e176]:
+          - text: Source
+          - combobox "Source" [ref=e177]:
+            - option "All apps" [selected]
+            - option "DingTalk"
+            - option "Feishu"
+            - option "Teams"
+        - button "Pause" [ref=e179] [cursor=pointer]
+      - region "Recent 24 hours" [ref=e180]:
+        - 'button "产品项目群 · 刘晨 · 15:31 0m 17s until automatic reply Message: 下周的上线时间能确定吗？ Reply: 目前计划在下周三完成上线，我会在周一同步最终排期。" [ref=e181] [cursor=pointer]':
+          - generic [ref=e182]: F
+          - generic [ref=e183]: 产品项目群 · 刘晨 · 15:31
+          - generic [ref=e184]: 0m 17s until automatic reply
+          - generic [ref=e185]: "Message: 下周的上线时间能确定吗？"
+          - generic [ref=e186]: "Reply: 目前计划在下周三完成上线，我会在周一同步最终排期。"
+        - 'button "研发协同群 · 周航 · 15:07 Processing Message: 灰度范围能再确认一下吗？ Reply: Processing" [ref=e187] [cursor=pointer]':
+          - generic [ref=e188]: D
+          - generic [ref=e189]: 研发协同群 · 周航 · 15:07
+          - generic [ref=e190]: Processing
+          - generic [ref=e191]: "Message: 灰度范围能再确认一下吗？"
+          - generic [ref=e192]: "Reply: Processing"
+        - 'button "客户交付群 · 赵明 · 14:42 Needs your confirmation Message: 是否可以承诺本月完成交付？ Reply: 我们会以本月完成交付为目标，并在本周确认最终资源安排。" [ref=e193] [cursor=pointer]':
+          - generic [ref=e194]: F
+          - generic [ref=e195]: 客户交付群 · 赵明 · 14:42
+          - generic [ref=e196]: Needs your confirmation
+          - generic [ref=e197]: "Message: 是否可以承诺本月完成交付？"
+          - generic [ref=e198]: "Reply: 我们会以本月完成交付为目标，并在本周确认最终资源安排。"
+        - 'button "王琳 · 14:03 Processed Message: 周会结论可以同步吗？ Reply: 可以，今天下午我会同步本周的结论和待确认事项。" [ref=e199] [cursor=pointer]':
+          - generic [ref=e200]: D
+          - generic [ref=e201]: 王琳 · 14:03
+          - generic [ref=e202]: Processed
+          - generic [ref=e203]: "Message: 周会结论可以同步吗？"
+          - generic [ref=e204]: "Reply: 可以，今天下午我会同步本周的结论和待确认事项。"
+        - 'button "项目频道 · Maya · 13:16 Trial complete, not sent Message: Can you share the launch checklist? Reply: I will share the updated launch checklist after today’s review." [ref=e205] [cursor=pointer]':
+          - generic [ref=e206]: T
+          - generic [ref=e207]: 项目频道 · Maya · 13:16
+          - generic [ref=e208]: Trial complete, not sent
+          - generic [ref=e209]: "Message: Can you share the launch checklist?"
+          - generic [ref=e210]: "Reply: I will share the updated launch checklist after today’s review."
+        - 'button "系统通知 · 11:55 Processed Message: 会议室预订已更新 Reply: No reply needed" [ref=e211] [cursor=pointer]':
+          - generic [ref=e212]: D
+          - generic [ref=e213]: 系统通知 · 11:55
+          - generic [ref=e214]: Processed
+          - generic [ref=e215]: "Message: 会议室预订已更新"
+          - generic [ref=e216]: "Reply: No reply needed"
+        - 'button "陈晓 · 10:50 Send failed Message: 预算表已经更新了吗？ Reply: 预算表已更新，我会补充本周的变更说明。" [ref=e217] [cursor=pointer]':
+          - generic [ref=e218]: F
+          - generic [ref=e219]: 陈晓 · 10:50
+          - generic [ref=e220]: Send failed
+          - generic [ref=e221]: "Message: 预算表已经更新了吗？"
+          - generic [ref=e222]: "Reply: 预算表已更新，我会补充本周的变更说明。"
+        - 'button "系统 · 09:47 Connection issue Message: Teams 连接异常 Reply: Connection issue" [ref=e223] [cursor=pointer]':
+          - generic [ref=e224]: T
+          - generic [ref=e225]: 系统 · 09:47
+          - generic [ref=e226]: Connection issue
+          - generic [ref=e227]: "Message: Teams 连接异常"
+          - generic [ref=e228]: "Reply: Connection issue"
