@@ -9,6 +9,27 @@ test('only the seeded demo account skips onboarding', () => {
   assert.equal(onboarding.needsOnboarding('new.person@stardust.ai'), true)
 })
 
+test('completed step titles remain reachable without exposing an unfinished future step', () => {
+  const complete = onboarding.confirmWorkStyle(
+    onboarding.skipMemory(
+      onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),
+    ),
+  )
+
+  assert.equal(onboarding.selectOnboardingStep(complete, 2).step, 2)
+  assert.equal(onboarding.selectOnboardingStep(onboarding.selectOnboardingStep(complete, 2), 4).step, 4)
+  assert.equal(onboarding.selectOnboardingStep(onboarding.createOnboardingState(), 4).step, 1)
+})
+
+test('Memory construction stays on Step 2 until the user confirms continuation', () => {
+  const built = onboarding.confirmMemory(
+    onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'feishu')),
+  )
+
+  assert.equal(built.step, 2)
+  assert.equal(onboarding.advanceFromMemory(built).step, 3)
+})
+
 test('a Trial adjustment changes only the current Trial reply', () => {
   const connected = onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')
   const memoryConfirmed = onboarding.confirmMemory(connected)
@@ -53,4 +74,15 @@ test('a Trial adjustment is retained as feedback material without changing the w
 
   assert.equal(adjusted.workStyleConfirmed, true)
   assert.deepEqual(event?.ownerFeedback, { kind: 'adjust', note: '先说明依赖风险，再给结论。' })
+})
+
+test('matching a Trial reply records feedback without changing its reply', () => {
+  const trial = onboarding.recordTrial(
+    onboarding.confirmWorkStyle(onboarding.skipMemory(onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')))),
+    '客户问：这个项目本周能交付吗？',
+  )
+  const matched = onboarding.recordTrialFeedback(trial, { kind: 'matched', note: '' })
+
+  assert.equal(matched.trial?.reply, trial.trial?.reply)
+  assert.deepEqual(onboarding.createTrialEvent(matched, new Date('2026-08-10T09:00:00.000Z'))?.ownerFeedback, { kind: 'matched', note: '' })
 })

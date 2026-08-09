@@ -1,12 +1,15 @@
-import type { HomeEvent, HomeSource } from './homeState.ts'
+import type { HomeEvent, HomeSource, OwnerFeedback } from './homeState.ts'
 
 export const seededDemoEmail = 'sirui.chen@stardust.ai'
 
-export type TrialReply = { question: string; reply: string; adjustment?: string }
+export type OnboardingStep = 1 | 2 | 3 | 4
+export type TrialReply = { question: string; reply: string; adjustment?: string; feedback?: OwnerFeedback }
 export type OnboardingState = {
-  step: 1 | 2 | 3 | 4
+  step: OnboardingStep
+  maxReached: OnboardingStep
   connectedSources: HomeSource[]
   memoryConfirmed: boolean
+  memorySkipped: boolean
   workStyleConfirmed: boolean
   trial?: TrialReply
   completed: boolean
@@ -24,8 +27,10 @@ export const needsOnboarding = (email: string): boolean => email.trim().toLowerC
 
 export const createOnboardingState = (): OnboardingState => ({
   step: 1,
+  maxReached: 1,
   connectedSources: [],
   memoryConfirmed: false,
+  memorySkipped: false,
   workStyleConfirmed: false,
   completed: false,
 })
@@ -35,15 +40,27 @@ export const connectSource = (state: OnboardingState, source: HomeSource): Onboa
 )
 
 export const continueToMemory = (state: OnboardingState): OnboardingState => (
-  state.connectedSources.length ? { ...state, step: 2 } : state
+  state.connectedSources.length ? { ...state, step: 2, maxReached: 2 } : state
 )
 
 export const confirmMemory = (state: OnboardingState): OnboardingState => (
-  state.connectedSources.length ? { ...state, memoryConfirmed: true, step: 3 } : state
+  state.connectedSources.length ? { ...state, memoryConfirmed: true, memorySkipped: false } : state
+)
+
+export const skipMemory = (state: OnboardingState): OnboardingState => (
+  state.connectedSources.length ? { ...state, memorySkipped: true, step: 3, maxReached: 3 } : state
+)
+
+export const advanceFromMemory = (state: OnboardingState): OnboardingState => (
+  state.memoryConfirmed || state.memorySkipped ? { ...state, step: 3, maxReached: 3 } : state
 )
 
 export const confirmWorkStyle = (state: OnboardingState): OnboardingState => (
-  state.memoryConfirmed ? { ...state, workStyleConfirmed: true, step: 4 } : state
+  state.memoryConfirmed || state.memorySkipped ? { ...state, workStyleConfirmed: true, step: 4, maxReached: 4 } : state
+)
+
+export const selectOnboardingStep = (state: OnboardingState, step: OnboardingStep): OnboardingState => (
+  step <= state.maxReached ? { ...state, step } : state
 )
 
 export const recordTrial = (state: OnboardingState, question: string): OnboardingState => {
@@ -61,10 +78,15 @@ export const regenerateTrial = (state: OnboardingState, adjustment: string): Onb
     trial: {
       ...state.trial,
       adjustment: trimmedAdjustment,
+      feedback: { kind: 'adjust', note: trimmedAdjustment },
       reply: `${state.trial.reply}\n\n已按本次 Trial 调整：${trimmedAdjustment}`,
     },
   }
 }
+
+export const recordTrialFeedback = (state: OnboardingState, feedback: OwnerFeedback): OnboardingState => (
+  state.trial ? { ...state, trial: { ...state.trial, feedback } } : state
+)
 
 export const completeOnboarding = (state: OnboardingState): OnboardingState => (
   state.workStyleConfirmed ? { ...state, completed: true } : state
@@ -80,6 +102,6 @@ export const createTrialEvent = (state: OnboardingState, now: Date): HomeEvent |
     question: state.trial.question,
     reply: state.trial.reply,
     rationale: 'Trial：回复仅在当前会话中查看，未发送给任何联系人。',
-    ...(state.trial.adjustment ? { ownerFeedback: { kind: 'adjust' as const, note: state.trial.adjustment } } : {}),
+    ...(state.trial.feedback ? { ownerFeedback: state.trial.feedback } : {}),
   } : null
 )

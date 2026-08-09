@@ -249,3 +249,119 @@ git commit -m "fix: refine onboarding presentation"
 ```
 
 If no correction is needed, do not create an empty commit.
+
+## Iteration 2: Review-driven interaction refinements
+
+**Goal:** Keep the four-step frame stable while moving Trial reading and feedback into the existing Home event/detail pattern, and make connection, Memory construction, Prompt review, and formal activation modal-based interactions.
+
+### Task 5: Preserve reachable steps and make Memory optional
+
+**Files:**
+- Modify: `src/onboardingState.ts`
+- Modify: `src/onboardingState.test.ts`
+
+**Interfaces:**
+- Add `maxReached: 1 | 2 | 3 | 4` and `memorySkipped: boolean` to `OnboardingState`.
+- Add `selectOnboardingStep(state, step)`, `skipMemory(state)`, and `advanceFromMemory(state)`.
+- `confirmMemory(state)` records construction success but stays on Step 2; `advanceFromMemory(state)` moves to Step 3 only after build or skip.
+
+- [x] **Step 1: Write the failing state tests**
+
+```ts
+test('completed step titles remain reachable without exposing an unfinished future step', () => {
+  const complete = confirmWorkStyle(skipMemory(continueToMemory(connectSource(createOnboardingState(), 'dingtalk'))))
+  assert.equal(selectOnboardingStep(complete, 2).step, 2)
+  assert.equal(selectOnboardingStep(selectOnboardingStep(complete, 2), 4).step, 4)
+})
+
+test('Memory construction stays on Step 2 until the user confirms continuation', () => {
+  const built = confirmMemory(continueToMemory(connectSource(createOnboardingState(), 'feishu')))
+  assert.equal(built.step, 2)
+  assert.equal(advanceFromMemory(built).step, 3)
+})
+```
+
+- [x] **Step 2: Run tests and verify they fail because the new state contract is missing**
+
+Run: `node --test src/onboardingState.test.ts`
+
+Expected: missing export or an assertion failure for the old Step 2 transition.
+
+- [x] **Step 3: Implement the immutable progression rules**
+
+```ts
+export const selectOnboardingStep = (state: OnboardingState, step: OnboardingStep): OnboardingState => (
+  step <= state.maxReached ? { ...state, step } : state
+)
+```
+
+Advance `maxReached` only through a completed action. Skip sets `memorySkipped: true`; neither skip nor build can alter the work-style or Trial fields.
+
+- [x] **Step 4: Run focused and full state tests**
+
+Run: `node --test src/onboardingState.test.ts && npm test`
+
+Expected: all tests pass.
+
+### Task 6: Replace inline onboarding results with stable, modal-driven UI
+
+**Files:**
+- Modify: `src/components/OnboardingHome.tsx`
+- Modify: `src/onboardingHome.test.ts`
+- Modify: `src/content/connectorLogos.ts`
+- Modify: `src/content/translations.ts`
+- Modify: `src/index.css`
+
+**Interfaces:**
+- `OnboardingHome` renders `HomeEventList` and `HomeEventDetail` for the current Trial event beneath the 24-hour chart.
+- The component records owner feedback through `regenerateTrial(state, note)` and returns to the event list after regeneration.
+- Local UI state is limited to modal stages: `connecting`, `memory`, `prompt`, and `activation`.
+
+- [x] **Step 1: Write failing SSR tests for the revised Home composition**
+
+```ts
+test('Step 4 keeps its composer in the fixed panel and places a Trial event in the Home event area', async () => {
+  const stepFour = recordTrial(
+    confirmWorkStyle(skipMemory(continueToMemory(connectSource(createOnboardingState(), 'dingtalk')))),
+    '客户问：当前方案有什么风险？',
+  )
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { initialState: stepFour, locale: 'zh', onComplete: () => {}, onOpenMemory: () => {} }))
+  assert.match(html, /发送给 Friday/)
+  assert.match(html, /Trial · 已完成，未发送/)
+  assert.doesNotMatch(html, /调整这次回复/)
+})
+```
+
+- [x] **Step 2: Run the revised component test and verify it fails against the inline Trial result**
+
+Run: `node --test src/onboardingHome.test.ts`
+
+Expected: the Trial event-area assertion fails because the current component still renders the reply inside the Step 4 panel.
+
+- [x] **Step 3: Implement the minimal UI replacement**
+
+```tsx
+<ol className="onboarding-steps">
+  <button disabled={step > state.maxReached} onClick={() => update(selectOnboardingStep(state, step))}>{label}</button>
+</ol>
+<section className="onboarding-panel">{/* fixed desktop height; one step body */}</section>
+<section className="onboarding-home-events">
+  <HomeActivityChart activity={activityHours(trialEvents, now)} copy={homeCopy} />
+  {selectedTrial ? <HomeEventDetail ... /> : <HomeEventList events={trialEvents} ... />}
+</section>
+```
+
+Use the same modal shell for the Connect confirmation, Memory reading/build sequence, Prompt original, and formal activation confirmation. Memory reads for a short local-demo duration, exposes a determinate progress bar and summary, then waits for user confirmation before construction. Reuse Settings' DingTalk and Feishu logos and add an official Teams mark. All modal copy explicitly says the operation is simulated locally.
+
+- [x] **Step 4: Run component tests, typecheck, build, and diff check**
+
+Run: `npm test && npm run typecheck && npm run build && git diff --check`
+
+Expected: all commands exit 0.
+
+- [x] **Step 5: Commit the review refinements**
+
+```bash
+git add src/onboardingState.ts src/onboardingState.test.ts src/components/OnboardingHome.tsx src/onboardingHome.test.ts src/content/connectorLogos.ts src/content/translations.ts src/index.css docs/superpowers/plans/2026-08-09-onboarding-flow.md
+git commit -m "fix: refine onboarding interactions"
+```

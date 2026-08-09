@@ -21,3 +21,21 @@ test('onboarding starts with four steps, three connection choices, and an empty 
   assert.match(html, /至少连接一个应用后继续/)
   assert.match(html, /暂无工作事件/)
 })
+
+test('Step 4 keeps its composer in the fixed panel and places a Trial event in the Home event area', async () => {
+  const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
+  const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')
+  const stepFour = onboarding.recordTrial(
+    onboarding.confirmWorkStyle(
+      onboarding.skipMemory(
+        onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),
+      ),
+    ),
+    '客户问：当前方案有什么风险？',
+  )
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { initialState: stepFour, locale: 'zh', onComplete: () => {}, onOpenMemory: () => {} }))
+
+  assert.match(html, /发送给 Friday/)
+  assert.match(html, /Trial · 已完成，未发送/)
+  assert.doesNotMatch(html, /调整这次回复/)
+})
