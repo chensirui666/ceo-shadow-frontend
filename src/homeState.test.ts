@@ -56,7 +56,7 @@ test('mode confirmation and owner feedback preserve the current event result', (
   const updated = homeState.recordOwnerFeedback(snapshot, 'trial-complete', { kind: 'adjust', note: '承诺时间前先确认资源。' })
 
   assert.equal(homeState.modeChangeNeedsConfirmation('trial', 'active'), true)
-  assert.equal(homeState.modeChangeNeedsConfirmation('active', 'paused'), false)
+  assert.equal(homeState.modeChangeNeedsConfirmation('active', 'trial'), true)
   assert.equal(updated.events.find((event) => event.id === 'trial-complete')?.outcome, undefined)
   assert.deepEqual(updated.events.find((event) => event.id === 'trial-complete')?.ownerFeedback, { kind: 'adjust', note: '承诺时间前先确认资源。' })
 })

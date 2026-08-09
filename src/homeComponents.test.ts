@@ -61,7 +61,7 @@ test('sent detail includes the recipient feedback preview while a failure has no
   assert.doesNotMatch(failed, /重试|重新连接/)
 })
 
-test('source row keeps the pause action with filtering and omits the trial shortcut', async () => {
+test('source row switches the formal Home back to Trial with filtering', async () => {
   const { HomeSourceRow } = await vite.ssrLoadModule('/src/components/HomeWorkspace.tsx')
   const html = renderToStaticMarkup(createElement(HomeSourceRow, {
     connectedSources: ['dingtalk', 'feishu'] as const, copy: translations.en.workspace.home, mode: 'active',
@@ -70,8 +70,8 @@ test('source row keeps the pause action with filtering and omits the trial short
 
   assert.match(html, /Source/)
   assert.match(html, /All apps/)
-  assert.match(html, />Pause</)
-  assert.doesNotMatch(html, /Switch to trial mode/)
+  assert.match(html, />Switch to trial mode</)
+  assert.doesNotMatch(html, />Pause</)
 })
 
 test('workspace keeps global controls outside the white canvas and removes the rail account', async () => {

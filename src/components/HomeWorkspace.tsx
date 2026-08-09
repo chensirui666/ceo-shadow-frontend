@@ -47,7 +47,7 @@ type HomeSourceRowProps = {
 }
 
 export function HomeSourceRow({ connectedSources, copy, mode, onModeChange, onSourceChange, source }: HomeSourceRowProps) {
-  const nextMode = mode === 'active' ? 'paused' : 'active'
+  const nextMode = mode === 'active' ? 'trial' : 'active'
   const modeAction = modeChangeNeedsConfirmation(mode, nextMode)
     ? <ModeConfirmation copy={copy} mode={nextMode} onConfirm={() => onModeChange(nextMode)} triggerLabel={copy.mode.action(mode)} />
     : <Button onPress={() => { void onModeChange(nextMode) }}>{copy.mode.action(mode)}</Button>

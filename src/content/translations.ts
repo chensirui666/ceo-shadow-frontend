@@ -177,7 +177,7 @@ export const translations: Record<Locale, Translation> = {
         status: { waiting: 'Waiting for you', processing: 'Processing', 'needs-confirmation': 'Needs your confirmation', completed: 'Processed', 'trial-complete': 'Trial complete, not sent', 'send-failed': 'Send failed', 'connection-error': 'Connection issue' },
         outcome: { sent: 'Sent', cancelled: 'Cancelled, Friday did not send', 'self-replied': 'You replied, Friday did not send', 'no-reply': 'No reply needed' },
         mode: {
-          action: (mode) => ({ trial: 'Enable active mode', active: 'Pause', paused: 'Resume active mode' })[mode],
+          action: (mode) => ({ trial: 'Enable active mode', active: 'Switch to trial mode' })[mode],
         },
         chart: {
           title: '24-hour message activity', processed: 'Processed', pending: 'Pending', failed: 'Send failed',
@@ -347,7 +347,7 @@ export const translations: Record<Locale, Translation> = {
         status: { waiting: '等待你先回复', processing: '正在处理', 'needs-confirmation': '待你确认', completed: '已处理', 'trial-complete': '测试完成，未发送', 'send-failed': '发送失败', 'connection-error': '连接异常' },
         outcome: { sent: '已发送', cancelled: '已取消，Friday 未发送', 'self-replied': '你已回复，Friday 未发送', 'no-reply': '无需回复' },
         mode: {
-          action: (mode) => ({ trial: '正式启用', active: '暂停', paused: '恢复正式运行' })[mode],
+          action: (mode) => ({ trial: '正式启用', active: '切回试运行' })[mode],
         },
         chart: {
           title: '24 小时消息处理总览', processed: '已处理', pending: '待处理', failed: '发送失败',
