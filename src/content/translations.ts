@@ -92,6 +92,20 @@ export type HomeCopy = {
   confirmation: { title: (mode: OperatingMode) => string; body: (mode: OperatingMode) => string; confirm: (mode: OperatingMode) => string }
 }
 
+type OnboardingCopy = {
+  progressLabel: string
+  steps: [string, string, string, string]
+  stepKicker: (step: number) => string
+  actions: { cancel: string; continue: string }
+  connection: { title: string; subtitle: string; demo: string; scope: Record<HomeSource, string>; connect: string; connected: string; confirmTitle: (name: string) => string; confirmBody: string; complete: string; continueHint: string }
+  memory: { title: string; subtitle: string; scope: Record<HomeSource, string>; demo: string; confirm: string; view: string }
+  style: { title: string; subtitle: string; summary: string; points: string[]; showPrompt: string; hidePrompt: string; prompt: string; confirm: string }
+  trial: { title: string; subtitle: string; suggestions: string; questions: string[]; inputLabel: string; placeholder: string; submit: string; contextTitle: string; context: string; replyTitle: string; note: string; adjustLabel: string; adjustPlaceholder: string; adjustAction: string }
+  activation: { start: string; hint: string; confirmTitle: string; confirmBody: string; confirm: string; celebrating: string }
+  contacts: { label: string; title: string; body: string; demo: string; close: string; notify: (name: string) => string }
+  emptyTimeline: string
+}
+
 export type Translation = {
   journey: string[]
   login: {
@@ -110,6 +124,7 @@ export type Translation = {
     accountMenu: string
     signOut: string
     home: HomeCopy
+    onboarding: OnboardingCopy
     pages: Record<string, PageCopy>
     exit: Record<'title' | 'body' | 'cancel', string>
     memory: MemoryCopy
@@ -174,7 +189,7 @@ export const translations: Record<Locale, Translation> = {
         reply: 'Reply',
         labelSeparator: ': ',
         countdown: (seconds) => `${Math.floor(seconds / 60)}m ${seconds % 60}s until automatic reply`,
-        status: { waiting: 'Waiting for you', processing: 'Processing', 'needs-confirmation': 'Needs your confirmation', completed: 'Processed', 'trial-complete': 'Trial complete, not sent', 'send-failed': 'Send failed', 'connection-error': 'Connection issue' },
+        status: { waiting: 'Waiting for you', processing: 'Processing', 'needs-confirmation': 'Needs your confirmation', completed: 'Processed', 'trial-complete': 'Trial · complete, not sent', 'send-failed': 'Send failed', 'connection-error': 'Connection issue' },
         outcome: { sent: 'Sent', cancelled: 'Cancelled, Friday did not send', 'self-replied': 'You replied, Friday did not send', 'no-reply': 'No reply needed' },
         mode: {
           action: (mode) => ({ trial: 'Enable active mode', active: 'Switch to trial mode' })[mode],
@@ -190,6 +205,16 @@ export const translations: Record<Locale, Translation> = {
         feedback: { title: 'Your feedback', matched: 'Matches me', adjust: 'Needs adjustment', placeholder: 'What should be different next time?', save: 'Save feedback', saved: 'Feedback recorded', recipientTitle: 'Recipient feedback', recipientQuestion: 'Did this reply resolve your question?', helpful: 'Helpful', unresolved: 'Not resolved', recipientPending: 'Recipient feedback will appear here when it is available.' },
         actions: { send: 'Send', cancel: 'Cancel', retry: 'Retry', goToSettings: 'Go to Settings', clearSource: 'View all apps' },
         confirmation: { title: (mode) => mode === 'active' ? 'Enable active mode?' : 'Switch to trial mode?', body: (mode) => mode === 'active' ? 'Future replies can be sent automatically under your rules.' : 'Future replies will no longer be sent.', confirm: (mode) => mode === 'active' ? 'Enable active mode' : 'Switch to trial mode' },
+      },
+      onboarding: {
+        progressLabel: 'Onboarding progress', steps: ['Connect apps', 'Build Memory', 'Confirm work style', 'Trial'], stepKicker: (step) => `Step ${step} of 4`, actions: { cancel: 'Cancel', continue: 'Continue' },
+        connection: { title: 'Connect your work apps', subtitle: 'Connect one app to begin. You can refine detailed rules later in Settings.', demo: 'Local demo only: this does not begin real authorisation or read any work content.', scope: { dingtalk: 'Work messages and calendar', feishu: 'Team messages and shared documents', teams: 'Messages and channel updates' }, connect: 'Connect', connected: 'Connected', confirmTitle: (name) => `Connect ${name}`, confirmBody: 'This local demo will only show the connection as complete. It does not open a real authorisation flow.', complete: 'Complete connection', continueHint: 'Connect at least one app to continue.' },
+        memory: { title: 'Build your Memory', subtitle: 'Review what Friday would read before you create the first work Memory.', scope: { dingtalk: 'Work messages and related calendar context', feishu: 'Work messages and shared document context', teams: 'Messages and channel collaboration context' }, demo: 'Local demo only: no connected content is read or written to Memory.', confirm: 'Build Memory', view: 'View Memory' },
+        style: { title: 'Confirm your work style', subtitle: 'Start with a readable summary. The original Prompt is available when you need it.', summary: 'Friday will use this work style for future drafts and formal work.', points: ['Expression: concise, direct, and clear about uncertainty.', 'Judgment: confirm progress, risks, and owners before making commitments.', 'Scenarios: provide a short next step after project or meeting updates.', 'Boundaries: hand off commitments, sensitive matters, and missing context.'], showPrompt: 'View original Prompt', hidePrompt: 'Hide original Prompt', prompt: 'Expression\nUse concise language. State uncertainty directly.\n\nDecision order\nConfirm current facts, risks, owners, and due dates before committing.\n\nScenario rules\nFor project and meeting updates, give the next step and owner.\n\nBoundaries\nHand off commitments, sensitive content, and missing context.', confirm: 'This works for me' },
+        trial: { title: 'Try one question', subtitle: 'In Trial, your message only goes to Friday. It is never sent to a colleague.', suggestions: 'Not sure what to ask?', questions: ['Customer asks: Can this project ship this week?', 'Teammate asks: What should we prepare for next week’s meeting?', 'Customer asks: What risks does the current plan have?'], inputLabel: 'Trial question', placeholder: 'Type a work question for Friday…', submit: 'Send to Friday', contextTitle: 'What Friday understood', context: 'This is a Trial based on the current connected-app scope and confirmed work style.', replyTitle: 'Suggested reply', note: 'Trial only: this reply is kept in this session and is not sent to any contact. An adjustment is retained as later calibration material and does not rewrite your work style now.', adjustLabel: 'Adjust this reply', adjustPlaceholder: 'Write one adjustment for this Trial reply', adjustAction: 'Regenerate' },
+        activation: { start: 'Start formal mode', hint: 'Available after you confirm your work style. A Trial is optional.', confirmTitle: 'Start formal mode?', confirmBody: 'Future replies may be handled under the rules you set. Real sending still requires backend gates.', confirm: 'Confirm formal mode', celebrating: 'Friday is ready to work with you' },
+        contacts: { label: 'Optional', title: 'Notify a work contact?', body: 'Choose one contact with whom you have worked in your connected apps. Friday will prepare a short notification from the current work context.', demo: 'Local demo only: no contact is notified and no message is sent.', close: 'Not now', notify: (name) => `Notify ${name}` },
+        emptyTimeline: 'No work events yet',
       },
       pages: {
         tasks: ['Tasks', 'Friday will organize projects, to-dos, and next steps from your work messages and meetings.', 'Back to Home'],
@@ -344,7 +369,7 @@ export const translations: Record<Locale, Translation> = {
         reply: '回复',
         labelSeparator: '：',
         countdown: (seconds) => `${Math.floor(seconds / 60)}分${seconds % 60}秒后自动回复`,
-        status: { waiting: '等待你先回复', processing: '正在处理', 'needs-confirmation': '待你确认', completed: '已处理', 'trial-complete': '测试完成，未发送', 'send-failed': '发送失败', 'connection-error': '连接异常' },
+        status: { waiting: '等待你先回复', processing: '正在处理', 'needs-confirmation': '待你确认', completed: '已处理', 'trial-complete': 'Trial · 已完成，未发送', 'send-failed': '发送失败', 'connection-error': '连接异常' },
         outcome: { sent: '已发送', cancelled: '已取消，Friday 未发送', 'self-replied': '你已回复，Friday 未发送', 'no-reply': '无需回复' },
         mode: {
           action: (mode) => ({ trial: '正式启用', active: '切回试运行' })[mode],
@@ -360,6 +385,16 @@ export const translations: Record<Locale, Translation> = {
         feedback: { title: '内部反馈', matched: '符合我', adjust: '需要调整', placeholder: '哪里不对、以后应怎样处理或表达？', save: '保存反馈', saved: '反馈已记录', recipientTitle: '收件人反馈', recipientQuestion: '这条回复是否解决了你的问题？', helpful: '有帮助', unresolved: '未解决', recipientPending: '收件人反馈可用后会在这里展示。' },
         actions: { send: '发送', cancel: '取消', retry: '重试', goToSettings: '前往设置', clearSource: '查看全部应用' },
         confirmation: { title: (mode) => mode === 'active' ? '正式启用 Friday？' : '切回试运行？', body: (mode) => mode === 'active' ? '后续回复会按当前规则自动发送。' : '后续回复不再发送。', confirm: (mode) => mode === 'active' ? '正式启用' : '切回试运行' },
+      },
+      onboarding: {
+        progressLabel: '引导进度', steps: ['连接应用', '建立 Memory', '确认工作风格', 'Trial'], stepKicker: (step) => `第 ${step} 步，共 4 步`, actions: { cancel: '取消', continue: '继续' },
+        connection: { title: '连接你的工作应用', subtitle: '先连接一个应用即可开始，详细规则稍后在设置中调整。', demo: '仅为本地演示：不会发起真实授权，也不会读取任何工作内容。', scope: { dingtalk: '工作消息与日程', feishu: '团队消息与共享文档', teams: '消息与频道动态' }, connect: 'Connect', connected: '已连接', confirmTitle: (name) => `连接${name}`, confirmBody: '此本地演示只会将应用标记为已连接，不会打开真实授权流程。', complete: '完成连接', continueHint: '至少连接一个应用后继续。' },
+        memory: { title: '建立你的 Memory', subtitle: '先确认 Friday 将读取的范围，再建立第一份工作 Memory。', scope: { dingtalk: '工作消息与相关日程上下文', feishu: '工作消息与共享文档上下文', teams: '消息与频道协作上下文' }, demo: '仅为本地演示：不会读取已连接应用的内容，也不会写入真实 Memory。', confirm: '建立 Memory', view: '查看 Memory' },
+        style: { title: '确认你的工作风格', subtitle: '先看易读摘要；需要时再查看 Prompt 原文。', summary: 'Friday 会将这份工作风格用于之后的草稿与正式运行。', points: ['表达：简洁直接，明确说明不确定性。', '判断：做出承诺前，先确认进度、风险与负责人。', '场景：项目或会议更新后，给出简短的下一步。', '边界：承诺、敏感事项和信息不足时交由你处理。'], showPrompt: '查看 Prompt 原文', hidePrompt: '收起 Prompt 原文', prompt: '表达方式\n使用简洁语言，直接说明不确定性。\n\n决策顺序\n先确认当前事实、风险、负责人和截止时间，再做出承诺。\n\n场景规则\n项目和会议更新后，给出下一步与负责人。\n\n必须交由本人\n承诺、敏感内容和信息不足时必须交由本人。', confirm: '符合我，继续' },
+        trial: { title: '用一条问题试运行', subtitle: 'Trial 中，消息只会发给 Friday，不会发给同事。', suggestions: '不知道问什么？', questions: ['客户问：这个项目本周能交付吗？', '同事问：下周会议要准备什么？', '客户问：当前方案有什么风险？'], inputLabel: '试运行问题', placeholder: '输入一句工作问题，让 Friday 试着回复…', submit: '发送给 Friday', contextTitle: 'Friday 理解到的背景', context: '这是一次基于当前连接范围与已确认工作风格的 Trial。', replyTitle: '建议回复', note: 'Trial：本次回复只保留在当前会话，不会发送给任何联系人。调整要求会作为后续校准材料，但不会立即改写长期工作风格。', adjustLabel: '调整这次回复', adjustPlaceholder: '输入一句对当前 Trial 回复的调整要求', adjustAction: '重新生成' },
+        activation: { start: '正式运行', hint: '完成工作风格确认后即可正式运行，不要求先完成 Trial。', confirmTitle: '正式启用 Friday？', confirmBody: '后续回复会按你设定的规则处理；真实发送仍需要后端门禁。', confirm: '确认正式运行', celebrating: 'Friday 已准备好和你一起工作' },
+        contacts: { label: '可选', title: '要通知一位工作联系人吗？', body: '选择一位已在连接应用中与你发生过工作互动的联系人。Friday 会基于当前工作上下文生成简短通知。', demo: '仅为本地演示：不会通知联系人，也不会真实发送消息。', close: '暂不通知', notify: (name) => `通知${name}` },
+        emptyTimeline: '暂无工作事件',
       },
       pages: {
         tasks: ['任务', 'Friday 会从工作消息和会议中整理项目、待办与下一步。', '返回首页'],

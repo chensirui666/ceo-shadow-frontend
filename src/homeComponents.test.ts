@@ -33,6 +33,17 @@ test('event list renders a compact row with a countdown and message lines', asyn
   assert.match(html, /回复：目前计划在下周三完成上线/)
 })
 
+test('a session Trial event carries a visible Trial marker in Home', async () => {
+  const { default: HomeEventList } = await vite.ssrLoadModule('/src/components/HomeEventList.tsx')
+  const event = {
+    id: 'trial', source: 'dingtalk', sender: '你', receivedAt: '2026-08-09T09:00:00.000Z', status: 'trial-complete',
+    question: '客户问：当前方案有什么风险？', reply: '我会先核实当前进度、风险和需要确认的事项。', rationale: 'Trial：回复仅在当前会话中查看，未发送给任何联系人。',
+  } satisfies import('./homeState.ts').HomeEvent
+  const html = renderToStaticMarkup(createElement(HomeEventList, { copy: translations.zh.workspace.home, events: [event], now: new Date('2026-08-09T09:01:00.000Z'), onOpen: () => {}, sourceNames: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' } }))
+
+  assert.match(html, /Trial · 已完成，未发送/)
+})
+
 const createDetailEvent = (override: Partial<import('./homeState.ts').HomeEvent> = {}): import('./homeState.ts').HomeEvent => ({
   id: 'detail', source: 'feishu', conversation: '产品项目群', sender: '刘晨', receivedAt: '2026-08-06T10:42:00.000Z',
   status: 'completed', outcome: 'sent', question: '下周的上线时间能确定吗？', reply: '建议下周三上线。',
@@ -84,4 +95,24 @@ test('workspace keeps global controls outside the white canvas and removes the r
   const canvasIndex = html.indexOf('workspace-canvas')
   assert.ok(globalBarIndex >= 0 && globalBarIndex < canvasIndex)
   assert.doesNotMatch(html, /rail-account/)
+})
+
+test('workspace starts onboarding for every non-seeded demo account', async () => {
+  const { default: Workspace } = await vite.ssrLoadModule('/src/components/Workspace.tsx')
+  const html = renderToStaticMarkup(createElement(Workspace, {
+    locale: 'zh', onLocaleChange: () => {}, onSignOut: () => {}, session: { email: 'new.person@stardust.ai', route: 'home' },
+  }))
+
+  assert.match(html, /连接你的工作应用/)
+  assert.match(html, /暂无工作事件/)
+})
+
+test('workspace keeps the seeded demo account on the normal Home', async () => {
+  const { default: Workspace } = await vite.ssrLoadModule('/src/components/Workspace.tsx')
+  const html = renderToStaticMarkup(createElement(Workspace, {
+    locale: 'zh', onLocaleChange: () => {}, onSignOut: () => {}, session: { email: 'sirui.chen@stardust.ai', route: 'home' },
+  }))
+
+  assert.doesNotMatch(html, /连接你的工作应用/)
+  assert.match(html, /正在加载最近事件…/)
 })

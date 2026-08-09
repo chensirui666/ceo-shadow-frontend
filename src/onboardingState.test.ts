@@ -42,3 +42,15 @@ test('a completed Trial becomes a visible session-only Home event', () => {
     rationale: 'Trial：回复仅在当前会话中查看，未发送给任何联系人。',
   })
 })
+
+test('a Trial adjustment is retained as feedback material without changing the work style', () => {
+  const prepared = onboarding.recordTrial(
+    onboarding.confirmWorkStyle(onboarding.confirmMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk'))),
+    '客户问：当前方案有什么风险？',
+  )
+  const adjusted = onboarding.regenerateTrial(prepared, '先说明依赖风险，再给结论。')
+  const event = onboarding.createTrialEvent(adjusted, new Date('2026-08-09T09:00:00.000Z'))
+
+  assert.equal(adjusted.workStyleConfirmed, true)
+  assert.deepEqual(event?.ownerFeedback, { kind: 'adjust', note: '先说明依赖风险，再给结论。' })
+})

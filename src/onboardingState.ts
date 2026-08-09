@@ -80,5 +80,6 @@ export const createTrialEvent = (state: OnboardingState, now: Date): HomeEvent |
     question: state.trial.question,
     reply: state.trial.reply,
     rationale: 'Trial：回复仅在当前会话中查看，未发送给任何联系人。',
+    ...(state.trial.adjustment ? { ownerFeedback: { kind: 'adjust' as const, note: state.trial.adjustment } } : {}),
   } : null
 )

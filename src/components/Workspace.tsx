@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Dropdown, Modal, useOverlayState } from '@heroui/react'
 import { Button as AriaButton } from 'react-aria-components'
 import { resolveRoute } from '../appState.ts'
 import type { Locale, Route, Session } from '../appState.ts'
 import { translations } from '../content/translations.ts'
+import { createHomeService } from '../homeService.ts'
+import { createDemoHomeSnapshot } from '../homeState.ts'
+import { createOnboardingState, createTrialEvent, needsOnboarding } from '../onboardingState.ts'
+import type { OnboardingState } from '../onboardingState.ts'
 import { saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
 import HomeWorkspace from './HomeWorkspace.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
+import OnboardingHome from './OnboardingHome.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
 
 type WorkspaceProps = {
@@ -30,6 +35,9 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const storedRoute = resolveRoute(session.route)
   const [route, setRoute] = useState<Route>(() => storedRoute === 'settings' ? 'home' : storedRoute)
   const [settingsOpen, setSettingsOpen] = useState(() => storedRoute === 'settings')
+  const [onboarding, setOnboarding] = useState(() => needsOnboarding(session.email))
+  const [onboardingState, setOnboardingState] = useState(() => createOnboardingState())
+  const sessionHomeService = useRef(createHomeService(createDemoHomeSnapshot()))
   const exitDialog = useOverlayState()
   const name = session.email.split('@')[0]
   const copy = translations[locale].workspace
@@ -47,6 +55,22 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
     const next = resolveRoute(nextRoute)
     if (next === 'settings') openSettings()
     else setRoute(next)
+  }
+
+  const finishOnboarding = (completedState: OnboardingState) => {
+    const fixture = createDemoHomeSnapshot()
+    const trialEvent = createTrialEvent(completedState, new Date())
+    sessionHomeService.current = createHomeService({
+      ...fixture,
+      mode: 'active',
+      connectedSources: completedState.connectedSources,
+      events: [
+        ...(trialEvent ? [trialEvent] : []),
+        ...fixture.events.filter((event) => completedState.connectedSources.includes(event.source)),
+      ],
+    })
+    setOnboarding(false)
+    setRoute('home')
   }
 
   return (
@@ -88,14 +112,16 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       </aside>
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
-        <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
+        {!(route === 'home' && onboarding) && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
           <h1>{route === 'home' ? copy.greeting(name) : currentLabel}</h1>
-        </header>
+        </header>}
 
         {route === 'memory' ? (
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
-          <HomeWorkspace locale={locale} onOpenSettings={openSettings} />
+          onboarding
+            ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onOpenMemory={() => goTo('memory')} onStateChange={setOnboardingState} />
+            : <HomeWorkspace locale={locale} onOpenSettings={openSettings} service={sessionHomeService.current} />
         ) : (
           <section className="empty-page">
             <p className="eyebrow">{currentLabel}</p>

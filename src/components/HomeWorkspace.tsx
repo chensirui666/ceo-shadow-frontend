@@ -4,6 +4,7 @@ import type { Locale } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import type { HomeCopy } from '../content/translations.ts'
 import { homeService } from '../homeService.ts'
+import type { HomeService } from '../homeService.ts'
 import { activityHours, modeChangeNeedsConfirmation, progressWaitingEvents, selectHomeEvents } from '../homeState.ts'
 import type { HomeSource, HomeSnapshot, OperatingMode, OwnerFeedback } from '../homeState.ts'
 import HomeActivityChart from './HomeActivityChart.tsx'
@@ -13,6 +14,7 @@ import HomeEventList from './HomeEventList.tsx'
 type HomeWorkspaceProps = {
   locale: Locale
   onOpenSettings: () => void
+  service?: HomeService
 }
 
 type ModeConfirmationProps = {
@@ -58,7 +60,7 @@ export function HomeSourceRow({ connectedSources, copy, mode, onModeChange, onSo
   </div>
 }
 
-export default function HomeWorkspace({ locale, onOpenSettings }: HomeWorkspaceProps) {
+export default function HomeWorkspace({ locale, onOpenSettings, service = homeService }: HomeWorkspaceProps) {
   const copy = translations[locale].workspace.home
   const [snapshot, setSnapshot] = useState<HomeSnapshot | null>(null)
   const [error, setError] = useState(false)
@@ -72,7 +74,7 @@ export default function HomeWorkspace({ locale, onOpenSettings }: HomeWorkspaceP
 
   const load = () => {
     setError(false)
-    return homeService.load().then(setSnapshot).catch(() => setError(true))
+    return service.load().then(setSnapshot).catch(() => setError(true))
   }
 
   useEffect(() => { void load() }, [])
@@ -107,18 +109,18 @@ export default function HomeWorkspace({ locale, onOpenSettings }: HomeWorkspaceP
     setSelectedEventId(null)
   }
 
-  const updateMode = (mode: OperatingMode) => homeService.updateMode(mode).then(setSnapshot)
+  const updateMode = (mode: OperatingMode) => service.updateMode(mode).then(setSnapshot)
 
   const resolveEvent = (eventId: string, decision: 'send' | 'cancel', reply: string) => {
     setBusy(true)
-    void homeService.resolveEvent(eventId, decision, reply).then((next) => {
+    void service.resolveEvent(eventId, decision, reply).then((next) => {
       setSnapshot(next)
       setBusy(false)
     })
   }
 
   const submitFeedback = (eventId: string, feedback: OwnerFeedback) => {
-    void homeService.submitOwnerFeedback(eventId, feedback).then(setSnapshot)
+    void service.submitOwnerFeedback(eventId, feedback).then(setSnapshot)
   }
 
   if (error) return <section aria-live="polite" className="home-state"><p>{copy.empty.error}</p><Button onPress={() => { void load() }}>{copy.actions.retry}</Button></section>

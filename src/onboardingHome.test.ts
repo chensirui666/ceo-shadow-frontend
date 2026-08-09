@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict'
+import { after, test } from 'node:test'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { createServer } from 'vite'
+
+const vite = await createServer({ root: process.cwd(), appType: 'custom', server: { hmr: false, middlewareMode: true } })
+after(() => vite.close())
+
+test('onboarding starts with four steps, three connection choices, and an empty Home timeline', async () => {
+  const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {}, onOpenMemory: () => {} }))
+
+  assert.match(html, /1.*连接应用/)
+  assert.match(html, /2.*建立 Memory/)
+  assert.match(html, /3.*确认工作风格/)
+  assert.match(html, /4.*Trial/)
+  assert.match(html, /钉钉/)
+  assert.match(html, /飞书/)
+  assert.match(html, /Teams/)
+  assert.match(html, /至少连接一个应用后继续/)
+  assert.match(html, /暂无工作事件/)
+})
