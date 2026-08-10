@@ -85,3 +85,13 @@ test('workspace keeps global controls outside the white canvas and removes the r
   assert.ok(globalBarIndex >= 0 && globalBarIndex < canvasIndex)
   assert.doesNotMatch(html, /rail-account/)
 })
+
+test('workspace renders FeedbackWorkspace instead of the feedback placeholder', async () => {
+  const { default: Workspace } = await vite.ssrLoadModule('/src/components/Workspace.tsx')
+  const html = renderToStaticMarkup(createElement(Workspace, {
+    locale: 'zh', onLocaleChange: () => {}, onSignOut: () => {}, session: { email: 'sirui@example.com', route: 'feedback' },
+  }))
+
+  assert.match(html, /正在加载反馈质量数据…/)
+  assert.doesNotMatch(html, /你和同事对回复的反馈，会在这里帮助 Friday 持续校准/)
+})

@@ -7,6 +7,7 @@ import { translations } from '../content/translations.ts'
 import { saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
+import FeedbackWorkspace from './FeedbackWorkspace.tsx'
 import HomeWorkspace from './HomeWorkspace.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
@@ -92,7 +93,9 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
           <h1>{route === 'home' ? copy.greeting(name) : currentLabel}</h1>
         </header>
 
-        {route === 'memory' ? (
+        {route === 'feedback' ? (
+          <FeedbackWorkspace locale={locale} />
+        ) : route === 'memory' ? (
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
           <HomeWorkspace locale={locale} onOpenSettings={openSettings} />
