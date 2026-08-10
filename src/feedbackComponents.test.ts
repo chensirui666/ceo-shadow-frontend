@@ -69,3 +69,28 @@ test('pagination locks its cursor and discards stale range results', async () =>
   const html = renderToStaticMarkup(createElement(FeedbackCardWall, { copy: translations.zh.workspace.feedback, items: [], loadingMore: true, locale: 'zh', nextCursor: 'cursor-2', onLoadMore: () => {}, onOpen: () => {} }))
   assert.match(html, /<button[^>]*disabled=""[^>]*>加载更多<\/button>/)
 })
+
+test('two immediate load-more invocations send one request for the same range and cursor', async () => {
+  const [workspace, serviceModule] = await Promise.all([
+    vite.ssrLoadModule('/src/components/FeedbackWorkspace.tsx'),
+    vite.ssrLoadModule('/src/feedbackService.ts'),
+  ])
+  assert.equal(typeof workspace.requestFeedbackPage, 'function')
+  const active = { current: null }
+  const page: FeedbackCardPage = { items: [], nextCursor: 'cursor-1' }
+  const calls: Array<[string, string | null]> = []
+  const original = serviceModule.feedbackService.loadCards
+  serviceModule.feedbackService.loadCards = async (range: string, cursor: string | null) => {
+    calls.push([range, cursor])
+    return { items: [], nextCursor: null }
+  }
+
+  try {
+    const loadMore = () => workspace.requestFeedbackPage(active, '7d', page)
+    assert.ok(loadMore())
+    assert.equal(loadMore(), null)
+    assert.deepEqual(calls, [['7d', 'cursor-1']])
+  } finally {
+    serviceModule.feedbackService.loadCards = original
+  }
+})

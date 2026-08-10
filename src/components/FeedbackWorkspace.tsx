@@ -9,11 +9,19 @@ import FeedbackDetailPanel from './FeedbackDetailPanel.tsx'
 
 type FailedOperation = 'range' | 'more' | 'detail' | null
 type PageRequest = { range: FeedbackRange; cursor: string }
+type PageRequestRef = { current: PageRequest | null }
 
 export const mergeFeedbackPage = (currentRange: FeedbackRange, current: FeedbackCardPage, requestRange: FeedbackRange, requestCursor: string, next: FeedbackCardPage) =>
   currentRange === requestRange && current.nextCursor === requestCursor
     ? { items: [...current.items, ...next.items], nextCursor: next.nextCursor }
     : current
+
+export const requestFeedbackPage = (active: PageRequestRef, range: FeedbackRange, page: FeedbackCardPage) => {
+  if (!page.nextCursor || active.current) return null
+  const request = { range, cursor: page.nextCursor }
+  active.current = request
+  return { request, response: feedbackService.loadCards(request.range, request.cursor) }
+}
 
 export default function FeedbackWorkspace({ locale }: { locale: Locale }) {
   const copy = translations[locale].workspace.feedback
@@ -47,12 +55,13 @@ export default function FeedbackWorkspace({ locale }: { locale: Locale }) {
   }, [selectedId])
 
   const loadMore = () => {
-    if (!page?.nextCursor || loadMoreRequest.current) return
-    const request = { range, cursor: page.nextCursor }
-    loadMoreRequest.current = request
+    if (!page) return
+    const pending = requestFeedbackPage(loadMoreRequest, range, page)
+    if (!pending) return
+    const { request, response } = pending
     setLoadingMore(true)
     setFailedOperation(null)
-    void feedbackService.loadCards(request.range, request.cursor)
+    void response
       .then((next) => {
         if (loadMoreRequest.current !== request) return
         setPage((current) => current && mergeFeedbackPage(rangeRef.current, current, request.range, request.cursor, next))
