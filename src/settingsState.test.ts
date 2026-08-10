@@ -18,7 +18,7 @@ test('settings default to safe group handling, a five-minute wait, and three ale
   assert.equal(settings.general.waitMinutes, 5)
   assert.equal(settings.general.quietHours, null)
   assert.equal(settingsState.countEnabledNotifications(settings.general.notifications), 3)
-  assert.deepEqual(settings.connectors, { dingtalk: 'disconnected', feishu: 'disconnected' })
+  assert.deepEqual(settings.connectors, { dingtalk: 'disconnected', feishu: 'disconnected', teams: 'disconnected' })
 })
 
 test('normalizeSettings recovers safe values from malformed persisted preferences', () => {
@@ -34,7 +34,7 @@ test('normalizeSettings recovers safe values from malformed persisted preference
     lastSection: 'missing',
   })
 
-  assert.deepEqual(settings.connectors, { dingtalk: 'connected', feishu: 'disconnected' })
+  assert.deepEqual(settings.connectors, { dingtalk: 'connected', feishu: 'disconnected', teams: 'disconnected' })
   assert.equal(settings.general.waitMinutes, 5)
   assert.equal(settings.general.quietHours, null)
   assert.deepEqual(settings.general.notifications, { handoff: false, reconnect: true, sendFailed: true })
@@ -46,7 +46,7 @@ test('saveSettings persists normalized preferences for a later load', () => {
   const storage = createStorage()
   const saved = settingsState.saveSettings(storage, {
     ...settingsState.createDefaultSettings(),
-    connectors: { dingtalk: 'connected', feishu: 'disconnected' },
+    connectors: { dingtalk: 'connected', feishu: 'disconnected', teams: 'connected' },
     general: {
       respondToEveryone: false,
       waitMinutes: 10,
