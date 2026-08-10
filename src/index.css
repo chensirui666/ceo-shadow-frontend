@@ -392,15 +392,16 @@ button, input { font: inherit; }
 .onboarding-section-header > p:last-child { margin: 10px 0 0; color: #6e675d; font-size: 14px; line-height: 1.6; }
 .onboarding-demo-note { margin: 19px 0; color: #817a70; font-size: 12px; line-height: 1.55; }
 .onboarding-source-list, .onboarding-scope-list { border-top: 1px solid #e8e3da; }
-.onboarding-connect-layout { display: grid; grid-template-columns: minmax(0, 52fr) minmax(330px, 48fr); padding: 0; }
+.onboarding-connect-layout { display: grid; grid-template-columns: minmax(0, 52fr) minmax(330px, 48fr); background: linear-gradient(100deg, #fffefd 0%, #fffdfb 47%, #faf5fc 65%, #f0e7f8 100%); padding: 0; }
 .onboarding-connect-content { display: flex; min-width: 0; flex-direction: column; padding: 20px 36px; }
 .onboarding-connect-content .onboarding-kicker { margin-bottom: 7px; }
 .onboarding-connect-content .onboarding-section-header h2 { font-size: 24px; }
 .onboarding-connect-content .onboarding-section-header > p:last-child { margin-top: 6px; font-size: 13px; line-height: 1.45; }
 .onboarding-connect-content .onboarding-demo-note { margin: 13px 0; line-height: 1.45; }
-.onboarding-connect-artwork { position: relative; min-width: 0; overflow: hidden; border-left: 1px solid #eee7f7; background: #fbf8ff; }
+.onboarding-connect-artwork { position: relative; min-width: 0; overflow: hidden; background: transparent; }
 .onboarding-connect-artwork > img:first-child { width: 100%; height: 100%; object-fit: cover; }
-.onboarding-connect-artwork-mark { position: absolute; z-index: 1; box-sizing: border-box; width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / 76%); border-radius: 12px; background: #fffefd; box-shadow: 0 10px 22px rgb(88 56 161 / 16%); padding: 7px; }
+.onboarding-connect-artwork::before { position: absolute; z-index: 1; inset: 0; background: linear-gradient(90deg, #fffdfb 0%, rgb(255 253 251 / 88%) 11%, rgb(255 251 251 / 45%) 26%, transparent 49%); content: ''; pointer-events: none; }
+.onboarding-connect-artwork-mark { position: absolute; z-index: 2; box-sizing: border-box; width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / 76%); border-radius: 12px; background: #fffefd; box-shadow: 0 10px 22px rgb(88 56 161 / 16%); padding: 7px; }
 .onboarding-connect-artwork-mark-dingtalk { top: 16%; left: 17%; }
 .onboarding-connect-artwork-mark-feishu { top: 30%; right: 13%; }
 .onboarding-connect-artwork-mark-teams { top: 55%; left: 9%; }
@@ -951,7 +952,7 @@ button, input { font: inherit; }
   .onboarding-section { height: 100%; min-height: 0; padding: 25px 22px; }
   .onboarding-connect-layout { grid-template-columns: 1fr; height: auto; padding: 0; }
   .onboarding-connect-content { padding: 25px 22px; }
-  .onboarding-connect-artwork { min-height: 250px; border-top: 1px solid #eee7f7; border-left: 0; }
+  .onboarding-connect-artwork { min-height: 250px; }
   .onboarding-scope-list > div { grid-template-columns: 1fr; gap: 4px; }
   .onboarding-modal-dialog, .onboarding-contact-dialog { padding: 21px; }
   .onboarding-home-events .home-detail { width: 100%; }
