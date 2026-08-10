@@ -10,6 +10,7 @@ import type { IconName } from './Icon.tsx'
 import HomeWorkspace from './HomeWorkspace.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
+import Brand from './Brand.tsx'
 
 type WorkspaceProps = {
   locale: Locale
@@ -70,7 +71,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       </header>
 
       <aside aria-hidden={settingsOpen} className="workspace-rail" inert={settingsOpen || undefined}>
-        <span className="workspace-brand">Friday</span>
+        <Brand className="workspace-brand" />
         <nav aria-label={copy.primaryNavigation} className="workspace-nav">
           {pages.slice(0, 4).map((page) => (
             <Button className={route === page.id ? 'nav-item nav-item-active' : 'nav-item'} key={page.id} onPress={() => goTo(page.id)} type="button">

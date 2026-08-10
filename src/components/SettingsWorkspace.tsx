@@ -26,6 +26,8 @@ const settingsNavIcons: Record<SettingsSection, LucideIcon> = {
   profile: UserRound,
 }
 
+const connectorNames: Record<ConnectorId, string> = { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' }
+
 export default function SettingsWorkspace({ locale, onClose, onLocaleChange, onNavigate }: SettingsWorkspaceProps) {
   const [saved, setSaved] = useState<FridaySettings>(() => loadSettings(window.localStorage))
   const [draft, setDraft] = useState<FridaySettings>(saved)
@@ -85,7 +87,7 @@ export default function SettingsWorkspace({ locale, onClose, onLocaleChange, onN
   const discardConfirmation = confirmation === 'discard' ? <SettingsConfirmation body={copy.discard.body} cancelLabel={copy.discard.cancel} confirmLabel={copy.discard.confirm} destructive onCancel={() => { setConfirmation(null); setPendingRoute(null) }} onConfirm={() => { setDraft(saved); leave(pendingRoute ?? undefined) }} title={copy.discard.title} /> : null
   const everyoneConfirmation = confirmation === 'everyone' ? <SettingsConfirmation body={copy.general.group.confirmation.body} cancelLabel={copy.general.group.confirmation.cancel} confirmLabel={copy.general.group.confirmation.confirm} onCancel={() => setConfirmation(null)} onConfirm={() => { updateDraft((current) => ({ ...current, general: { ...current.general, respondToEveryone: true } })); setConfirmation(null) }} title={copy.general.group.confirmation.title} /> : null
   const pendingConnector = confirmation && connectorIds.includes(confirmation as ConnectorId) ? confirmation as ConnectorId : null
-  const connectorConfirmation = pendingConnector ? <SettingsConfirmation body={copy.apps.disconnect.body(pendingConnector === 'dingtalk' ? 'DingTalk' : 'Feishu')} cancelLabel={copy.apps.disconnect.cancel} confirmLabel={copy.apps.disconnect.confirm(pendingConnector === 'dingtalk' ? 'DingTalk' : 'Feishu')} destructive onCancel={() => setConfirmation(null)} onConfirm={() => disconnect(pendingConnector)} title={copy.apps.disconnect.title(pendingConnector === 'dingtalk' ? 'DingTalk' : 'Feishu')} /> : null
+  const connectorConfirmation = pendingConnector ? <SettingsConfirmation body={copy.apps.disconnect.body(connectorNames[pendingConnector])} cancelLabel={copy.apps.disconnect.cancel} confirmLabel={copy.apps.disconnect.confirm(connectorNames[pendingConnector])} destructive onCancel={() => setConfirmation(null)} onConfirm={() => disconnect(pendingConnector)} title={copy.apps.disconnect.title(connectorNames[pendingConnector])} /> : null
 
   const content = section === 'apps'
     ? <SettingsAppsPanel busyConnector={busyConnector} confirmation={discardConfirmation ?? connectorConfirmation} copy={copy} notice={notice} onConnect={connect} onRequestDisconnect={setConfirmation} saved={saved} />

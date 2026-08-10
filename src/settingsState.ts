@@ -1,6 +1,6 @@
 export const settingsStorageKey = 'friday-demo-settings'
 
-export const connectorIds = ['dingtalk', 'feishu'] as const
+export const connectorIds = ['dingtalk', 'feishu', 'teams'] as const
 export const connectorStatuses = ['disconnected', 'connected', 'needs-reconnect'] as const
 export const settingsSections = ['apps', 'general', 'profile'] as const
 export const waitMinutes = [1, 5, 10] as const
@@ -45,7 +45,7 @@ const isWaitMinutes = (value: unknown): value is typeof waitMinutes[number] => (
 )
 
 export const createDefaultSettings = (): FridaySettings => ({
-  connectors: { dingtalk: 'disconnected', feishu: 'disconnected' },
+  connectors: { dingtalk: 'disconnected', feishu: 'disconnected', teams: 'disconnected' },
   general: {
     respondToEveryone: false,
     waitMinutes: 5,
@@ -72,6 +72,7 @@ export const normalizeSettings = (value: unknown): FridaySettings => {
     connectors: {
       dingtalk: isConnectorStatus(connectors.dingtalk) ? connectors.dingtalk : fallback.connectors.dingtalk,
       feishu: isConnectorStatus(connectors.feishu) ? connectors.feishu : fallback.connectors.feishu,
+      teams: isConnectorStatus(connectors.teams) ? connectors.teams : fallback.connectors.teams,
     },
     general: {
       respondToEveryone: typeof general.respondToEveryone === 'boolean' ? general.respondToEveryone : fallback.general.respondToEveryone,

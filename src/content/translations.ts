@@ -95,8 +95,8 @@ export type HomeCopy = {
 export type Translation = {
   journey: string[]
   login: {
-    email: Record<'eyebrow' | 'title' | 'demoLabel' | 'demo' | 'demoEnding' | 'label' | 'sending' | 'submit' | 'legalBefore' | 'terms' | 'legalBetween' | 'privacy', string>
-    code: Record<'eyebrow' | 'title' | 'demoLabel' | 'demo' | 'demoEnding' | 'label' | 'verifying' | 'submit' | 'edit' | 'resend', string> & { resendIn: (seconds: number) => string }
+    email: Record<'eyebrow' | 'title' | 'label' | 'sending' | 'submit' | 'legalBefore' | 'terms' | 'legalBetween' | 'privacy', string>
+    code: Record<'eyebrow' | 'title' | 'label' | 'verifying' | 'submit' | 'edit' | 'resend', string> & { resendIn: (seconds: number) => string }
     errors: Record<'invalidEmail' | 'sendFailed' | 'invalidCode' | 'incompleteCode', string>
     authVisualLabel: string
   }
@@ -124,9 +124,6 @@ export const translations: Record<Locale, Translation> = {
       email: {
         eyebrow: 'Welcome to Friday',
         title: 'Sign in to Friday',
-        demoLabel: 'Demo mode',
-        demo: 'This local demo does not send a real code. Enter any email, then use',
-        demoEnding: '.',
         label: 'WORK EMAIL',
         sending: 'Sending…',
         submit: 'Get code',
@@ -138,9 +135,6 @@ export const translations: Record<Locale, Translation> = {
       code: {
         eyebrow: 'Verify your identity',
         title: 'Enter your code.',
-        demoLabel: 'Demo mode',
-        demo: 'This local demo accepts',
-        demoEnding: '.',
         label: 'Six-digit code',
         verifying: 'Verifying…',
         submit: 'Verify and enter Friday',
@@ -240,7 +234,7 @@ export const translations: Record<Locale, Translation> = {
           title: 'Connected apps',
           subtitle: 'Choose where Friday can work with you.',
           demo: 'Demo only: changes stay in this browser. Friday does not start live authorization or process messages.',
-          description: { dingtalk: 'Work messages and relevant updates', feishu: 'Team messages and shared documents' },
+          description: { dingtalk: 'Work messages and relevant updates', feishu: 'Team messages and shared documents', teams: 'Team chats, channels, and shared files' },
           status: { disconnected: 'Not connected', connected: 'Connected', 'needs-reconnect': 'Reconnect needed', connecting: 'Connecting…' },
           action: { connect: (name) => `Connect ${name}`, reconnect: (name) => `Reconnect ${name}`, disconnect: (name) => `Disconnect ${name}` },
           disconnect: { title: (name) => `Disconnect ${name}?`, body: (name) => `Friday will stop reading and handling new ${name} content. Existing Memory from ${name} stays available and can be managed separately in Memory.`, cancel: 'Cancel', confirm: (name) => `Disconnect ${name}` },
@@ -294,9 +288,6 @@ export const translations: Record<Locale, Translation> = {
       email: {
         eyebrow: '欢迎使用 Friday',
         title: '登录 Friday',
-        demoLabel: '演示模式',
-        demo: '本地演示不会发送真实验证码。请输入任意邮箱后使用',
-        demoEnding: '。',
         label: '工作邮箱',
         sending: '正在发送…',
         submit: '获取验证码',
@@ -308,9 +299,6 @@ export const translations: Record<Locale, Translation> = {
       code: {
         eyebrow: '验证身份',
         title: '输入验证码。',
-        demoLabel: '演示模式',
-        demo: '本地演示可使用',
-        demoEnding: '。',
         label: '六位验证码',
         verifying: '正在验证…',
         submit: '验证并进入 Friday',
@@ -410,7 +398,7 @@ export const translations: Record<Locale, Translation> = {
           title: '已连接的应用',
           subtitle: '选择 Friday 可以在哪里与你一起工作。',
           demo: '仅为演示：更改只保留在此浏览器中。Friday 不会开始真实授权或处理消息。',
-          description: { dingtalk: '工作消息与相关动态', feishu: '团队消息与共享文档' },
+          description: { dingtalk: '工作消息与相关动态', feishu: '团队消息与共享文档', teams: '团队聊天、频道与共享文件' },
           status: { disconnected: '未连接', connected: '已连接', 'needs-reconnect': '需要重新连接', connecting: '正在连接…' },
           action: { connect: (name) => `连接${name}`, reconnect: (name) => `重新连接${name}`, disconnect: (name) => `断开${name}` },
           disconnect: { title: (name) => `断开${name}？`, body: (name) => `Friday 将停止读取和处理新的${name}内容。此前从${name}沉淀的 Memory 会保留；你可以稍后在 Memory 中单独管理它。`, cancel: '取消', confirm: (name) => `断开${name}` },
