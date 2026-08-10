@@ -15,7 +15,7 @@
 - 同事评价与我的审核必须始终标明来源；正负向不能只靠颜色表达。
 - 页面没有“已处理”、训练确认、编辑、重发、撤回或关联回复跳转。
 - 后台工作画像学习不属于前端接口、状态、文案或错误展示。
-- 不新增依赖；复用现有 Button、React、HeroUI 和 CSS 模式。
+- 不新增生产依赖；仅允许版本匹配的 `react-test-renderer` 开发依赖，用于驱动 Task 3 的真实点击路径回归测试。
 - API 无数据时明确空态；读取失败可重试，绝不以 fixtures 替代真实数据。
 
 ---
@@ -162,6 +162,8 @@ git commit -m "feat: add feedback API boundary"
 - Create: src/components/FeedbackDetailPanel.tsx
 - Create: src/components/FeedbackWorkspace.tsx
 - Modify: src/content/translations.ts
+- Modify: package.json
+- Modify: package-lock.json
 - Test: src/feedbackComponents.test.ts
 
 **Interfaces:**
@@ -182,6 +184,8 @@ test('feedback components render range controls, measurable quality signals, sou
 ~~~
 
 Add a second test that renders one negative owner card and its detail. Assert 需调整 and 我的审核 appear, while 标记已处理 and 查看关联回复 do not.
+
+Add a third test with the version-matched `react-test-renderer` development dependency. Render `FeedbackWorkspace` with a delayed injected `FeedbackService`, trigger its actual `加载更多` handler twice in one `act` block, and assert the service observes exactly one request for the shared cursor. Resolve the delayed request and assert the added card is rendered once.
 
 - [ ] **Step 2: Run tests to verify they fail**
 
