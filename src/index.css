@@ -428,7 +428,7 @@ button, input { font: inherit; }
 .empty-action { margin-top: 30px; padding: 0 22px; }
 
 /* Feedback */
-.workspace-canvas:has(.feedback-page) { background: #f7f5ef; }
+.workspace-canvas:has(.feedback-page) { background: #f4efe5; }
 .workspace-header:has(+ .feedback-page), .workspace-header:has(+ .feedback-state) { display: none; }
 
 .feedback-page {
