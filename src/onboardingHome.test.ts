@@ -28,7 +28,20 @@ test('Connect apps renders its decorative illustration alongside the connection 
 
   assert.match(html, /onboarding-connect-layout/)
   assert.match(html, /onboarding-connect-artwork/)
-  assert.match(html, /onboarding-connect-illustration/)
+  assert.match(html, /onboarding-connect-editorial/)
+})
+
+test('later onboarding steps render their matching decorative artwork', async () => {
+  const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
+  const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')
+  const stepTwo = onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk'))
+  const stepThree = onboarding.skipMemory(stepTwo)
+  const stepFour = onboarding.confirmWorkStyle(stepThree)
+  const props = { locale: 'zh' as const, onComplete: () => {}, onOpenMemory: () => {} }
+
+  assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepTwo })), /onboarding-memory-editorial/)
+  assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepThree })), /onboarding-work-style-editorial/)
+  assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepFour })), /onboarding-trial-editorial/)
 })
 
 test('Step 4 keeps its composer in the fixed panel and places a Trial event in the Home event area', async () => {

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
-import connectIllustration from '../assets/onboarding-connect-illustration-v2.png'
+import connectIllustration from '../assets/onboarding-connect-editorial.png'
+import memoryIllustration from '../assets/onboarding-memory-editorial.png'
+import trialIllustration from '../assets/onboarding-trial-editorial.png'
+import workStyleIllustration from '../assets/onboarding-work-style-editorial.png'
 import type { Locale } from '../appState.ts'
 import { onboardingConnectorLogos } from '../content/connectorLogos.ts'
 import { translations } from '../content/translations.ts'
@@ -129,34 +132,42 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
         </div>
         <aside aria-hidden="true" className="onboarding-connect-artwork">
           <img alt="" src={connectIllustration} />
-          {homeSources.map((source) => <img className={`onboarding-connect-artwork-mark onboarding-connect-artwork-mark-${source}`} key={source} alt="" src={onboardingConnectorLogos[source]} />)}
         </aside>
       </section>}
 
-      {state.step === 2 && <section className="onboarding-section">
-        <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(2)}</p><h2>{copy.memory.title}</h2><p>{copy.memory.subtitle}</p></header>
-        <div className="onboarding-scope-list">
-          {state.connectedSources.map((source) => <div key={source}><strong>{homeCopy.sources[source]}</strong><span>{copy.memory.scope[source]}</span></div>)}
+      {state.step === 2 && <section className="onboarding-section onboarding-editorial-layout onboarding-memory-layout">
+        <div className="onboarding-editorial-content">
+          <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(2)}</p><h2>{copy.memory.title}</h2><p>{copy.memory.subtitle}</p></header>
+          <div className="onboarding-scope-list">
+            {state.connectedSources.map((source) => <div key={source}><strong>{homeCopy.sources[source]}</strong><span>{copy.memory.scope[source]}</span></div>)}
+          </div>
+          <p className="onboarding-demo-note">{copy.memory.demo}</p>
+          <footer className="onboarding-section-footer onboarding-section-footer-actions">
+            {state.memoryConfirmed ? <><Button onPress={onOpenMemory} type="button" variant="secondary">{copy.memory.view}</Button><Button onPress={() => update(advanceFromMemory(state))} type="button">{copy.memory.proceed}</Button></> : <><Button onPress={beginMemoryRead} type="button">{copy.memory.confirm}</Button><Button onPress={() => update(state.memorySkipped ? advanceFromMemory(state) : skipMemory(state))} type="button" variant="secondary">{state.memorySkipped ? copy.memory.proceed : copy.memory.skip}</Button></>}
+          </footer>
         </div>
-        <p className="onboarding-demo-note">{copy.memory.demo}</p>
-        <footer className="onboarding-section-footer onboarding-section-footer-actions">
-          {state.memoryConfirmed ? <><Button onPress={onOpenMemory} type="button" variant="secondary">{copy.memory.view}</Button><Button onPress={() => update(advanceFromMemory(state))} type="button">{copy.memory.proceed}</Button></> : <><Button onPress={beginMemoryRead} type="button">{copy.memory.confirm}</Button><Button onPress={() => update(state.memorySkipped ? advanceFromMemory(state) : skipMemory(state))} type="button" variant="secondary">{state.memorySkipped ? copy.memory.proceed : copy.memory.skip}</Button></>}
-        </footer>
+        <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={memoryIllustration} /></aside>
       </section>}
 
-      {state.step === 3 && <section className="onboarding-section">
-        <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(3)}</p><h2>{copy.style.title}</h2><p>{copy.style.subtitle}</p></header>
-        <div className="onboarding-style-summary"><p>{copy.style.summary}</p><ul>{copy.style.points.map((point) => <li key={point}>{point}</li>)}</ul></div>
-        <button className="onboarding-prompt-toggle" onClick={() => setPromptOpen(true)} type="button">{copy.style.showPrompt}</button>
-        <footer className="onboarding-section-footer"><Button onPress={() => update(confirmWorkStyle(state))} type="button">{copy.style.confirm}</Button></footer>
+      {state.step === 3 && <section className="onboarding-section onboarding-editorial-layout onboarding-work-style-layout">
+        <div className="onboarding-editorial-content">
+          <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(3)}</p><h2>{copy.style.title}</h2><p>{copy.style.subtitle}</p></header>
+          <div className="onboarding-style-summary"><p>{copy.style.summary}</p><ul>{copy.style.points.map((point) => <li key={point}>{point}</li>)}</ul></div>
+          <button className="onboarding-prompt-toggle" onClick={() => setPromptOpen(true)} type="button">{copy.style.showPrompt}</button>
+          <footer className="onboarding-section-footer"><Button onPress={() => update(confirmWorkStyle(state))} type="button">{copy.style.confirm}</Button></footer>
+        </div>
+        <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={workStyleIllustration} /></aside>
       </section>}
 
-      {state.step === 4 && <section className="onboarding-section onboarding-trial-section">
-        <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(4)}</p><h2>{copy.trial.title}</h2><p>{copy.trial.subtitle}</p></header>
-        <div className="onboarding-trial-suggestions"><span>{copy.trial.suggestions}</span>{copy.trial.questions.map((suggestion) => <button key={suggestion} onClick={() => setQuestion(suggestion)} type="button">{suggestion}</button>)}</div>
-        <label className="onboarding-composer"><span className="sr-only">{copy.trial.inputLabel}</span><textarea onChange={(event) => setQuestion(event.target.value)} placeholder={copy.trial.placeholder} value={question} /></label>
-        <Button className="onboarding-trial-submit" isDisabled={!question.trim()} onPress={submitTrial} type="button">{copy.trial.submit}</Button>
-        <footer className="onboarding-section-footer onboarding-formal-action"><Button onPress={() => setActivation('confirm')} type="button" variant="secondary">{copy.activation.start}</Button><p>{copy.activation.hint}</p></footer>
+      {state.step === 4 && <section className="onboarding-section onboarding-editorial-layout onboarding-trial-section onboarding-trial-layout">
+        <div className="onboarding-editorial-content">
+          <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(4)}</p><h2>{copy.trial.title}</h2><p>{copy.trial.subtitle}</p></header>
+          <div className="onboarding-trial-suggestions"><span>{copy.trial.suggestions}</span>{copy.trial.questions.map((suggestion) => <button key={suggestion} onClick={() => setQuestion(suggestion)} type="button">{suggestion}</button>)}</div>
+          <label className="onboarding-composer"><span className="sr-only">{copy.trial.inputLabel}</span><textarea onChange={(event) => setQuestion(event.target.value)} placeholder={copy.trial.placeholder} value={question} /></label>
+          <Button className="onboarding-trial-submit" isDisabled={!question.trim()} onPress={submitTrial} type="button">{copy.trial.submit}</Button>
+          <footer className="onboarding-section-footer onboarding-formal-action"><Button onPress={() => setActivation('confirm')} type="button" variant="secondary">{copy.activation.start}</Button><p>{copy.activation.hint}</p></footer>
+        </div>
+        <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={trialIllustration} /></aside>
       </section>}
     </section>
 
