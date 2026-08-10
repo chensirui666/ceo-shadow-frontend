@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
-import connectIllustration from '../assets/onboarding-connect-illustration.png'
+import connectIllustration from '../assets/onboarding-connect-illustration-v2.png'
 import type { Locale } from '../appState.ts'
 import { onboardingConnectorLogos } from '../content/connectorLogos.ts'
 import { translations } from '../content/translations.ts'
