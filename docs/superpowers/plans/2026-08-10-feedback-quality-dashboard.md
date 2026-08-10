@@ -2,21 +2,22 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (- [ ]) syntax for tracking.
 
-**Goal:** 在 Friday 前端交付一个由真实 Feedback 服务驱动的质量驾驶舱，展示收集覆盖、质量趋势、来源占比和可展开的反馈卡片墙。
+**Goal:** 在 Friday 前端交付一个以本地演示数据渲染的质量驾驶舱，展示收集覆盖、质量趋势、来源占比和可展开的反馈卡片墙。
 
-**Architecture:** feedbackService.ts 是唯一的可替换服务边界，负责三个 HTTP 读取能力；组件不感知接口 URL、学习队列或任何本地示例数据。FeedbackWorkspace 只协调范围、读取、分页和详情，三个展示组件分别负责汇总、卡片墙和详情面板。
+**Architecture:** feedbackService.ts 是唯一的可替换数据边界，当前提供本地演示数据；后续接入后端时只替换此模块。组件不感知接口 URL、学习队列或后端实现。FeedbackWorkspace 只协调范围、读取和详情，三个展示组件分别负责汇总、卡片墙和详情面板。
 
 **Tech Stack:** React 19、TypeScript、Vite、HeroUI、原生 CSS、Node test runner、React DOM server rendering。
 
 ## Global Constraints
 
-- 只展示服务端返回的真实反馈；运行时不内置或伪装本地反馈样例。
+- 当前纯前端版本使用本地演示数据，并在页面标题下明确标注；不发起 `/api/feedback` 请求。
 - 仅支持 7d、30d、all，默认 7d；all 的趋势按月，其余按日。
 - 同事评价与我的审核必须始终标明来源；正负向不能只靠颜色表达。
 - 页面没有“已处理”、训练确认、编辑、重发、撤回或关联回复跳转。
 - 后台工作画像学习不属于前端接口、状态、文案或错误展示。
-- 不新增生产依赖；仅允许版本匹配的 `react-test-renderer` 开发依赖，用于驱动 Task 3 的真实点击路径回归测试。
-- API 无数据时明确空态；读取失败可重试，绝不以 fixtures 替代真实数据。
+- 不新增依赖，不提供分页、Retry 或读取失败页；未来有后端后再按真实失败模式设计。
+
+> **2026-08-10 scope correction:** 本计划中关于真实 HTTP API、分页、`react-test-renderer` 和读取失败重试的旧步骤，均由上述纯前端演示边界取代。
 
 ---
 

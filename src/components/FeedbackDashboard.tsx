@@ -23,7 +23,7 @@ export default function FeedbackDashboard({ copy, data, onRangeChange, range }: 
 
   return <>
     <header className="feedback-header">
-      <div><h1>{copy.title}</h1><p>{copy.subtitle}</p></div>
+      <div><h1>{copy.title}</h1><p>{copy.subtitle}<span className="feedback-demo">{copy.demo}</span></p></div>
       <div aria-label={copy.title} className="feedback-range" role="group">
         {feedbackRanges.map((item) => <button aria-pressed={range === item} key={item} onClick={() => onRangeChange(item)} type="button">{copy.ranges[item]}</button>)}
       </div>

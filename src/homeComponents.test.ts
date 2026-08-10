@@ -92,6 +92,6 @@ test('workspace renders FeedbackWorkspace instead of the feedback placeholder', 
     locale: 'zh', onLocaleChange: () => {}, onSignOut: () => {}, session: { email: 'sirui@example.com', route: 'feedback' },
   }))
 
-  assert.match(html, /正在加载反馈质量数据…/)
+  assert.match(html, /正在载入演示反馈…/)
   assert.doesNotMatch(html, /你和同事对回复的反馈，会在这里帮助 Friday 持续校准/)
 })

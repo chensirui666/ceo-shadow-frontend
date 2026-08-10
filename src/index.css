@@ -445,6 +445,7 @@ button, input { font: inherit; }
 .feedback-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
 .feedback-header h1 { margin: 0; font-size: 27px; font-weight: 650; letter-spacing: -0.04em; }
 .feedback-header p { margin: 5px 0 0; color: #716c65; font-size: 13px; line-height: 1.5; }
+.feedback-demo { display: inline-block; margin-left: 7px; border: 1px solid #e3ddd3; border-radius: 999px; color: #817b72; padding: 1px 6px; font-size: 10px; }
 .feedback-range { display: flex; gap: 3px; border: 1px solid #ded9cf; border-radius: 8px; background: #fffefd; padding: 3px; }
 .feedback-range button { min-height: 30px; border: 0; border-radius: 5px; background: transparent; color: #716c65; cursor: pointer; padding: 0 11px; font-size: 12px; }
 .feedback-range button[aria-pressed='true'] { background: #ebe8e0; color: #302d29; font-weight: 650; }
@@ -488,8 +489,6 @@ button, input { font: inherit; }
 .feedback-card strong + span { min-width: 0; overflow: hidden; font-size: 12px; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
 .feedback-card time { color: #918b82; font-size: 10px; }
 .feedback-card-link { color: #4f674a; font-size: 11px; font-weight: 650; text-align: right; }
-.feedback-load-more, .feedback-state button { display: block; min-height: 36px; border: 1px solid #d8d2c8; border-radius: 7px; background: #fffefd; color: #49443d; cursor: pointer; margin: 14px auto 0; padding: 0 14px; font-size: 12px; font-weight: 650; }
-.feedback-load-more:disabled { cursor: wait; opacity: .55; }
 .feedback-state { display: grid; min-height: 240px; place-content: center; justify-items: center; color: #716c65; font-size: 13px; }
 
 .feedback-detail {
@@ -519,7 +518,7 @@ button, input { font: inherit; }
 .feedback-detail-record span, .feedback-detail-record time { color: #817b72; text-align: right; }
 .feedback-detail-record p { grid-column: 1 / -1; margin: 3px 0; font-size: 12px; line-height: 1.55; }
 
-.feedback-page button:focus-visible, .feedback-state button:focus-visible, .feedback-trend-point:focus-visible, .feedback-detail button:focus-visible { outline: 2px solid #302d29; outline-offset: 2px; }
+.feedback-page button:focus-visible, .feedback-trend-point:focus-visible, .feedback-detail button:focus-visible { outline: 2px solid #302d29; outline-offset: 2px; }
 
 @media (max-width: 1000px) {
   .feedback-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }

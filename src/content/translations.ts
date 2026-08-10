@@ -96,14 +96,15 @@ export type HomeCopy = {
 export type FeedbackCopy = {
   title: string
   subtitle: string
+  demo: string
   ranges: Record<FeedbackRange, string>
   metrics: Record<'feedbackCount' | 'coverageRate' | 'positiveRate' | 'attentionCount', string>
   trend: { title: string; positive: string; negative: string; point: (point: FeedbackTrendPoint) => string; empty: string }
   sources: { title: string; names: Record<FeedbackSource, string>; total: (name: string, count: number, rate: number) => string; empty: string }
   sentiment: Record<FeedbackSentiment, string>
-  cards: { title: string; question: string; reply: string; note: string; view: string; loadMore: string; empty: string }
-  detail: { title: string; close: string; question: string; reply: string; feedback: string; loading: string; error: string }
-  state: { loading: string; error: string; retry: string }
+  cards: { title: string; question: string; reply: string; note: string; view: string; empty: string }
+  detail: { title: string; close: string; question: string; reply: string; feedback: string; loading: string }
+  state: { loading: string }
 }
 
 export type Translation = {
@@ -209,14 +210,15 @@ export const translations: Record<Locale, Translation> = {
       feedback: {
         title: 'Feedback',
         subtitle: 'From teammate ratings and my reviews',
+        demo: 'Local demo data',
         ranges: { '7d': 'Last 7 days', '30d': 'Last 30 days', all: 'ALL' },
         metrics: { feedbackCount: 'Feedback received', coverageRate: 'Feedback coverage', positiveRate: 'Positive rate', attentionCount: 'Feedback needing attention' },
         trend: { title: 'Quality trend', positive: 'Positive', negative: 'Negative', point: (point) => `${point.label}: Positive ${point.positive}, Negative ${point.negative}`, empty: 'No feedback trend for this range.' },
         sources: { title: 'Feedback sources', names: { recipient: 'Teammate rating', owner: 'My review' }, total: (name, count, rate) => `${name} ${count} · ${rate}%`, empty: 'No feedback sources for this range.' },
         sentiment: { positive: 'Positive', negative: 'Needs adjustment' },
-        cards: { title: 'Feedback wall', question: 'Question', reply: 'Final reply', note: 'Feedback', view: 'View details', loadMore: 'Load more', empty: 'No feedback collected in this range.' },
-        detail: { title: 'Feedback details', close: 'Close feedback details', question: 'Complete question', reply: 'Final reply', feedback: 'All feedback', loading: 'Loading feedback details…', error: 'Feedback details could not be loaded.' },
-        state: { loading: 'Loading feedback quality…', error: 'Feedback could not be loaded. Try again.', retry: 'Retry' },
+        cards: { title: 'Feedback wall', question: 'Question', reply: 'Final reply', note: 'Feedback', view: 'View details', empty: 'No feedback collected in this range.' },
+        detail: { title: 'Feedback details', close: 'Close feedback details', question: 'Complete question', reply: 'Final reply', feedback: 'All feedback', loading: 'Loading feedback details…' },
+        state: { loading: 'Loading demo feedback…' },
       },
       pages: {
         tasks: ['Tasks', 'Friday will organize projects, to-dos, and next steps from your work messages and meetings.', 'Back to Home'],
@@ -391,14 +393,15 @@ export const translations: Record<Locale, Translation> = {
       feedback: {
         title: 'Feedback',
         subtitle: '来自同事评价和我的审核',
+        demo: '本地演示数据',
         ranges: { '7d': '近 7 天', '30d': '近 30 天', all: 'ALL' },
         metrics: { feedbackCount: '收到反馈', coverageRate: '反馈覆盖率', positiveRate: '好评率', attentionCount: '需关注反馈' },
         trend: { title: '质量趋势', positive: '正向', negative: '负向', point: (point) => `${point.label}：正向 ${point.positive}，负向 ${point.negative}`, empty: '当前范围内暂无反馈趋势。' },
         sources: { title: '反馈来源', names: { recipient: '同事评价', owner: '我的审核' }, total: (name, count, rate) => `${name} ${count} · ${rate}%`, empty: '当前范围内暂无反馈来源。' },
         sentiment: { positive: '正向', negative: '需调整' },
-        cards: { title: '反馈卡片', question: '问题', reply: '最终回答', note: '反馈原话', view: '查看详情', loadMore: '加载更多', empty: '当前范围内还没有收集到反馈。' },
-        detail: { title: '反馈详情', close: '关闭反馈详情', question: '完整问题', reply: '当时最终回复', feedback: '全部反馈', loading: '正在加载反馈详情…', error: '暂时无法加载反馈详情。' },
-        state: { loading: '正在加载反馈质量数据…', error: '暂时无法加载反馈，请重试。', retry: '重试' },
+        cards: { title: '反馈卡片', question: '问题', reply: '最终回答', note: '反馈原话', view: '查看详情', empty: '当前范围内还没有收集到反馈。' },
+        detail: { title: '反馈详情', close: '关闭反馈详情', question: '完整问题', reply: '当时最终回复', feedback: '全部反馈', loading: '正在加载反馈详情…' },
+        state: { loading: '正在载入演示反馈…' },
       },
       pages: {
         tasks: ['任务', 'Friday 会从工作消息和会议中整理项目、待办与下一步。', '返回首页'],
