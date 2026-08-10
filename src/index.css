@@ -373,17 +373,17 @@ button, input { font: inherit; }
 
 /* Onboarding */
 .onboarding-page { width: min(1008px, calc(100% - 104px)); margin: 0 auto; padding-bottom: 48px; }
-.onboarding-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 0 0 26px; padding: 0; list-style: none; }
+.onboarding-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 13px 0; padding: 0; list-style: none; }
 .onboarding-step { position: relative; color: #938d84; font-size: 13px; white-space: nowrap; }
 .onboarding-step:not(:last-child)::after { position: absolute; top: 50%; right: -9px; width: 18px; height: 1px; background: #ded8cf; content: ''; }
 .onboarding-step button { display: flex; align-items: center; gap: 9px; border: 0; background: transparent; color: inherit; cursor: pointer; padding: 0; font: inherit; }
 .onboarding-step button:disabled { cursor: default; }
-.onboarding-step button:focus-visible { outline: 2px solid #176869; outline-offset: 4px; }
+.onboarding-step button:focus-visible { outline: 2px solid #ae622d; outline-offset: 4px; }
 .onboarding-step span { display: grid; width: 25px; height: 25px; place-items: center; border: 1px solid #d5d0c8; border-radius: 50%; background: #fffefd; font-size: 12px; }
 .onboarding-step strong { font-weight: 600; }
-.onboarding-step-active, .onboarding-step-done { color: #1b6d6d; }
-.onboarding-step-active span, .onboarding-step-done span { border-color: #176869; background: #176869; color: #fff; }
-.onboarding-step-active:not(:last-child)::after, .onboarding-step-done:not(:last-child)::after { background: #7da7a6; }
+.onboarding-step-active, .onboarding-step-done { color: #ae622d; }
+.onboarding-step-active span, .onboarding-step-done span { border-color: #ae622d; background: #ae622d; color: #fff; }
+.onboarding-step-active:not(:last-child)::after, .onboarding-step-done:not(:last-child)::after { background: #d6a16d; }
 .onboarding-panel { height: 468px; overflow: hidden; border: 1px solid #e5e0d7; border-radius: 13px; background: #fffefd; }
 .onboarding-section { display: flex; box-sizing: border-box; height: 100%; flex-direction: column; padding: 31px 36px; }
 .onboarding-section-header { max-width: 640px; }
@@ -414,11 +414,7 @@ button, input { font: inherit; }
 .onboarding-connect-button, .onboarding-section-footer .button, .onboarding-modal-dialog .button, .onboarding-contact-dialog .button { min-height: 34px; border-radius: 7px; font-size: 13px; }
 .onboarding-connect-button { min-width: 86px; border: 1px solid #176869; background: transparent; color: #176869; }
 .onboarding-connected { color: #277468; font-size: 13px; font-weight: 650; }
-.onboarding-page-step-1 .onboarding-step-active { color: #ae622d; }
-.onboarding-page-step-1 .onboarding-step-active span { border-color: #ae622d; background: #ae622d; }
-.onboarding-page-step-1 .onboarding-step-active:not(:last-child)::after { background: #d6a16d; }
 .onboarding-connect-content .onboarding-connect-button, .onboarding-connect-content .onboarding-section-footer .button { border-color: #f3eadc; background: #f3eadc; color: #30231d; }
-.onboarding-page-step-1 .onboarding-step button:focus-visible { outline-color: #ae622d; }
 .onboarding-editorial-layout { position: relative; display: block; isolation: isolate; overflow: hidden; background: #191512; padding: 0; }
 .onboarding-editorial-content { position: relative; z-index: 1; display: flex; width: min(54%, 580px); min-width: 0; height: 100%; flex-direction: column; padding: 24px 36px; }
 .onboarding-editorial-artwork { position: absolute; z-index: -1; inset: 0; overflow: hidden; }
