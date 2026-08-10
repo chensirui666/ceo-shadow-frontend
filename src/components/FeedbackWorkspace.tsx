@@ -8,7 +8,6 @@ import FeedbackCardWall from './FeedbackCardWall.tsx'
 import FeedbackDashboard from './FeedbackDashboard.tsx'
 import FeedbackDetailPanel from './FeedbackDetailPanel.tsx'
 
-type FailedOperation = 'range' | 'more' | 'detail' | null
 type PageRequest = { range: FeedbackRange; cursor: string }
 
 export const mergeFeedbackPage = (currentRange: FeedbackRange, current: FeedbackCardPage, requestRange: FeedbackRange, requestCursor: string, next: FeedbackCardPage) =>
@@ -23,7 +22,9 @@ export default function FeedbackWorkspace({ locale, service = feedbackService }:
   const [page, setPage] = useState<FeedbackCardPage | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detail, setDetail] = useState<FeedbackDetail | null>(null)
-  const [failedOperation, setFailedOperation] = useState<FailedOperation>(null)
+  const [rangeError, setRangeError] = useState(false)
+  const [paginationError, setPaginationError] = useState(false)
+  const [detailError, setDetailError] = useState(false)
   const [rangeRequest, setRangeRequest] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const rangeRef = useRef(range)
@@ -32,18 +33,19 @@ export default function FeedbackWorkspace({ locale, service = feedbackService }:
   useEffect(() => {
     let active = true
     loadMoreRequest.current = null; setLoadingMore(false)
-    setDashboard(null); setPage(null); setSelectedId(null); setDetail(null); setFailedOperation(null)
+    setDashboard(null); setPage(null); setSelectedId(null); setDetail(null)
+    setRangeError(false); setPaginationError(false); setDetailError(false)
     void Promise.all([service.loadDashboard(range), service.loadCards(range, null)])
       .then(([nextDashboard, nextPage]) => { if (active) { setDashboard(nextDashboard); setPage(nextPage) } })
-      .catch(() => { if (active) setFailedOperation('range') })
+      .catch(() => { if (active) setRangeError(true) })
     return () => { active = false; loadMoreRequest.current = null }
   }, [range, rangeRequest, service])
 
   useEffect(() => {
     if (!selectedId) return
     let active = true
-    setDetail(null); setFailedOperation(null)
-    void service.loadDetail(selectedId).then((next) => { if (active) setDetail(next) }).catch(() => { if (active) setFailedOperation('detail') })
+    setDetail(null); setDetailError(false)
+    void service.loadDetail(selectedId).then((next) => { if (active) setDetail(next) }).catch(() => { if (active) setDetailError(true) })
     return () => { active = false }
   }, [selectedId, service])
 
@@ -52,23 +54,18 @@ export default function FeedbackWorkspace({ locale, service = feedbackService }:
     const request = { range, cursor: page.nextCursor }
     loadMoreRequest.current = request
     setLoadingMore(true)
-    setFailedOperation(null)
+    setPaginationError(false)
     void service.loadCards(request.range, request.cursor)
       .then((next) => {
         if (loadMoreRequest.current !== request) return
         setPage((current) => current && mergeFeedbackPage(rangeRef.current, current, request.range, request.cursor, next))
       })
-      .catch(() => { if (loadMoreRequest.current === request) setFailedOperation('more') })
+      .catch(() => { if (loadMoreRequest.current === request) setPaginationError(true) })
       .finally(() => {
         if (loadMoreRequest.current !== request) return
         loadMoreRequest.current = null
         setLoadingMore(false)
       })
-  }
-
-  const retry = () => {
-    if (failedOperation === 'more') loadMore()
-    else setRangeRequest((value) => value + 1)
   }
 
   const changeRange = (nextRange: FeedbackRange) => {
@@ -78,12 +75,12 @@ export default function FeedbackWorkspace({ locale, service = feedbackService }:
     setRange(nextRange)
   }
 
-  if (!dashboard || !page) return <section aria-live="polite" className="feedback-state"><p>{failedOperation === 'range' ? copy.state.error : copy.state.loading}</p>{failedOperation === 'range' && <button onClick={retry} type="button">{copy.state.retry}</button>}</section>
+  if (!dashboard || !page) return <section aria-live="polite" className="feedback-state"><p>{rangeError ? copy.state.error : copy.state.loading}</p>{rangeError && <button onClick={() => setRangeRequest((value) => value + 1)} type="button">{copy.state.retry}</button>}</section>
 
   return <section className="feedback-page">
     <FeedbackDashboard copy={copy} data={dashboard} onRangeChange={changeRange} range={range} />
-    {failedOperation === 'more' && <div aria-live="polite" className="feedback-state"><p>{copy.state.error}</p><button onClick={retry} type="button">{copy.state.retry}</button></div>}
-    <FeedbackCardWall copy={copy} items={page.items} loadingMore={loadingMore} locale={locale} nextCursor={page.nextCursor} onLoadMore={loadMore} onOpen={setSelectedId} />
-    {selectedId && <FeedbackDetailPanel copy={copy} detail={detail} error={failedOperation === 'detail'} loading={!detail && failedOperation !== 'detail'} locale={locale} onClose={() => { setSelectedId(null); setDetail(null); setFailedOperation(null) }} />}
+    {paginationError && <div aria-live="polite" className="feedback-state"><p>{copy.state.error}</p><button onClick={loadMore} type="button">{copy.state.retry}</button></div>}
+    <FeedbackCardWall copy={copy} items={page.items} loadingMore={loadingMore} locale={locale} nextCursor={paginationError ? null : page.nextCursor} onLoadMore={loadMore} onOpen={setSelectedId} />
+    {selectedId && <FeedbackDetailPanel copy={copy} detail={detail} error={detailError} loading={!detail && !detailError} locale={locale} onClose={() => { setSelectedId(null); setDetail(null); setDetailError(false) }} />}
   </section>
 }

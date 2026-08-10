@@ -101,3 +101,30 @@ test('two immediate workspace load-more clicks send one request and append one c
   assert.equal(renderer!.root.findAll((node: { props: { className?: string } }) => node.props.className === 'feedback-card feedback-card-positive').length, 1)
   act(() => renderer!.unmount())
 })
+
+test('detail and pagination failures remain isolated with one pagination retry path', async () => {
+  const { default: FeedbackWorkspace } = await vite.ssrLoadModule('/src/components/FeedbackWorkspace.tsx')
+  const card: FeedbackCard = { id: 'feedback-1', replyId: 'reply-1', source: 'recipient', sentiment: 'positive', question: '问题', reply: '回复', note: '有帮助', createdAt: '2026-08-10T11:00:00.000Z' }
+  const service: FeedbackService = {
+    loadDashboard: async () => dashboard,
+    loadCards: async (_range, cursor) => cursor ? Promise.reject(new Error('pagination failed')) : { items: [card], nextCursor: 'cursor-1' },
+    loadDetail: async () => { throw new Error('detail failed') },
+  }
+  let renderer: ReturnType<typeof create>
+
+  await act(async () => { renderer = create(createElement(FeedbackWorkspace, { locale: 'zh', service })) })
+  const feedbackCard = renderer!.root.find((node: { props: { className?: string } }) => node.props.className === 'feedback-card feedback-card-positive')
+  await act(async () => { feedbackCard.props.onClick() })
+  assert.equal(renderer!.root.findAll((node: { children: unknown[] }) => node.children.join('') === '暂时无法加载反馈详情。').length, 1)
+
+  const loadMore = renderer!.root.findAllByType('button').find((button: { children: unknown[] }) => button.children.join('') === '加载更多')
+  assert.ok(loadMore)
+  await act(async () => { loadMore.props.onClick() })
+
+  const buttonLabels = renderer!.root.findAllByType('button').map((button: { children: unknown[] }) => button.children.join(''))
+  assert.equal(buttonLabels.filter((label: string) => label === '重试').length, 1)
+  assert.equal(buttonLabels.filter((label: string) => label === '加载更多').length, 0)
+  assert.equal(renderer!.root.findAll((node: { children: unknown[] }) => node.children.join('') === '暂时无法加载反馈详情。').length, 1)
+  assert.equal(renderer!.root.findAll((node: { children: unknown[] }) => node.children.join('') === '正在加载反馈详情…').length, 0)
+  act(() => renderer!.unmount())
+})
