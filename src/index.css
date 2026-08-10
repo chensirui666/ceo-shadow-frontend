@@ -401,10 +401,10 @@ button, input { font: inherit; }
 .onboarding-connect-artwork { position: relative; min-width: 0; overflow: hidden; background: transparent; }
 .onboarding-connect-artwork > img:first-child { width: 100%; height: 100%; object-fit: cover; }
 .onboarding-connect-artwork::before { position: absolute; z-index: 1; inset: 0; background: linear-gradient(90deg, #fffdfb 0%, rgb(255 253 251 / 88%) 11%, rgb(255 251 251 / 45%) 26%, transparent 49%); content: ''; pointer-events: none; }
-.onboarding-connect-artwork-mark { position: absolute; z-index: 2; box-sizing: border-box; width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / 76%); border-radius: 12px; background: #fffefd; box-shadow: 0 10px 22px rgb(88 56 161 / 16%); padding: 7px; }
-.onboarding-connect-artwork-mark-dingtalk { top: 16%; left: 17%; }
-.onboarding-connect-artwork-mark-feishu { top: 30%; right: 13%; }
-.onboarding-connect-artwork-mark-teams { top: 55%; left: 9%; }
+.onboarding-connect-artwork-mark { position: absolute; z-index: 2; width: 48px; height: 48px; object-fit: contain; transform: translate(-50%, -50%); }
+.onboarding-connect-artwork-mark-dingtalk { top: 21%; left: 52%; }
+.onboarding-connect-artwork-mark-feishu { top: 39%; left: 88%; }
+.onboarding-connect-artwork-mark-teams { top: 38%; left: 18%; }
 .onboarding-connect-content .onboarding-source-row { min-height: 56px; }
 .onboarding-connect-content .onboarding-source-row small { margin-top: 1px; }
 .onboarding-source-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) max-content; align-items: center; gap: 13px; min-height: 68px; border-bottom: 1px solid #e8e3da; }
@@ -953,6 +953,9 @@ button, input { font: inherit; }
   .onboarding-connect-layout { grid-template-columns: 1fr; height: auto; padding: 0; }
   .onboarding-connect-content { padding: 25px 22px; }
   .onboarding-connect-artwork { min-height: 250px; }
+  .onboarding-connect-artwork-mark-dingtalk { left: 51%; }
+  .onboarding-connect-artwork-mark-feishu { left: 75%; }
+  .onboarding-connect-artwork-mark-teams { left: 29%; }
   .onboarding-scope-list > div { grid-template-columns: 1fr; gap: 4px; }
   .onboarding-modal-dialog, .onboarding-contact-dialog { padding: 21px; }
   .onboarding-home-events .home-detail { width: 100%; }
