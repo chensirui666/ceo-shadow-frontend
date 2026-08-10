@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
+import connectIllustration from '../assets/onboarding-connect-illustration.png'
 import type { Locale } from '../appState.ts'
 import { onboardingConnectorLogos } from '../content/connectorLogos.ts'
 import { translations } from '../content/translations.ts'
@@ -100,7 +101,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
     setViewingTrial(false)
   }
 
-  return <section className="onboarding-page">
+  return <section className={`onboarding-page onboarding-page-step-${state.step}`}>
     <ol aria-label={copy.progressLabel} className="onboarding-steps">
       {copy.steps.map((label, index) => {
         const step = (index + 1) as 1 | 2 | 3 | 4
@@ -110,20 +111,26 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
     </ol>
 
     <section className="onboarding-panel">
-      {state.step === 1 && <section className="onboarding-section">
-        <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(1)}</p><h2>{copy.connection.title}</h2><p>{copy.connection.subtitle}</p></header>
-        <p className="onboarding-demo-note">{copy.connection.demo}</p>
-        <div className="onboarding-source-list">
-          {homeSources.map((source) => {
-            const connected = state.connectedSources.includes(source)
-            return <div className="onboarding-source-row" key={source}>
-              <span aria-hidden="true" className="onboarding-source-glyph"><img alt="" src={onboardingConnectorLogos[source]} /></span>
-              <span><strong>{homeCopy.sources[source]}</strong><small>{copy.connection.scope[source]}</small></span>
-              {connected ? <span className="onboarding-connected">{copy.connection.connected}</span> : <Button className="onboarding-connect-button" onPress={() => setConnecting(source)} type="button">{copy.connection.connect}</Button>}
-            </div>
-          })}
+      {state.step === 1 && <section className="onboarding-section onboarding-connect-layout">
+        <div className="onboarding-connect-content">
+          <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(1)}</p><h2>{copy.connection.title}</h2><p>{copy.connection.subtitle}</p></header>
+          <p className="onboarding-demo-note">{copy.connection.demo}</p>
+          <div className="onboarding-source-list">
+            {homeSources.map((source) => {
+              const connected = state.connectedSources.includes(source)
+              return <div className="onboarding-source-row" key={source}>
+                <span aria-hidden="true" className="onboarding-source-glyph"><img alt="" src={onboardingConnectorLogos[source]} /></span>
+                <span><strong>{homeCopy.sources[source]}</strong><small>{copy.connection.scope[source]}</small></span>
+                {connected ? <span className="onboarding-connected">{copy.connection.connected}</span> : <Button className="onboarding-connect-button" onPress={() => setConnecting(source)} type="button">{copy.connection.connect}</Button>}
+              </div>
+            })}
+          </div>
+          <footer className="onboarding-section-footer"><Button isDisabled={!state.connectedSources.length} onPress={() => update(continueToMemory(state))} type="button">{copy.actions.continue}</Button><p>{copy.connection.continueHint}</p></footer>
         </div>
-        <footer className="onboarding-section-footer"><Button isDisabled={!state.connectedSources.length} onPress={() => update(continueToMemory(state))} type="button">{copy.actions.continue}</Button><p>{copy.connection.continueHint}</p></footer>
+        <aside aria-hidden="true" className="onboarding-connect-artwork">
+          <img alt="" src={connectIllustration} />
+          {homeSources.map((source) => <img className={`onboarding-connect-artwork-mark onboarding-connect-artwork-mark-${source}`} key={source} alt="" src={onboardingConnectorLogos[source]} />)}
+        </aside>
       </section>}
 
       {state.step === 2 && <section className="onboarding-section">

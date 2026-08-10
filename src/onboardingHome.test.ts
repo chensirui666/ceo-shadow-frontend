@@ -22,6 +22,15 @@ test('onboarding starts with four steps, three connection choices, and an empty 
   assert.match(html, /暂无工作事件/)
 })
 
+test('Connect apps renders its decorative illustration alongside the connection flow', async () => {
+  const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {}, onOpenMemory: () => {} }))
+
+  assert.match(html, /onboarding-connect-layout/)
+  assert.match(html, /onboarding-connect-artwork/)
+  assert.match(html, /onboarding-connect-illustration/)
+})
+
 test('Step 4 keeps its composer in the fixed panel and places a Trial event in the Home event area', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
   const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')

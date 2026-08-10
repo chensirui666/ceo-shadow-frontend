@@ -27,7 +27,7 @@
 - Produces the static image imported by `OnboardingHome.tsx` in Task 2.
 - The image is decorative; its accessible name is supplied by the surrounding DOM, so its `<img>` will use `alt=""`.
 
-- [ ] **Step 1: Generate the artwork with the built-in image tool**
+- [x] **Step 1: Generate the artwork with the built-in image tool**
 
 Use this exact prompt:
 
@@ -43,11 +43,11 @@ Color palette: muted violet #6F42C1, pale lavender, warm white, a restrained pea
 Constraints: no text, no letters, no brand marks, no people, no dashboards, no charts, no user data, no watermark
 ```
 
-- [ ] **Step 2: Inspect the generated output**
+- [x] **Step 2: Inspect the generated output**
 
 Check that the artwork is landscape, contains no readable text or product marks, has room for three overlaid connector marks, and stays visually quiet enough for the left-side work flow to remain primary.
 
-- [ ] **Step 3: Place the selected asset in the project**
+- [x] **Step 3: Place the selected asset in the project**
 
 Copy the selected generated PNG to `src/assets/onboarding-connect-illustration.png` without overwriting any existing asset. Confirm it is a valid PNG:
 
@@ -69,7 +69,7 @@ Expected: `PNG image data`.
 - Produces: Step 1 markup with `.onboarding-connect-layout`, `.onboarding-connect-content`, `.onboarding-connect-artwork`, and `.onboarding-connect-artwork-mark` classes.
 - Keeps: `connecting`, `completeConnection`, `continueToMemory`, and `state.connectedSources` behavior unchanged.
 
-- [ ] **Step 1: Write the failing SSR assertion**
+- [x] **Step 1: Write the failing SSR assertion**
 
 Add this test to `src/onboardingHome.test.ts`:
 
@@ -84,13 +84,13 @@ test('Connect apps uses the dedicated two-column artwork layout', async () => {
 })
 ```
 
-- [ ] **Step 2: Run the focused test and confirm the new markup is absent**
+- [x] **Step 2: Run the focused test and confirm the new markup is absent**
 
 Run: `node --test src/onboardingHome.test.ts`
 
 Expected: FAIL because `onboarding-connect-layout` is not rendered.
 
-- [ ] **Step 3: Add the scoped Step 1 markup**
+- [x] **Step 3: Add the scoped Step 1 markup**
 
 Import the artwork and update only the Step 1 branch:
 
@@ -126,7 +126,7 @@ Add `onboarding-page-step-1` to the outer page class so CSS can apply violet onl
 <section className={`onboarding-page onboarding-page-step-${state.step}`}>
 ```
 
-- [ ] **Step 4: Add the scoped layout and color rules**
+- [x] **Step 4: Add the scoped layout and color rules**
 
 Use CSS equivalent to:
 
@@ -149,7 +149,7 @@ Use CSS equivalent to:
 
 The existing `@media (max-width: 720px)` panel rule continues to preserve the `468px` outer frame and internal scrolling.
 
-- [ ] **Step 5: Run the focused SSR test**
+- [x] **Step 5: Run the focused SSR test**
 
 Run: `node --test src/onboardingHome.test.ts`
 
@@ -168,7 +168,7 @@ Expected: PASS, including existing Step 4 Trial placement coverage.
 - Uses the two-column Step 1 layout from Task 2.
 - Does not add state fields, service calls, dependencies, or external requests at runtime.
 
-- [ ] **Step 1: Run the full verification suite**
+- [x] **Step 1: Run the full verification suite**
 
 Run:
 
@@ -178,11 +178,11 @@ npm test && npm run typecheck && npm run build && git diff --check
 
 Expected: all commands exit `0`.
 
-- [ ] **Step 2: Check the local page manually**
+- [x] **Step 2: Check the local page manually**
 
 Open `http://127.0.0.1:5173/` as a non-seeded account. Confirm the left column remains readable, the right-side artwork is decorative, Connect opens the existing confirmation modal, confirmation switches the row to connected, and Continue stays disabled until one app is connected.
 
-- [ ] **Step 3: Commit the verified refresh**
+- [x] **Step 3: Commit the verified refresh**
 
 ```bash
 git add src/assets/onboarding-connect-illustration.png src/components/OnboardingHome.tsx src/index.css src/onboardingHome.test.ts docs/superpowers/plans/2026-08-10-onboarding-connect-visual.md

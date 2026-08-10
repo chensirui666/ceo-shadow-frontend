@@ -392,6 +392,20 @@ button, input { font: inherit; }
 .onboarding-section-header > p:last-child { margin: 10px 0 0; color: #6e675d; font-size: 14px; line-height: 1.6; }
 .onboarding-demo-note { margin: 19px 0; color: #817a70; font-size: 12px; line-height: 1.55; }
 .onboarding-source-list, .onboarding-scope-list { border-top: 1px solid #e8e3da; }
+.onboarding-connect-layout { display: grid; grid-template-columns: minmax(0, 52fr) minmax(330px, 48fr); padding: 0; }
+.onboarding-connect-content { display: flex; min-width: 0; flex-direction: column; padding: 20px 36px; }
+.onboarding-connect-content .onboarding-kicker { margin-bottom: 7px; }
+.onboarding-connect-content .onboarding-section-header h2 { font-size: 24px; }
+.onboarding-connect-content .onboarding-section-header > p:last-child { margin-top: 6px; font-size: 13px; line-height: 1.45; }
+.onboarding-connect-content .onboarding-demo-note { margin: 13px 0; line-height: 1.45; }
+.onboarding-connect-artwork { position: relative; min-width: 0; overflow: hidden; border-left: 1px solid #eee7f7; background: #fbf8ff; }
+.onboarding-connect-artwork > img:first-child { width: 100%; height: 100%; object-fit: cover; }
+.onboarding-connect-artwork-mark { position: absolute; z-index: 1; box-sizing: border-box; width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / 76%); border-radius: 12px; background: #fffefd; box-shadow: 0 10px 22px rgb(88 56 161 / 16%); padding: 7px; }
+.onboarding-connect-artwork-mark-dingtalk { top: 16%; left: 17%; }
+.onboarding-connect-artwork-mark-feishu { top: 30%; right: 13%; }
+.onboarding-connect-artwork-mark-teams { top: 55%; left: 9%; }
+.onboarding-connect-content .onboarding-source-row { min-height: 56px; }
+.onboarding-connect-content .onboarding-source-row small { margin-top: 1px; }
 .onboarding-source-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) max-content; align-items: center; gap: 13px; min-height: 68px; border-bottom: 1px solid #e8e3da; }
 .onboarding-source-row strong { display: block; color: #34312c; font-size: 14px; }
 .onboarding-source-row small { display: block; margin-top: 3px; color: #777168; font-size: 12px; }
@@ -400,6 +414,11 @@ button, input { font: inherit; }
 .onboarding-connect-button, .onboarding-section-footer .button, .onboarding-modal-dialog .button, .onboarding-contact-dialog .button { min-height: 34px; border-radius: 7px; font-size: 13px; }
 .onboarding-connect-button { min-width: 86px; border: 1px solid #176869; background: transparent; color: #176869; }
 .onboarding-connected { color: #277468; font-size: 13px; font-weight: 650; }
+.onboarding-page-step-1 .onboarding-step-active { color: #6f42c1; }
+.onboarding-page-step-1 .onboarding-step-active span { border-color: #6f42c1; background: #6f42c1; }
+.onboarding-page-step-1 .onboarding-step-active:not(:last-child)::after { background: #b7a0df; }
+.onboarding-connect-content .onboarding-connect-button, .onboarding-connect-content .onboarding-section-footer .button { border-color: #6f42c1; background: #6f42c1; color: #fff; }
+.onboarding-page-step-1 .onboarding-step button:focus-visible { outline-color: #6f42c1; }
 .onboarding-section-footer { display: flex; align-items: center; gap: 13px; margin-top: auto; padding-top: 23px; }
 .onboarding-section-footer > p { margin: 0; color: #817a70; font-size: 12px; }
 .onboarding-section-footer-actions { justify-content: flex-end; }
@@ -930,6 +949,9 @@ button, input { font: inherit; }
   .onboarding-step:not(:last-child)::after { right: -5px; width: 10px; }
   .onboarding-panel { height: 468px; min-height: 0; overflow: auto; }
   .onboarding-section { height: 100%; min-height: 0; padding: 25px 22px; }
+  .onboarding-connect-layout { grid-template-columns: 1fr; height: auto; padding: 0; }
+  .onboarding-connect-content { padding: 25px 22px; }
+  .onboarding-connect-artwork { min-height: 250px; border-top: 1px solid #eee7f7; border-left: 0; }
   .onboarding-scope-list > div { grid-template-columns: 1fr; gap: 4px; }
   .onboarding-modal-dialog, .onboarding-contact-dialog { padding: 21px; }
   .onboarding-home-events .home-detail { width: 100%; }
