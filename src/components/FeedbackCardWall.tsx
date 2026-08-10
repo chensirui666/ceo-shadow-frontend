@@ -5,13 +5,14 @@ import type { FeedbackCard } from '../feedbackState.ts'
 type FeedbackCardWallProps = {
   copy: FeedbackCopy
   items: FeedbackCard[]
+  loadingMore?: boolean
   locale: 'en' | 'zh'
   nextCursor: string | null
   onLoadMore: () => void
   onOpen: (id: string) => void
 }
 
-export default function FeedbackCardWall({ copy, items, locale, nextCursor, onLoadMore, onOpen }: FeedbackCardWallProps) {
+export default function FeedbackCardWall({ copy, items, loadingMore = false, locale, nextCursor, onLoadMore, onOpen }: FeedbackCardWallProps) {
   return <section aria-labelledby="feedback-cards-title" className="feedback-card-wall-section">
     <h2 id="feedback-cards-title">{copy.cards.title}</h2>
     {!items.length && <p>{copy.cards.empty}</p>}
@@ -26,6 +27,6 @@ export default function FeedbackCardWall({ copy, items, locale, nextCursor, onLo
         <span className="feedback-card-link">{copy.cards.view}</span>
       </button>)}
     </div>
-    {nextCursor && <button className="feedback-load-more" onClick={onLoadMore} type="button">{copy.cards.loadMore}</button>}
+    {nextCursor && <button className="feedback-load-more" disabled={loadingMore} onClick={onLoadMore} type="button">{copy.cards.loadMore}</button>}
   </section>
 }

@@ -9,14 +9,13 @@ type FeedbackDetailPanelProps = {
   loading?: boolean
   locale: 'en' | 'zh'
   onClose: () => void
-  onRetry?: () => void
 }
 
-export default function FeedbackDetailPanel({ copy, detail, error = false, loading = false, locale, onClose, onRetry }: FeedbackDetailPanelProps) {
+export default function FeedbackDetailPanel({ copy, detail, error = false, loading = false, locale, onClose }: FeedbackDetailPanelProps) {
   return <aside aria-labelledby="feedback-detail-title" className="feedback-detail">
     <header><h2 id="feedback-detail-title">{copy.detail.title}</h2><button aria-label={copy.detail.close} onClick={onClose} type="button">×</button></header>
     {loading && <p aria-live="polite">{copy.detail.loading}</p>}
-    {error && <div aria-live="polite"><p>{copy.detail.error}</p>{onRetry && <button onClick={onRetry} type="button">{copy.state.retry}</button>}</div>}
+    {error && <p aria-live="polite">{copy.detail.error}</p>}
     {detail && <>
       <section><h3>{copy.detail.question}</h3><p>{detail.question}</p></section>
       <section><h3>{copy.detail.reply}</h3><p>{detail.reply}</p></section>
