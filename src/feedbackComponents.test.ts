@@ -2,8 +2,13 @@ import assert from 'node:assert/strict'
 import { after, test } from 'node:test'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+// @ts-expect-error react-test-renderer 19.2.8 does not publish TypeScript declarations.
+import { act, create } from 'react-test-renderer'
 import { createServer } from 'vite'
 import type { FeedbackCard, FeedbackCardPage, FeedbackDashboardData, FeedbackDetail } from './feedbackState.ts'
+import type { FeedbackService } from './feedbackService.ts'
+
+(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
 const { translations } = await import('./content/translations.ts')
 const vite = await createServer({ root: process.cwd(), appType: 'custom', server: { hmr: { port: 24683 }, middlewareMode: true } })
@@ -70,27 +75,29 @@ test('pagination locks its cursor and discards stale range results', async () =>
   assert.match(html, /<button[^>]*disabled=""[^>]*>加载更多<\/button>/)
 })
 
-test('two immediate load-more invocations send one request for the same range and cursor', async () => {
-  const [workspace, serviceModule] = await Promise.all([
-    vite.ssrLoadModule('/src/components/FeedbackWorkspace.tsx'),
-    vite.ssrLoadModule('/src/feedbackService.ts'),
-  ])
-  assert.equal(typeof workspace.requestFeedbackPage, 'function')
-  const active = { current: null }
-  const page: FeedbackCardPage = { items: [], nextCursor: 'cursor-1' }
+test('two immediate workspace load-more clicks send one request and append one card', async () => {
+  const { default: FeedbackWorkspace } = await vite.ssrLoadModule('/src/components/FeedbackWorkspace.tsx')
   const calls: Array<[string, string | null]> = []
-  const original = serviceModule.feedbackService.loadCards
-  serviceModule.feedbackService.loadCards = async (range: string, cursor: string | null) => {
-    calls.push([range, cursor])
-    return { items: [], nextCursor: null }
+  let resolveMore!: (page: FeedbackCardPage) => void
+  const delayedPage = new Promise<FeedbackCardPage>((resolve) => { resolveMore = resolve })
+  const service: FeedbackService = {
+    loadDashboard: async () => dashboard,
+    loadCards: async (range, cursor) => {
+      calls.push([range, cursor])
+      return cursor ? delayedPage : { items: [], nextCursor: 'cursor-1' }
+    },
+    loadDetail: async () => { throw new Error('detail is not used in this test') },
   }
+  let renderer: ReturnType<typeof create>
 
-  try {
-    const loadMore = () => workspace.requestFeedbackPage(active, '7d', page)
-    assert.ok(loadMore())
-    assert.equal(loadMore(), null)
-    assert.deepEqual(calls, [['7d', 'cursor-1']])
-  } finally {
-    serviceModule.feedbackService.loadCards = original
-  }
+  await act(async () => { renderer = create(createElement(FeedbackWorkspace, { locale: 'zh', service })) })
+  const loadMore = renderer!.root.findAllByType('button').find((button: { children: unknown[] }) => button.children.join('') === '加载更多')
+  assert.ok(loadMore)
+  act(() => { loadMore.props.onClick(); loadMore.props.onClick() })
+  assert.deepEqual(calls.filter(([, cursor]) => cursor), [['7d', 'cursor-1']])
+
+  const added: FeedbackCard = { id: 'added', replyId: 'reply-added', source: 'recipient', sentiment: 'positive', question: '唯一追加卡片', reply: '已追加。', note: '有帮助', createdAt: '2026-08-10T11:00:00.000Z' }
+  await act(async () => { resolveMore({ items: [added], nextCursor: null }); await delayedPage })
+  assert.equal(renderer!.root.findAll((node: { props: { className?: string } }) => node.props.className === 'feedback-card feedback-card-positive').length, 1)
+  act(() => renderer!.unmount())
 })

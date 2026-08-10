@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Locale } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import { feedbackService } from '../feedbackService.ts'
+import type { FeedbackService } from '../feedbackService.ts'
 import type { FeedbackCardPage, FeedbackDashboardData, FeedbackDetail, FeedbackRange } from '../feedbackState.ts'
 import FeedbackCardWall from './FeedbackCardWall.tsx'
 import FeedbackDashboard from './FeedbackDashboard.tsx'
@@ -9,21 +10,13 @@ import FeedbackDetailPanel from './FeedbackDetailPanel.tsx'
 
 type FailedOperation = 'range' | 'more' | 'detail' | null
 type PageRequest = { range: FeedbackRange; cursor: string }
-type PageRequestRef = { current: PageRequest | null }
 
 export const mergeFeedbackPage = (currentRange: FeedbackRange, current: FeedbackCardPage, requestRange: FeedbackRange, requestCursor: string, next: FeedbackCardPage) =>
   currentRange === requestRange && current.nextCursor === requestCursor
     ? { items: [...current.items, ...next.items], nextCursor: next.nextCursor }
     : current
 
-export const requestFeedbackPage = (active: PageRequestRef, range: FeedbackRange, page: FeedbackCardPage) => {
-  if (!page.nextCursor || active.current) return null
-  const request = { range, cursor: page.nextCursor }
-  active.current = request
-  return { request, response: feedbackService.loadCards(request.range, request.cursor) }
-}
-
-export default function FeedbackWorkspace({ locale }: { locale: Locale }) {
+export default function FeedbackWorkspace({ locale, service = feedbackService }: { locale: Locale; service?: FeedbackService }) {
   const copy = translations[locale].workspace.feedback
   const [range, setRange] = useState<FeedbackRange>('7d')
   const [dashboard, setDashboard] = useState<FeedbackDashboardData | null>(null)
@@ -40,28 +33,27 @@ export default function FeedbackWorkspace({ locale }: { locale: Locale }) {
     let active = true
     loadMoreRequest.current = null; setLoadingMore(false)
     setDashboard(null); setPage(null); setSelectedId(null); setDetail(null); setFailedOperation(null)
-    void Promise.all([feedbackService.loadDashboard(range), feedbackService.loadCards(range, null)])
+    void Promise.all([service.loadDashboard(range), service.loadCards(range, null)])
       .then(([nextDashboard, nextPage]) => { if (active) { setDashboard(nextDashboard); setPage(nextPage) } })
       .catch(() => { if (active) setFailedOperation('range') })
     return () => { active = false; loadMoreRequest.current = null }
-  }, [range, rangeRequest])
+  }, [range, rangeRequest, service])
 
   useEffect(() => {
     if (!selectedId) return
     let active = true
     setDetail(null); setFailedOperation(null)
-    void feedbackService.loadDetail(selectedId).then((next) => { if (active) setDetail(next) }).catch(() => { if (active) setFailedOperation('detail') })
+    void service.loadDetail(selectedId).then((next) => { if (active) setDetail(next) }).catch(() => { if (active) setFailedOperation('detail') })
     return () => { active = false }
-  }, [selectedId])
+  }, [selectedId, service])
 
   const loadMore = () => {
-    if (!page) return
-    const pending = requestFeedbackPage(loadMoreRequest, range, page)
-    if (!pending) return
-    const { request, response } = pending
+    if (!page?.nextCursor || loadMoreRequest.current) return
+    const request = { range, cursor: page.nextCursor }
+    loadMoreRequest.current = request
     setLoadingMore(true)
     setFailedOperation(null)
-    void response
+    void service.loadCards(request.range, request.cursor)
       .then((next) => {
         if (loadMoreRequest.current !== request) return
         setPage((current) => current && mergeFeedbackPage(rangeRef.current, current, request.range, request.cursor, next))
