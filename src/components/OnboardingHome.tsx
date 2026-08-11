@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
-import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Scale, ShieldCheck } from 'lucide-react'
+import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, ShieldCheck } from 'lucide-react'
 import connectIllustration from '../assets/onboarding-connect-editorial.png'
 import memoryIllustration from '../assets/onboarding-memory-editorial.png'
 import trialIllustration from '../assets/onboarding-trial-editorial.png'
@@ -30,6 +30,8 @@ type StyleStage = 'extracting' | 'ready' | null
 
 const contacts = ['刘晨', '周航', '赵明']
 const memorySignalIcons = { messages: MessageCircle, documents: FileText, calendar: CalendarCheck }
+const memoryFindingIcons = { messages: MessageCircle, documents: FileText, topics: Repeat2 }
+const memoryFindingKeys = ['messages', 'documents', 'topics'] as const
 const stylePointIcons = [MessageCircle, Scale, ArrowRight, ShieldCheck]
 
 export default function OnboardingHome({ initialState, locale, onComplete, onOpenMemory, onStateChange }: OnboardingHomeProps) {
@@ -236,7 +238,11 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
     {memoryStage && <section aria-label={copy.memory.readingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-memory-dialog">
       <h2>{copy.memory.readingTitle}</h2><progress className="onboarding-progress" max="100" value={memoryProgress}>{memoryProgress}%</progress>
       {memoryStage === 'reading' && <p>{copy.memory.reading[memoryProgress < 70 ? 0 : 1]}</p>}
-      {memoryStage === 'ready' && <div className="onboarding-modal-result"><p>{copy.memory.summary}</p><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={() => setMemoryStage('building')} type="button">{copy.memory.construct}</Button></footer></div>}
+      {memoryStage === 'ready' && <div className="onboarding-modal-result"><div aria-label={copy.memory.findingsLabel} className="onboarding-memory-findings">{memoryFindingKeys.map((finding) => {
+        const FindingIcon = memoryFindingIcons[finding]
+        const [count, label] = copy.memory.findings[finding]
+        return <div className="onboarding-memory-finding" key={finding}><FindingIcon aria-hidden="true" /><strong>{count}</strong><span>{label}</span></div>
+      })}</div><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={() => setMemoryStage('building')} type="button">{copy.memory.construct}</Button></footer></div>}
       {memoryStage === 'building' && <p>{copy.memory.building}</p>}
       <small>{copy.memory.demo}</small>
     </div></section>}
