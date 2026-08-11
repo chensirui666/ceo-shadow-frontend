@@ -57,6 +57,7 @@ test('Home status tokens and tooltip layout use the approved palette', async () 
   assert.match(css, /\.home-chart-tooltip \{[\s\S]*?box-shadow: 0 10px 24px rgb\(54 48 39 \/ 12%\);/)
   assert.match(css, /\.home-chart-tooltip-item \{[\s\S]*?grid-template-columns: 8px minmax\(0, 1fr\) auto;/)
   assert.match(css, /\.home-chart-tooltip-value \{[\s\S]*?font-variant-numeric: tabular-nums;/)
+  assert.match(css, /\.home-detail \.home-detail-state-trial-complete \{ border-color: var\(--color-friday-muted\); \}/)
 })
 
 test('event list renders a compact row with a countdown and message lines', async () => {
