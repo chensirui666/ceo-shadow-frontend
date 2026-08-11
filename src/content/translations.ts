@@ -107,6 +107,31 @@ export type FeedbackCopy = {
   state: { loading: string }
 }
 
+export type TasksCopy = {
+  loading: string
+  error: string
+  empty: string
+  dashboard: { title: string; projects: string; owned: (count: number) => string; myTodos: string; myTodosHint: string; attention: string; attentionHint: (overdue: number, blocked: number) => string }
+  list: { project: string; status: string; owner: string; progress: string; personalTodos: string }
+  openTodos: (count: number) => string
+  progress: (completed: number, total: number, percent: number) => string
+  fraction: (completed: number, total: number) => string
+  projectStatus: Record<'not-started' | 'in-progress' | 'overdue' | 'completed', string>
+  todoStatus: Record<'open' | 'completed' | 'cancelled', string>
+  priority: Record<'high' | 'medium' | 'low', string>
+  sections: { details: string; milestones: string; todos: string; conclusions: string; sources: string }
+  detail: { started: string; owner: string; participants: string; priority: string; status: string; goal: string; background: string; progress: string; blocker: string; nextStep: string; recentChange: string }
+  document: { detail: string; projectDetail: string; open: string; backToProject: (project: string) => string; preview: string; edit: string; save: string; saved: string; titleLabel: string; bodyLabel: string }
+  milestone: { current: string; due: string; progress: string; completed: string; active: string; upcoming: string; openLinkedActions: string }
+  todo: { owner: string; item: string; progress: string; due: string; completedAt: string; source: string; aiProduct: string; actions: string; noDue: string; empty: string; openAiProduct: string; noAiProduct: string }
+  aiProductDocument: { label: string; backToProject: (project: string) => string; actionItem: string; sourceCount: (count: number) => string; titleLabel: string; bodyLabel: string; draft: string; save: string; saved: string; openCopilot: string; closeCopilot: string; copilotTitle: string; copilotHint: string; feedback: string; feedbackPlaceholder: string; sendFeedback: string; feedbackSent: string; noFeedback: string; newConversation: string; messagePlaceholder: string; ask: string }
+  conclusion: { summary: string; time: string; source: string }
+  personalTodos: { open: (count: number) => string; overdue: (count: number) => string; completed: (count: number) => string; tooltip: string }
+  source: { count: (count: number) => string; type: Record<'document' | 'minutes' | 'presentation' | 'audio' | 'folder' | 'file' | 'message' | 'meeting' | 'todo', string> }
+  cancelDialog: { title: string; body: string; keep: string; confirm: string }
+  actions: { back: string; complete: string; cancel: string; retry: string }
+}
+
 export type Translation = {
   journey: string[]
   login: {
@@ -126,6 +151,7 @@ export type Translation = {
     signOut: string
     home: HomeCopy
     feedback: FeedbackCopy
+    tasks: TasksCopy
     pages: Record<string, PageCopy>
     exit: Record<'title' | 'body' | 'cancel', string>
     memory: MemoryCopy
@@ -167,7 +193,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday work scene',
     },
     workspace: {
-      nav: { home: 'Home', tasks: 'Tasks', memory: 'Memory', feedback: 'Feedback', settings: 'Settings' },
+      nav: { home: 'Home', tasks: 'Projects', memory: 'Memory', feedback: 'Feedback', settings: 'Settings' },
       primaryNavigation: 'Primary navigation',
       content: (label: string) => `${label} content`,
       greeting: (name: string) => `Welcome back, ${name}`,
@@ -214,8 +240,22 @@ export const translations: Record<Locale, Translation> = {
         detail: { title: 'Feedback details', close: 'Close feedback details', question: 'Complete question', reply: 'Final reply', feedback: 'All feedback', loading: 'Loading feedback details…' },
         state: { loading: 'Loading demo feedback…' },
       },
+      tasks: {
+        loading: 'Loading Projects…', error: 'Projects could not be loaded. Try again shortly.', empty: 'No projects relevant to you have been formed yet.',
+        dashboard: { title: 'My projects', projects: 'Projects involved', owned: (count) => `${count} owned`, myTodos: 'My action items', myTodosHint: 'Completed / active total', attention: 'Needs attention', attentionHint: (overdue, blocked) => `${overdue} overdue · ${blocked} blocked only` },
+        list: { project: 'Project', status: 'Status', owner: 'Owner', progress: 'Progress', personalTodos: 'My actions' }, openTodos: (count) => `${count} open`, progress: (completed, total, percent) => `${completed}/${total} · ${percent}%`, fraction: (completed, total) => `${completed}/${total}`,
+        projectStatus: { 'not-started': 'Not started', 'in-progress': 'In progress', overdue: 'Overdue', completed: 'Completed' }, todoStatus: { open: 'Open', completed: 'Completed', cancelled: 'Cancelled' }, priority: { high: 'P0', medium: 'P1', low: 'P2' },
+        sections: { details: 'Project overview', milestones: 'Current progress', todos: 'Todos', conclusions: 'Conclusions', sources: 'Project sources' },
+        detail: { started: 'Started', owner: 'Owner', participants: 'Participants', priority: 'Priority', status: 'Status', goal: 'Project goal', background: 'Background', progress: 'Current progress', blocker: 'Blocker', nextStep: 'Next step', recentChange: 'Recent change' },
+        document: { detail: 'Detail', projectDetail: 'Project detail', open: 'Open file', backToProject: (project) => 'Back to ' + project, preview: 'Preview', edit: 'Edit', save: 'Save changes', saved: 'Saved in this session', titleLabel: 'Document title', bodyLabel: 'Document content' },
+        milestone: { current: 'Current milestone', due: 'Due', progress: 'Progress', completed: 'Completed', active: 'In progress', upcoming: 'Upcoming', openLinkedActions: 'View linked action items' },
+        todo: { owner: 'Owner', item: 'Todos', progress: 'Status', due: 'Due', completedAt: 'Completed at', source: 'Source', aiProduct: 'AI Product', actions: 'Actions', noDue: 'No due date', empty: 'No todos yet', openAiProduct: 'View draft', noAiProduct: 'No draft' }, aiProductDocument: { label: 'AI Product document', backToProject: (project) => `Back to ${project}`, actionItem: 'Action item', sourceCount: (count) => `${count} source${count === 1 ? '' : 's'} linked`, titleLabel: 'Document title', bodyLabel: 'Document content', draft: 'Draft', save: 'Save changes', saved: 'Saved in this session', openCopilot: 'Open Copilot', closeCopilot: 'Close Copilot', copilotTitle: 'Copilot', copilotHint: 'Review this draft and record feedback. Copilot will not send or overwrite anything.', feedback: 'Feedback', feedbackPlaceholder: 'Describe what should change…', sendFeedback: 'Save feedback', feedbackSent: 'Feedback saved for this session', noFeedback: 'No feedback yet', newConversation: 'New AI conversation', messagePlaceholder: 'Ask anything about this document…', ask: 'Ask' }, source: { count: (count) => `${count} source${count === 1 ? '' : 's'}`, type: { document: 'Document', minutes: 'Minutes', presentation: 'Presentation', audio: 'Audio', folder: 'Folder', file: 'File', message: 'Message', meeting: 'Meeting', todo: 'Action item' } },
+        conclusion: { summary: 'Conclusion', time: 'Time', source: 'Sources' },
+        personalTodos: { open: (count) => `${count} open`, overdue: (count) => `${count} overdue`, completed: (count) => `${count} completed`, tooltip: 'Personal action-item details' },
+        cancelDialog: { title: 'Cancel this action item?', body: 'This only updates the current page session and cannot be undone in this demo.', keep: 'Keep action item', confirm: 'Cancel action item' }, actions: { back: 'Back to Projects', complete: 'Complete', cancel: 'Cancel', retry: 'Retry' },
+      },
       pages: {
-        tasks: ['Tasks', 'Friday will organize projects, to-dos, and next steps from your work messages and meetings.', 'Back to Home'],
+        tasks: ['Projects', 'Friday will organize projects, action items, and next steps from your work messages and meetings.', 'Back to Home'],
         memory: ['Memory', 'Friday will show the work material and working style it has learned here.', 'View Settings'],
         feedback: ['Feedback', 'Your feedback and your teammates’ feedback will help Friday stay calibrated.', 'Back to Home'],
         settings: ['Settings', 'Connect work apps and manage your avatar’s scope and running state here.', 'View available apps'],
@@ -344,7 +384,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday 工作场景',
     },
     workspace: {
-      nav: { home: '首页', tasks: '任务', memory: '记忆', feedback: '反馈', settings: '设置' },
+      nav: { home: '首页', tasks: '项目', memory: '记忆', feedback: '反馈', settings: '设置' },
       primaryNavigation: '主要导航',
       content: (label: string) => `${label}内容`,
       greeting: (name: string) => `欢迎回来，${name}`,
@@ -391,8 +431,22 @@ export const translations: Record<Locale, Translation> = {
         detail: { title: '反馈详情', close: '关闭反馈详情', question: '完整问题', reply: '当时最终回复', feedback: '全部反馈', loading: '正在加载反馈详情…' },
         state: { loading: '正在载入演示反馈…' },
       },
+      tasks: {
+        loading: '正在加载项目…', error: '暂时无法加载项目，请稍后重试。', empty: '暂时没有沉淀出与你相关的项目。',
+        dashboard: { title: '我的项目', projects: '参与项目', owned: (count) => `其中负责 ${count} 个`, myTodos: '我的行动项', myTodosHint: '已完成 / 未取消总数', attention: '需要关注', attentionHint: (overdue, blocked) => `${overdue} 项逾期 · ${blocked} 项仅阻塞` },
+        list: { project: '项目', status: '当前状态', owner: '负责人', progress: '进展', personalTodos: '个人行动项' }, openTodos: (count) => `${count} 项待处理`, progress: (completed, total, percent) => `${completed}/${total} · ${percent}%`, fraction: (completed, total) => `${completed}/${total}`,
+        projectStatus: { 'not-started': '未开始', 'in-progress': '进行中', overdue: '已逾期', completed: '已完成' }, todoStatus: { open: '待处理', completed: '已完成', cancelled: '已取消' }, priority: { high: 'P0', medium: 'P1', low: 'P2' },
+        sections: { details: '项目概览', milestones: '当前进展', todos: '待办', conclusions: '结论', sources: '项目来源' },
+        detail: { started: '项目启动时间', owner: '负责人', participants: '参与人', priority: '重要程度', status: '当前状态', goal: '项目目标', background: '背景', progress: '当前进展', blocker: '阻塞点', nextStep: '下一步', recentChange: '最近变化' },
+        document: { detail: 'Detail', projectDetail: '项目详情', open: '打开文件', backToProject: (project) => '返回 ' + project, preview: '预览', edit: '编辑', save: '保存修改', saved: '已保存到当前会话', titleLabel: '文档标题', bodyLabel: '文档正文' },
+        milestone: { current: '当前里程碑', due: '截止时间', progress: '进度', completed: '已完成', active: '进行中', upcoming: '未开始', openLinkedActions: '查看关联行动项' },
+        todo: { owner: '负责人', item: '待办', progress: '状态', due: 'DDL', completedAt: '完成时间', source: '来源', aiProduct: 'AI Product', actions: '操作', noDue: '暂无 DDL', empty: '暂无待办', openAiProduct: '查看草稿', noAiProduct: '暂无生成内容' }, aiProductDocument: { label: 'AI Product 文档', backToProject: (project) => `返回 ${project}`, actionItem: '关联行动项', sourceCount: (count) => `关联 ${count} 个来源`, titleLabel: '文档标题', bodyLabel: '文档正文', draft: '草稿', save: '保存修改', saved: '已保存到当前会话', openCopilot: '打开 Copilot', closeCopilot: '关闭 Copilot', copilotTitle: 'Copilot', copilotHint: '查看当前草稿并记录反馈；不会自动覆盖正文或发送给外部对象。', feedback: '反馈', feedbackPlaceholder: '描述需要调整的内容…', sendFeedback: '保存反馈', feedbackSent: '反馈已保存到当前会话', noFeedback: '暂未记录反馈', newConversation: '新建 AI 对话', messagePlaceholder: '万事问 AI…', ask: '问问' }, source: { count: (count) => `${count} 个来源`, type: { document: '文档', minutes: '听记', presentation: 'PPT', audio: '音频', folder: '文件夹', file: '文件', message: '工作消息', meeting: '会议', todo: '行动项' } },
+        conclusion: { summary: '结论', time: '时间', source: '来源' },
+        personalTodos: { open: (count) => `${count} 项待处理`, overdue: (count) => `${count} 项逾期`, completed: (count) => `${count} 项已完成`, tooltip: '个人行动项详情' },
+        cancelDialog: { title: '取消这项行动项？', body: '这只会更新当前页面会话内的演示数据，且本次演示中无法恢复。', keep: '保留行动项', confirm: '确认取消' }, actions: { back: '返回项目', complete: '完成', cancel: '取消', retry: '重试' },
+      },
       pages: {
-        tasks: ['任务', 'Friday 会从工作消息和会议中整理项目、待办与下一步。', '返回首页'],
+        tasks: ['项目', 'Friday 会从工作消息和会议中整理项目、行动项与下一步。', '返回首页'],
         memory: ['记忆', '这里会呈现 Friday 已理解的工作资料和你的工作方式。', '查看设置'],
         feedback: ['反馈', '你和同事对回复的反馈，会在这里帮助 Friday 持续校准。', '返回首页'],
         settings: ['设置', '在这里连接工作应用，并管理分身的处理范围与运行状态。', '查看可连接应用'],

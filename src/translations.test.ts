@@ -25,3 +25,15 @@ test('Memory page omits introductory and demo copy', () => {
     assert.equal('demo' in memory, false)
   }
 })
+
+test('the stable tasks route is presented as Projects and Todos to users', () => {
+  assert.equal(translations.en.workspace.nav.tasks, 'Projects')
+  assert.equal(translations.zh.workspace.nav.tasks, '项目')
+  assert.equal(translations.zh.workspace.tasks.sections.todos, '待办')
+  assert.equal(translations.en.workspace.tasks.sections.sources, 'Project sources')
+})
+
+test('AI Product document copy identifies local editing, feedback, and Copilot entry points', () => {
+  assert.equal(translations.zh.workspace.tasks.aiProductDocument.openCopilot, '打开 Copilot')
+  assert.equal(translations.en.workspace.tasks.aiProductDocument.feedbackSent, 'Feedback saved for this session')
+})
