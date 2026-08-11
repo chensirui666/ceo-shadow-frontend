@@ -133,7 +133,7 @@ export default function HomeWorkspace({ locale, onOpenSettings, service = homeSe
   const events = selectHomeEvents(snapshot, source)
 
   return <section className="home-page" ref={pageRef}>
-    <HomeActivityChart activity={activityHours(events, now)} copy={copy} showDefaultTooltip />
+    <HomeActivityChart activity={activityHours(events, now)} copy={copy} />
     <HomeSourceRow connectedSources={snapshot.connectedSources} copy={copy} mode={snapshot.mode} onModeChange={updateMode} onSourceChange={setSource} source={source} />
     {events.length ? <HomeEventList copy={copy} events={events} now={now} onOpen={openEvent} sourceNames={copy.sources} /> : <section className="home-state"><p>{source === 'all' ? copy.empty.events : copy.empty.source(copy.sources[source])}</p>{source !== 'all' && <Button onPress={() => setSource('all')} variant="secondary">{copy.actions.clearSource}</Button>}</section>}
   </section>

@@ -19,29 +19,17 @@ test('activity chart exposes a textual legend and exact counts for a focusable h
   assert.match(html, /10:00：已处理 2，待处理 1，发送失败 1/)
 })
 
-test('formal Home exposes the latest non-zero hour in an opt-in tooltip', async () => {
+test('formal Home chart starts without a detail panel', async () => {
   const { default: HomeActivityChart } = await vite.ssrLoadModule('/src/components/HomeActivityChart.tsx')
   const activity = [
     { hour: '02', processed: 0, pending: 0, failed: 0 },
     { hour: '03', processed: 3, pending: 3, failed: 1 },
   ]
-  const withTooltip = renderToStaticMarkup(createElement(HomeActivityChart, {
+  const html = renderToStaticMarkup(createElement(HomeActivityChart, {
     activity, copy: translations.en.workspace.home, showDefaultTooltip: true,
   }))
-  const withoutTooltip = renderToStaticMarkup(createElement(HomeActivityChart, {
-    activity, copy: translations.en.workspace.home,
-  }))
 
-  assert.match(withTooltip, /home-chart-tooltip/)
-  assert.match(withTooltip, /03:00/)
-  assert.match(withTooltip, /Processed 3/)
-  assert.match(withTooltip, /Pending 3/)
-  assert.match(withTooltip, /Send failed 1/)
-  assert.match(withTooltip, /home-chart-tooltip-label/)
-  assert.match(withTooltip, /home-chart-tooltip-value/)
-  assert.match(withTooltip, /<span class="home-chart-tooltip-label">Processed<\/span><strong class="home-chart-tooltip-value">3<\/strong>/)
-  assert.doesNotMatch(withTooltip, /aria-label="Processed 3"|aria-hidden="true"/)
-  assert.doesNotMatch(withoutTooltip, /home-chart-tooltip/)
+  assert.doesNotMatch(html, /home-chart-tooltip/)
 })
 
 test('Home status tokens and tooltip layout use the approved palette', async () => {
