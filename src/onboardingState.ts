@@ -11,6 +11,7 @@ export type OnboardingState = {
   memoryConfirmed: boolean
   memorySkipped: boolean
   workStyleConfirmed: boolean
+  workStylePrompt?: string
   trial?: TrialReply
   completed: boolean
 }
@@ -55,8 +56,10 @@ export const advanceFromMemory = (state: OnboardingState): OnboardingState => (
   state.memoryConfirmed || state.memorySkipped ? { ...state, step: 3, maxReached: 3 } : state
 )
 
-export const confirmWorkStyle = (state: OnboardingState): OnboardingState => (
-  state.memoryConfirmed || state.memorySkipped ? { ...state, workStyleConfirmed: true, step: 4, maxReached: 4 } : state
+export const confirmWorkStyle = (state: OnboardingState, prompt?: string): OnboardingState => (
+  state.memoryConfirmed || state.memorySkipped
+    ? { ...state, ...(prompt?.trim() ? { workStylePrompt: prompt.trim() } : {}), workStyleConfirmed: true, step: 4, maxReached: 4 }
+    : state
 )
 
 export const selectOnboardingStep = (state: OnboardingState, step: OnboardingStep): OnboardingState => (

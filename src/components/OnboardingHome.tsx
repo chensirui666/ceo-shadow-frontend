@@ -25,6 +25,7 @@ type OnboardingHomeProps = {
 
 type ActivationStage = 'idle' | 'confirm' | 'celebrating' | 'contacts'
 type MemoryStage = 'reading' | 'summary' | 'building' | null
+type StyleStage = 'extracting' | 'editing' | null
 
 const contacts = ['刘晨', '周航', '赵明']
 
@@ -37,7 +38,9 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
   const [connecting, setConnecting] = useState<HomeSource | null>(null)
   const [memoryStage, setMemoryStage] = useState<MemoryStage>(null)
   const [memoryProgress, setMemoryProgress] = useState(0)
-  const [promptOpen, setPromptOpen] = useState(false)
+  const [styleStage, setStyleStage] = useState<StyleStage>(null)
+  const [styleProgress, setStyleProgress] = useState(0)
+  const [promptDraft, setPromptDraft] = useState(() => state.workStylePrompt ?? copy.style.prompt)
   const [question, setQuestion] = useState('')
   const [activation, setActivation] = useState<ActivationStage>('idle')
   const [contact, setContact] = useState(contacts[0])
@@ -47,16 +50,39 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
 
   useEffect(() => {
     if (memoryStage !== 'reading') return
-    const progressTimer = window.setTimeout(() => setMemoryProgress(72), 700)
-    const summaryTimer = window.setTimeout(() => {
+    const progressTimer = window.setInterval(() => setMemoryProgress((value) => Math.min(value + 2.5, 95)), 100)
+    const completionTimer = window.setTimeout(() => {
+      window.clearInterval(progressTimer)
       setMemoryProgress(100)
+    }, 3_800)
+    const summaryTimer = window.setTimeout(() => {
       setMemoryStage('summary')
-    }, 1_900)
+    }, 4_100)
     return () => {
-      window.clearTimeout(progressTimer)
+      window.clearInterval(progressTimer)
+      window.clearTimeout(completionTimer)
       window.clearTimeout(summaryTimer)
     }
   }, [memoryStage])
+
+  useEffect(() => {
+    if (styleStage !== 'extracting') return
+    const progressTimer = window.setInterval(() => setStyleProgress((value) => Math.min(value + 2.5, 95)), 100)
+    const completionTimer = window.setTimeout(() => {
+      window.clearInterval(progressTimer)
+      setStyleProgress(100)
+    }, 3_800)
+    const editorTimer = window.setTimeout(() => setStyleStage('editing'), 4_100)
+    return () => {
+      window.clearInterval(progressTimer)
+      window.clearTimeout(completionTimer)
+      window.clearTimeout(editorTimer)
+    }
+  }, [styleStage])
+
+  useEffect(() => {
+    if (!state.workStylePrompt) setPromptDraft(copy.style.prompt)
+  }, [copy.style.prompt, state.workStylePrompt])
 
   useEffect(() => {
     if (memoryStage !== 'building') return
@@ -85,9 +111,17 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
   }
 
   const beginMemoryRead = () => {
-    setMemoryProgress(32)
+    setMemoryProgress(0)
     setMemoryStage('reading')
   }
+
+  const beginStyleExtraction = () => {
+    setPromptDraft(state.workStylePrompt ?? copy.style.prompt)
+    setStyleProgress(0)
+    setStyleStage('extracting')
+  }
+
+  const confirmStyle = () => update(confirmWorkStyle(state, promptDraft))
 
   const beginActivation = () => {
     update(completeOnboarding(state))
@@ -153,8 +187,8 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
         <div className="onboarding-editorial-content">
           <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(3)}</p><h2>{copy.style.title}</h2><p>{copy.style.subtitle}</p></header>
           <div className="onboarding-style-summary"><p>{copy.style.summary}</p><ul>{copy.style.points.map((point) => <li key={point}>{point}</li>)}</ul></div>
-          <button className="onboarding-prompt-toggle" onClick={() => setPromptOpen(true)} type="button">{copy.style.showPrompt}</button>
-          <footer className="onboarding-section-footer"><Button onPress={() => update(confirmWorkStyle(state))} type="button">{copy.style.confirm}</Button></footer>
+          <button className="onboarding-prompt-toggle" onClick={() => setStyleStage('editing')} type="button">{copy.style.showPrompt}</button>
+          <footer className="onboarding-section-footer onboarding-style-actions"><Button onPress={beginStyleExtraction} type="button" variant="secondary">{copy.style.extract}</Button><Button isDisabled={!promptDraft.trim()} onPress={confirmStyle} type="button">{copy.style.confirm}</Button></footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={workStyleIllustration} /></aside>
       </section>}
@@ -187,7 +221,10 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
       {memoryStage === 'building' && <><h2>{copy.memory.confirm}</h2><progress max="100" value="100">100%</progress><p>{copy.memory.building}</p><small>{copy.memory.demo}</small></>}
     </div></section>}
 
-    {promptOpen && <section aria-label={copy.style.showPrompt} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog onboarding-prompt-dialog"><h2>{copy.style.showPrompt}</h2><pre className="onboarding-prompt-preview">{copy.style.prompt}</pre><footer><Button onPress={() => setPromptOpen(false)} type="button">{copy.actions.continue}</Button></footer></div></section>}
+    {styleStage && <section aria-label={styleStage === 'extracting' ? copy.style.extractingTitle : copy.style.editTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-style-dialog">
+      {styleStage === 'extracting' && <><h2>{copy.style.extractingTitle}</h2><progress max="100" value={styleProgress}>{styleProgress}%</progress><p>{copy.style.extracting[styleProgress < 60 ? 0 : 1]}</p><small>{copy.style.demo}</small></>}
+      {styleStage === 'editing' && <><h2>{copy.style.editTitle}</h2><p>{copy.style.editHint}</p><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea onChange={(event) => setPromptDraft(event.target.value)} value={promptDraft} /></label><small>{copy.style.demo}</small><footer><Button onPress={() => setStyleStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!promptDraft.trim()} onPress={() => setStyleStage(null)} type="button">{copy.style.usePrompt}</Button></footer></>}
+    </div></section>}
 
     {activation === 'confirm' && <section aria-label={copy.activation.confirmTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog"><h2>{copy.activation.confirmTitle}</h2><p>{copy.activation.confirmBody}</p><footer><Button onPress={() => setActivation('idle')} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={beginActivation} type="button">{copy.activation.confirm}</Button></footer></div></section>}
 

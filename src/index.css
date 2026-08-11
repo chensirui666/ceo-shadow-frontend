@@ -449,9 +449,11 @@ button, input { font: inherit; }
 .onboarding-scope-list strong { color: #34312c; }
 .onboarding-style-summary { border-top: 1px solid #e8e3da; border-bottom: 1px solid #e8e3da; margin-top: 21px; padding: 15px 0; color: #4c4841; font-size: 13px; line-height: 1.65; }
 .onboarding-style-summary p { margin: 0; }
-.onboarding-style-summary ul { display: grid; gap: 5px; margin: 12px 0 0; padding-left: 18px; }
+.onboarding-style-summary ul { display: grid; gap: 5px; margin: 12px 0 0; padding: 0; list-style: none; }
 .onboarding-prompt-toggle { margin-top: 15px; border: 0; background: transparent; color: #176869; cursor: pointer; padding: 0; font-size: 13px; font-weight: 650; }
-.onboarding-prompt-preview { overflow: auto; margin: 13px 0 0; border: 1px solid #e8e3da; border-radius: 8px; background: #fbfaf7; padding: 14px; color: #4b463e; font: 12px/1.6 "Figtree", sans-serif; white-space: pre-wrap; }
+.onboarding-prompt-editor { display: grid; gap: 7px; margin-top: 15px; color: #4b463e; font-size: 12px; font-weight: 650; }
+.onboarding-prompt-editor textarea { min-height: 245px; resize: vertical; border: 1px solid #756f65; border-radius: 8px; background: #fffdf8; padding: 13px; color: #35312c; font: 12px/1.6 "Figtree", sans-serif; }
+.onboarding-prompt-editor textarea:focus { border-color: #ae622d; outline: 2px solid rgb(174 98 45 / 18%); outline-offset: 1px; }
 .onboarding-trial-section { max-width: 720px; margin: 0 auto; }
 .onboarding-trial-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin: 23px 0 12px; }
 .onboarding-trial-suggestions > span { width: 100%; color: #6e675d; font-size: 12px; }
@@ -469,14 +471,16 @@ button, input { font: inherit; }
 .onboarding-home-events .home-detail { width: 100%; margin: 0; }
 .onboarding-home-events .home-detail-hero-content { padding-top: 26px; }
 .onboarding-modal-backdrop, .onboarding-contact-backdrop { position: fixed; z-index: 4; inset: 0; display: grid; place-items: center; background: rgb(40 36 30 / 31%); padding: 20px; }
-.onboarding-modal-dialog, .onboarding-contact-dialog { width: min(445px, 100%); border: 1px solid #ded8cf; border-radius: 13px; background: #fffefd; box-shadow: 0 22px 55px rgb(52 47 39 / 22%); padding: 25px; }
+.onboarding-modal-dialog, .onboarding-contact-dialog { width: min(445px, 100%); border: 1px solid #ded8cf; border-radius: 13px; background: #f8f4ea; box-shadow: 0 22px 55px rgb(52 47 39 / 22%); padding: 25px; }
 .onboarding-modal-dialog h2, .onboarding-contact-dialog h2 { margin: 0 0 8px; color: #2d2a25; font-size: 23px; letter-spacing: -.04em; }
 .onboarding-modal-dialog > p, .onboarding-contact-dialog > p { margin: 0; color: #6e675d; font-size: 13px; line-height: 1.6; }
 .onboarding-modal-dialog footer, .onboarding-contact-dialog footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-.onboarding-memory-dialog progress { width: 100%; height: 8px; margin: 20px 0 11px; accent-color: #176869; }
-.onboarding-memory-dialog small { display: block; margin-top: 15px; color: #817a70; font-size: 12px; line-height: 1.55; }
-.onboarding-prompt-dialog { width: min(620px, 100%); }
-.onboarding-prompt-dialog .onboarding-prompt-preview { max-height: min(50vh, 360px); }
+.onboarding-modal-dialog .button, .onboarding-contact-dialog .button { border-color: #292721; background: #292721; color: #fffefd; }
+.onboarding-modal-dialog .button.button--secondary, .onboarding-contact-dialog .button.button--secondary { border-color: #efe6d4; background: #efe6d4; color: #292721; }
+.onboarding-modal-dialog .button:focus-visible, .onboarding-contact-dialog .button:focus-visible { outline-color: #ae622d; }
+.onboarding-memory-dialog progress, .onboarding-style-dialog progress { width: 100%; height: 8px; margin: 20px 0 11px; accent-color: #ae622d; }
+.onboarding-modal-dialog small { display: block; margin-top: 15px; color: #817a70; font-size: 12px; line-height: 1.55; }
+.onboarding-style-dialog { width: min(620px, 100%); }
 .onboarding-modal-celebration { display: flex; align-items: center; gap: 12px; color: #216c61; }
 .onboarding-modal-celebration h2 { margin: 0; }
 .onboarding-modal-celebration span { display: inline-block; animation: onboarding-sparkle .65s ease-out both; font-size: 22px; }

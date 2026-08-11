@@ -40,7 +40,9 @@ test('later onboarding steps render their matching decorative artwork', async ()
   const props = { locale: 'zh' as const, onComplete: () => {}, onOpenMemory: () => {} }
 
   assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepTwo })), /onboarding-memory-editorial/)
-  assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepThree })), /onboarding-work-style-editorial/)
+  const stepThreeHtml = renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepThree }))
+  assert.match(stepThreeHtml, /onboarding-work-style-editorial/)
+  assert.match(stepThreeHtml, /提取工作风格/)
   assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepFour })), /onboarding-trial-editorial/)
 })
 

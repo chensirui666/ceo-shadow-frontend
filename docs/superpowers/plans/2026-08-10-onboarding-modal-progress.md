@@ -54,6 +54,7 @@ Run: `node --test src/onboardingHome.test.ts`
 **Files:**
 - Modify: `src/components/OnboardingHome.tsx`
 - Modify: `src/content/translations.ts`
+- Modify: `src/onboardingState.ts`
 - Modify: `src/onboardingHome.test.ts`
 
 - [ ] **Step 1: Add translated extraction labels and an accessible editable Prompt label.**
@@ -62,11 +63,12 @@ Run: `node --test src/onboardingHome.test.ts`
 extract: 'Extract work style', extractingTitle: 'Extracting your work style', editPrompt: 'Edit work-style Prompt'
 ```
 
-- [ ] **Step 2: Add a local `styleStage`, `styleProgress`, and `promptDraft` in `OnboardingHome`.**
+- [ ] **Step 2: Add a local `styleStage`, `styleProgress`, and `promptDraft` in `OnboardingHome`; accept the edited Prompt in `confirmWorkStyle` and retain it in the session state.**
 
 ```ts
 const [styleStage, setStyleStage] = useState<'extracting' | 'editing' | null>(null)
 const [promptDraft, setPromptDraft] = useState(copy.style.prompt)
+confirmWorkStyle(state, promptDraft)
 ```
 
 - [ ] **Step 3: Render extraction progress followed by an editable textarea preview; route the existing confirmation through the edited draft.**

@@ -30,6 +30,15 @@ test('Memory construction stays on Step 2 until the user confirms continuation',
   assert.equal(onboarding.advanceFromMemory(built).step, 3)
 })
 
+test('work style confirmation retains an edited Prompt for the current session', () => {
+  const prepared = onboarding.skipMemory(
+    onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),
+  )
+  const confirmed = onboarding.confirmWorkStyle(prepared, '先确认事实，再给出下一步。')
+
+  assert.equal(confirmed.workStylePrompt, '先确认事实，再给出下一步。')
+})
+
 test('a Trial adjustment changes only the current Trial reply', () => {
   const connected = onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')
   const memoryConfirmed = onboarding.confirmMemory(connected)
