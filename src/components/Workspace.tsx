@@ -10,6 +10,8 @@ import type { IconName } from './Icon.tsx'
 import HomeWorkspace from './HomeWorkspace.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
+import TasksWorkspace from './TasksWorkspace.tsx'
+import type { TasksDetailHeader } from './TasksWorkspace.tsx'
 
 type WorkspaceProps = {
   locale: Locale
@@ -30,6 +32,8 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const storedRoute = resolveRoute(session.route)
   const [route, setRoute] = useState<Route>(() => storedRoute === 'settings' ? 'home' : storedRoute)
   const [settingsOpen, setSettingsOpen] = useState(() => storedRoute === 'settings')
+  const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
+  const [tasksListRequest, setTasksListRequest] = useState(0)
   const exitDialog = useOverlayState()
   const name = session.email.split('@')[0]
   const copy = translations[locale].workspace
@@ -46,7 +50,11 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const goTo = (nextRoute: unknown) => {
     const next = resolveRoute(nextRoute)
     if (next === 'settings') openSettings()
-    else setRoute(next)
+    else if (next === 'tasks' && route === 'tasks' && tasksDetailHeader) setTasksListRequest((request) => request + 1)
+    else {
+      setTasksDetailHeader(null)
+      setRoute(next)
+    }
   }
 
   return (
@@ -89,13 +97,15 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
         <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
-          <h1>{route === 'home' ? copy.greeting(name) : currentLabel}</h1>
+          <div className="workspace-header-title"><h1>{route === 'home' ? copy.greeting(name) : tasksDetailHeader?.title ?? currentLabel}</h1>{route === 'tasks' && tasksDetailHeader && <span className={`task-status task-status-${tasksDetailHeader.status}`}>{copy.tasks.projectStatus[tasksDetailHeader.status]}</span>}</div>
         </header>
 
         {route === 'memory' ? (
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
           <HomeWorkspace locale={locale} onOpenSettings={openSettings} />
+        ) : route === 'tasks' ? (
+          <TasksWorkspace currentUser={name} locale={locale} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />
         ) : (
           <section className="empty-page">
             <p className="eyebrow">{currentLabel}</p>
