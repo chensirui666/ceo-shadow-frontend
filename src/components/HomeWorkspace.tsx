@@ -5,7 +5,7 @@ import { translations } from '../content/translations.ts'
 import type { HomeCopy } from '../content/translations.ts'
 import { homeService } from '../homeService.ts'
 import type { HomeService } from '../homeService.ts'
-import { activityHours, modeChangeNeedsConfirmation, progressWaitingEvents, selectHomeEvents } from '../homeState.ts'
+import { activityHours, progressWaitingEvents, selectHomeEvents } from '../homeState.ts'
 import type { HomeSource, HomeSnapshot, OperatingMode, OwnerFeedback } from '../homeState.ts'
 import HomeActivityChart from './HomeActivityChart.tsx'
 import HomeEventDetail from './HomeEventDetail.tsx'
@@ -17,26 +17,43 @@ type HomeWorkspaceProps = {
   service?: HomeService
 }
 
-type ModeConfirmationProps = {
+type ModePickerProps = {
   copy: HomeCopy
   mode: OperatingMode
-  onConfirm: () => Promise<void>
-  triggerLabel: string
+  onModeChange: (mode: OperatingMode) => Promise<void>
 }
 
-function ModeConfirmation({ copy, mode, onConfirm, triggerLabel }: ModeConfirmationProps) {
+function ModePicker({ copy, mode, onModeChange }: ModePickerProps) {
   const dialog = useOverlayState()
   const [busy, setBusy] = useState(false)
+  const [pendingMode, setPendingMode] = useState<OperatingMode | null>(null)
+  const modes: OperatingMode[] = ['active', 'trial', 'paused']
 
-  const confirm = () => {
-    setBusy(true)
-    void onConfirm().then(dialog.close).finally(() => setBusy(false))
+  const close = () => {
+    dialog.close()
+    setPendingMode(null)
   }
 
-  return <Modal state={dialog}>
-    <Modal.Trigger aria-pressed="false" className="home-mode-choice">{triggerLabel}</Modal.Trigger>
-    <Modal.Backdrop className="home-mode-backdrop"><Modal.Container className="home-mode-container" placement="center"><Modal.Dialog className="home-mode-dialog"><Modal.Header><Modal.Heading>{copy.confirmation.title(mode)}</Modal.Heading></Modal.Header><Modal.Body>{copy.confirmation.body(mode)}</Modal.Body><Modal.Footer><Button isDisabled={busy} onPress={dialog.close} variant="secondary">{copy.actions.cancel}</Button><Button isPending={busy} onPress={confirm}>{copy.confirmation.confirm(mode)}</Button></Modal.Footer></Modal.Dialog></Modal.Container></Modal.Backdrop>
-  </Modal>
+  const choose = (nextMode: OperatingMode) => {
+    if (nextMode === mode) return
+    setPendingMode(nextMode)
+    dialog.open()
+  }
+
+  const confirm = () => {
+    if (!pendingMode) return
+    setBusy(true)
+    void onModeChange(pendingMode).then(close).finally(() => setBusy(false))
+  }
+
+  return <div className="home-source-mode">
+    <select aria-label={copy.mode.label} className="home-mode-select" onChange={(event) => choose(event.target.value as OperatingMode)} value={mode}>
+      {modes.map((item) => <option key={item} value={item}>{copy.mode.choices[item]}</option>)}
+    </select>
+    <Modal state={dialog}>
+      {pendingMode && <Modal.Backdrop className="home-mode-backdrop"><Modal.Container className="home-mode-container" placement="center"><Modal.Dialog className="home-mode-dialog"><Modal.Header><Modal.Heading>{copy.confirmation.title(pendingMode)}</Modal.Heading></Modal.Header><Modal.Body>{copy.confirmation.body(pendingMode)}</Modal.Body><Modal.Footer><Button isDisabled={busy} onPress={close} variant="secondary">{copy.actions.cancel}</Button><Button isPending={busy} onPress={confirm}>{copy.confirmation.confirm(pendingMode)}</Button></Modal.Footer></Modal.Dialog></Modal.Container></Modal.Backdrop>}
+    </Modal>
+  </div>
 }
 
 type HomeSourceRowProps = {
@@ -49,15 +66,9 @@ type HomeSourceRowProps = {
 }
 
 export function HomeSourceRow({ connectedSources, copy, mode, onModeChange, onSourceChange, source }: HomeSourceRowProps) {
-  const modes: OperatingMode[] = ['active', 'trial', 'paused']
-
   return <div className="home-source-row">
     <label className="home-source-filter">{copy.source}<select onChange={(event) => onSourceChange(event.target.value as HomeSource | 'all')} value={source}><option value="all">{copy.allSources}</option>{connectedSources.map((item) => <option key={item} value={item}>{copy.sources[item]}</option>)}</select></label>
-    <div aria-label={copy.mode.label} className="home-source-mode" role="group">
-      {modes.map((nextMode) => modeChangeNeedsConfirmation(mode, nextMode)
-        ? <ModeConfirmation copy={copy} key={nextMode} mode={nextMode} onConfirm={() => onModeChange(nextMode)} triggerLabel={copy.mode.choices[nextMode]} />
-        : <button aria-pressed="true" className="home-mode-choice" key={nextMode} type="button">{copy.mode.choices[nextMode]}</button>)}
-    </div>
+    <ModePicker copy={copy} mode={mode} onModeChange={onModeChange} />
   </div>
 }
 

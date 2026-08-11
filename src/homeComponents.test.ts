@@ -58,8 +58,8 @@ test('Home status tokens and tooltip layout use the approved palette', async () 
   assert.match(css, /--memory-source-teams: #9990a8;/)
   assert.doesNotMatch(css, /--home-status-success-foreground/)
   assert.match(css, /--button-primary-background: var\(--color-friday-ink\);/)
-  assert.match(css, /\.home-mode-choice\[aria-pressed='true'\] \{[^}]*background: var\(--button-primary-background\);/)
-  assert.match(css, /\.home-mode-choice:focus-visible \{[^}]*outline: 2px solid var\(--focus-ring\);/)
+  assert.match(css, /\.home-mode-select \{[^}]*background: var\(--button-primary-background\);/)
+  assert.match(css, /\.home-mode-select:focus-visible \{[^}]*outline: 2px solid var\(--focus-ring\);/)
   assert.match(css, /\.home-detail-state \{[^}]*border-left: 2px solid var\(--status-success-foreground\);/)
   assert.match(css, /\.settings-button-danger \{ background: var\(--status-danger-text\); color: var\(--color-friday-surface\); \}/)
   assert.match(css, /\.onboarding-connect-content \.onboarding-section-footer \.onboarding-continue-action \{[^}]*background: var\(--button-inverse-background\);/)
@@ -161,20 +161,21 @@ test('sent detail includes the recipient feedback preview while a failure has no
   assert.doesNotMatch(failed, /重试|重新连接/)
 })
 
-test('source row renders exactly three compact mode choices without the old toggle wording', async () => {
+test('source row keeps one current mode trigger and offers the three modes in its native menu', async () => {
   const { HomeSourceRow } = await vite.ssrLoadModule('/src/components/HomeWorkspace.tsx')
   const html = renderToStaticMarkup(createElement(HomeSourceRow, {
-    connectedSources: ['dingtalk', 'feishu'] as const, copy: translations.en.workspace.home, mode: 'active',
+    connectedSources: ['dingtalk', 'feishu'] as const, copy: translations.en.workspace.home, mode: 'trial',
     onModeChange: async () => {}, onSourceChange: () => {}, source: 'all',
   }))
 
   assert.match(html, /Source/)
   assert.match(html, /All apps/)
-  assert.equal((html.match(/home-mode-choice/g) ?? []).length, 3)
+  assert.equal((html.match(/home-mode-select/g) ?? []).length, 1)
   assert.match(html, />Start</)
   assert.match(html, />Try</)
   assert.match(html, />Pause</)
-  assert.doesNotMatch(html, /Switch to trial mode|Enable active mode/)
+  assert.match(html, /<option value="trial" selected="">Try<\/option>/)
+  assert.doesNotMatch(html, /home-mode-choice|Switch to trial mode|Enable active mode/)
 })
 
 test('Start confirmation describes local demo and backend gates in both locales', () => {
@@ -189,7 +190,7 @@ test('Start confirmation describes local demo and backend gates in both locales'
   assert.doesNotMatch(chinese, /自动发送/)
 })
 
-test('mode selector has a localized label and leaves the selected mode focusable', async () => {
+test('mode picker labels its native current-state control in both locales', async () => {
   const { HomeSourceRow } = await vite.ssrLoadModule('/src/components/HomeWorkspace.tsx')
   const english = renderToStaticMarkup(createElement(HomeSourceRow, {
     connectedSources: ['dingtalk'] as const, copy: translations.en.workspace.home, mode: 'active',
@@ -200,9 +201,9 @@ test('mode selector has a localized label and leaves the selected mode focusable
     onModeChange: async () => {}, onSourceChange: () => {}, source: 'all',
   }))
 
-  assert.match(english, /aria-label="Operating mode" class="home-source-mode" role="group"/)
-  assert.match(chinese, /aria-label="运行模式" class="home-source-mode" role="group"/)
-  assert.match(english, /<button aria-pressed="true" class="home-mode-choice" type="button">Start<\/button>/)
+  assert.match(english, /<select aria-label="Operating mode" class="home-mode-select"/)
+  assert.match(chinese, /<select aria-label="运行模式" class="home-mode-select"/)
+  assert.match(english, /<option value="active" selected="">Start<\/option>/)
 })
 
 test('workspace keeps global controls outside the white canvas and removes the rail account', async () => {
