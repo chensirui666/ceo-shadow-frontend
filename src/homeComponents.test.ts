@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { after, test } from 'node:test'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -36,7 +37,22 @@ test('formal Home exposes the latest non-zero hour in an opt-in tooltip', async 
   assert.match(withTooltip, /Processed 3/)
   assert.match(withTooltip, /Pending 3/)
   assert.match(withTooltip, /Send failed 1/)
+  assert.match(withTooltip, /home-chart-tooltip-label/)
+  assert.match(withTooltip, /home-chart-tooltip-value/)
+  assert.match(withTooltip, /aria-label="Processed 3"/)
   assert.doesNotMatch(withoutTooltip, /home-chart-tooltip/)
+})
+
+test('Home status tokens and tooltip layout use the approved palette', async () => {
+  const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
+
+  assert.match(css, /--color-friday-success: #1b9876;/)
+  assert.match(css, /--color-friday-pending: #ffa946;/)
+  assert.match(css, /--color-friday-danger: #d84e52;/)
+  assert.match(css, /--accent-foreground: var\(--color-friday-surface\);/)
+  assert.match(css, /\.home-chart-tooltip \{[\s\S]*?box-shadow: 0 10px 24px rgb\(54 48 39 \/ 12%\);/)
+  assert.match(css, /\.home-chart-tooltip-item \{[\s\S]*?grid-template-columns: 8px minmax\(0, 1fr\) auto;/)
+  assert.match(css, /\.home-chart-tooltip-value \{[\s\S]*?font-variant-numeric: tabular-nums;/)
 })
 
 test('event list renders a compact row with a countdown and message lines', async () => {

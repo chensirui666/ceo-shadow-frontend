@@ -10,9 +10,9 @@
   --color-friday-ink: #242422;
   --color-friday-muted: #6f6d67;
   --color-friday-border: #e7e4dc;
-  --color-friday-success: #00b89c;
-  --color-friday-pending: #ff9f1c;
-  --color-friday-danger: #ff4d4f;
+  --color-friday-success: #1b9876;
+  --color-friday-pending: #ffa946;
+  --color-friday-danger: #d84e52;
 }
 
 :root {
@@ -49,7 +49,7 @@
   --default: var(--color-friday-surface-muted);
   --default-foreground: var(--color-friday-ink);
   --accent: var(--color-friday-ink);
-  --accent-foreground: var(--color-friday-ink);
+  --accent-foreground: var(--color-friday-surface);
   --success: var(--color-friday-success);
   --success-foreground: var(--color-friday-ink);
   --warning: var(--color-friday-pending);
@@ -57,11 +57,11 @@
   --danger: var(--color-friday-danger);
   --danger-foreground: var(--color-friday-ink);
   --status-success-foreground: var(--color-friday-success);
-  --status-success-text: color-mix(in srgb, var(--status-success-foreground) 65%, var(--color-friday-ink));
+  --status-success-text: color-mix(in srgb, var(--status-success-foreground) 72%, var(--color-friday-ink));
   --status-success-background: color-mix(in srgb, var(--status-success-foreground) 12%, var(--color-friday-surface));
   --status-success-border: color-mix(in srgb, var(--status-success-foreground) 28%, var(--color-friday-surface));
   --status-pending-foreground: var(--color-friday-pending);
-  --status-pending-text: color-mix(in srgb, var(--status-pending-foreground) 57%, var(--color-friday-ink));
+  --status-pending-text: color-mix(in srgb, var(--status-pending-foreground) 49%, var(--color-friday-ink));
   --status-pending-background: color-mix(in srgb, var(--status-pending-foreground) 12%, var(--color-friday-surface));
   --status-pending-border: color-mix(in srgb, var(--status-pending-foreground) 28%, var(--color-friday-surface));
   --status-danger-foreground: var(--color-friday-danger);
@@ -398,9 +398,10 @@ button, input, select, textarea { font: inherit; }
 .home-chart-bars { position: relative; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); align-items: end; gap: 4px; height: 144px; border-bottom: 1px solid var(--home-chart-grid); padding-top: 12px; }
 .home-chart-bars::before { position: absolute; inset: 12px 0 20px; background: repeating-linear-gradient(to bottom, transparent 0 27px, color-mix(in srgb, var(--home-chart-grid) 72%, transparent) 27px 28px); content: ''; mask-image: repeating-linear-gradient(to right, var(--color-friday-ink) 0 4px, transparent 4px 8px); -webkit-mask-image: repeating-linear-gradient(to right, var(--color-friday-ink) 0 4px, transparent 4px 8px); pointer-events: none; }
 .home-chart-tooltip-layer { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 4px; pointer-events: none; }
-.home-chart-tooltip { z-index: 1; align-self: start; width: max-content; border: 1px solid var(--color-friday-border); border-radius: var(--radius-control); background: var(--color-friday-surface); box-shadow: none; color: var(--color-friday-ink); padding: 8px 10px; font-size: var(--font-meta); line-height: 1.5; }
+.home-chart-tooltip { z-index: 1; align-self: start; width: max-content; border: 1px solid var(--color-friday-border); border-radius: var(--radius-control); background: var(--color-friday-surface); box-shadow: 0 10px 24px rgb(54 48 39 / 12%); color: var(--color-friday-ink); padding: 8px 10px; font-size: var(--font-meta); line-height: 1.5; }
 .home-chart-tooltip strong, .home-chart-tooltip-item { display: block; }
-.home-chart-tooltip-item { display: flex; align-items: center; gap: 6px; border: 0; background: transparent; padding: 0; }
+.home-chart-tooltip-item { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; align-items: center; column-gap: 6px; border: 0; background: transparent; padding: 0; }
+.home-chart-tooltip-value { justify-self: end; font-variant-numeric: tabular-nums; font-weight: 600; }
 .home-chart-tooltip-start { justify-self: start; }
 .home-chart-tooltip-center { justify-self: center; }
 .home-chart-tooltip-end { justify-self: end; }
