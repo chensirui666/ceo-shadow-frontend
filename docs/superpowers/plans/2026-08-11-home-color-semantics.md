@@ -266,4 +266,4 @@ git status --short
 git log -2 --oneline
 ```
 
-Expected: 本方案只留下 Task 1 和 Task 2 的提交；任何既有未跟踪 Playwright 文件或截图保持未暂存、未修改。
+Expected: Task 1 和 Task 2 的代码提交存在，配套规格/计划提交可存在；任何既有未跟踪 Playwright 文件或截图保持未暂存、未修改。
