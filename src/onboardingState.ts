@@ -62,13 +62,17 @@ export const confirmWorkStyle = (state: OnboardingState, prompt?: string): Onboa
     : state
 )
 
+export const skipWorkStyle = (state: OnboardingState): OnboardingState => (
+  state.memoryConfirmed || state.memorySkipped ? { ...state, step: 4, maxReached: 4 } : state
+)
+
 export const selectOnboardingStep = (state: OnboardingState, step: OnboardingStep): OnboardingState => (
   step <= state.maxReached ? { ...state, step } : state
 )
 
 export const recordTrial = (state: OnboardingState, question: string): OnboardingState => {
   const trimmedQuestion = question.trim()
-  return state.workStyleConfirmed && trimmedQuestion
+  return state.step === 4 && trimmedQuestion
     ? { ...state, trial: { question: trimmedQuestion, reply: trialReplyFor(trimmedQuestion) } }
     : state
 }

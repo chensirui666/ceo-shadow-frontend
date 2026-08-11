@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
+import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Scale, ShieldCheck } from 'lucide-react'
 import connectIllustration from '../assets/onboarding-connect-editorial.png'
 import memoryIllustration from '../assets/onboarding-memory-editorial.png'
 import trialIllustration from '../assets/onboarding-trial-editorial.png'
@@ -9,7 +10,7 @@ import { onboardingConnectorLogos } from '../content/connectorLogos.ts'
 import { translations } from '../content/translations.ts'
 import { activityHours, homeSources } from '../homeState.ts'
 import type { HomeSource } from '../homeState.ts'
-import { advanceFromMemory, completeOnboarding, confirmMemory, confirmWorkStyle, connectSource, continueToMemory, createOnboardingState, createTrialEvent, recordTrial, recordTrialFeedback, regenerateTrial, selectOnboardingStep, skipMemory } from '../onboardingState.ts'
+import { advanceFromMemory, completeOnboarding, confirmMemory, confirmWorkStyle, connectSource, continueToMemory, createOnboardingState, createTrialEvent, recordTrial, recordTrialFeedback, regenerateTrial, selectOnboardingStep, skipMemory, skipWorkStyle } from '../onboardingState.ts'
 import type { OnboardingState } from '../onboardingState.ts'
 import HomeActivityChart from './HomeActivityChart.tsx'
 import HomeEventDetail from './HomeEventDetail.tsx'
@@ -24,10 +25,12 @@ type OnboardingHomeProps = {
 }
 
 type ActivationStage = 'idle' | 'confirm' | 'celebrating' | 'contacts'
-type MemoryStage = 'reading' | 'summary' | 'building' | null
-type StyleStage = 'extracting' | 'editing' | null
+type MemoryStage = 'reading' | 'ready' | 'building' | null
+type StyleStage = 'extracting' | 'ready' | null
 
 const contacts = ['刘晨', '周航', '赵明']
+const memorySignalIcons = { messages: MessageCircle, documents: FileText, calendar: CalendarCheck }
+const stylePointIcons = [MessageCircle, Scale, ArrowRight, ShieldCheck]
 
 export default function OnboardingHome({ initialState, locale, onComplete, onOpenMemory, onStateChange }: OnboardingHomeProps) {
   const copy = translations[locale].workspace.onboarding
@@ -56,7 +59,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
       setMemoryProgress(100)
     }, 3_800)
     const summaryTimer = window.setTimeout(() => {
-      setMemoryStage('summary')
+      setMemoryStage('ready')
     }, 4_100)
     return () => {
       window.clearInterval(progressTimer)
@@ -72,7 +75,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
       window.clearInterval(progressTimer)
       setStyleProgress(100)
     }, 3_800)
-    const editorTimer = window.setTimeout(() => setStyleStage('editing'), 4_100)
+    const editorTimer = window.setTimeout(() => setStyleStage('ready'), 4_100)
     return () => {
       window.clearInterval(progressTimer)
       window.clearTimeout(completionTimer)
@@ -121,9 +124,13 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
     setStyleStage('extracting')
   }
 
-  const confirmStyle = () => update(confirmWorkStyle(state, promptDraft))
+  const confirmStyle = () => {
+    update(confirmWorkStyle(state, promptDraft))
+    setStyleStage(null)
+  }
 
   const beginActivation = () => {
+    if (!state.workStyleConfirmed) return
     update(completeOnboarding(state))
     setActivation('celebrating')
   }
@@ -172,11 +179,20 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
       {state.step === 2 && <section className="onboarding-section onboarding-editorial-layout onboarding-memory-layout">
         <div className="onboarding-editorial-content">
           <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(2)}</p><h2>{copy.memory.title}</h2><p>{copy.memory.subtitle}</p></header>
-          <div className="onboarding-scope-list">
-            {state.connectedSources.map((source) => <div key={source}><strong>{homeCopy.sources[source]}</strong><span>{copy.memory.scope[source]}</span></div>)}
+          <div className="onboarding-memory-sources">
+            <p>{copy.memory.connectedTitle}</p>
+            <div className="onboarding-memory-source-list">{state.connectedSources.map((source) => <div className="onboarding-memory-source" key={source}>
+              <img alt="" src={onboardingConnectorLogos[source]} />
+              <span><strong>{homeCopy.sources[source]}</strong><small>{copy.memory.connected}</small></span>
+              <span className="onboarding-read-only"><Check aria-hidden="true" />{copy.memory.readOnly}</span>
+            </div>)}</div>
+            <div className="onboarding-memory-signals"><p>{copy.memory.signalsTitle}</p><ul>{(Object.keys(memorySignalIcons) as Array<keyof typeof memorySignalIcons>).map((signal) => {
+              const SignalIcon = memorySignalIcons[signal]
+              const [label, description] = copy.memory.signals[signal]
+              return <li key={signal}><SignalIcon aria-hidden="true" /><span><strong>{label}</strong><small>{description}</small></span></li>
+            })}</ul></div>
           </div>
-          <p className="onboarding-demo-note">{copy.memory.demo}</p>
-          <footer className="onboarding-section-footer onboarding-section-footer-actions">
+          <footer className="onboarding-section-footer onboarding-section-footer-actions onboarding-memory-actions">
             {state.memoryConfirmed ? <><Button onPress={onOpenMemory} type="button" variant="secondary">{copy.memory.view}</Button><Button onPress={() => update(advanceFromMemory(state))} type="button">{copy.memory.proceed}</Button></> : <><Button onPress={beginMemoryRead} type="button">{copy.memory.confirm}</Button><Button onPress={() => update(state.memorySkipped ? advanceFromMemory(state) : skipMemory(state))} type="button" variant="secondary">{state.memorySkipped ? copy.memory.proceed : copy.memory.skip}</Button></>}
           </footer>
         </div>
@@ -186,9 +202,11 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
       {state.step === 3 && <section className="onboarding-section onboarding-editorial-layout onboarding-work-style-layout">
         <div className="onboarding-editorial-content">
           <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(3)}</p><h2>{copy.style.title}</h2><p>{copy.style.subtitle}</p></header>
-          <div className="onboarding-style-summary"><p>{copy.style.summary}</p><ul>{copy.style.points.map((point) => <li key={point}>{point}</li>)}</ul></div>
-          <button className="onboarding-prompt-toggle" onClick={() => setStyleStage('editing')} type="button">{copy.style.showPrompt}</button>
-          <footer className="onboarding-section-footer onboarding-style-actions"><Button onPress={beginStyleExtraction} type="button" variant="secondary">{copy.style.extract}</Button><Button isDisabled={!promptDraft.trim()} onPress={confirmStyle} type="button">{copy.style.confirm}</Button></footer>
+          <div className="onboarding-style-summary"><p>{copy.style.summary}</p><ul>{copy.style.points.map((point, index) => {
+            const PointIcon = stylePointIcons[index]
+            return <li className="onboarding-style-point" key={point}><span className="onboarding-style-point-icon"><PointIcon aria-hidden="true" /></span>{point}</li>
+          })}</ul></div>
+          <footer className="onboarding-section-footer onboarding-style-actions"><Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button><Button onPress={() => update(skipWorkStyle(state))} type="button" variant="secondary">{copy.style.skip}</Button></footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={workStyleIllustration} /></aside>
       </section>}
@@ -199,7 +217,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
           <div className="onboarding-trial-suggestions"><span>{copy.trial.suggestions}</span>{copy.trial.questions.map((suggestion) => <button key={suggestion} onClick={() => setQuestion(suggestion)} type="button">{suggestion}</button>)}</div>
           <label className="onboarding-composer"><span className="sr-only">{copy.trial.inputLabel}</span><textarea onChange={(event) => setQuestion(event.target.value)} placeholder={copy.trial.placeholder} value={question} /></label>
           <Button className="onboarding-trial-submit" isDisabled={!question.trim()} onPress={submitTrial} type="button">{copy.trial.submit}</Button>
-          <footer className="onboarding-section-footer onboarding-formal-action"><Button onPress={() => setActivation('confirm')} type="button" variant="secondary">{copy.activation.start}</Button><p>{copy.activation.hint}</p></footer>
+          <footer className="onboarding-section-footer onboarding-formal-action"><Button isDisabled={!state.workStyleConfirmed} onPress={() => setActivation('confirm')} type="button" variant="secondary">{copy.activation.start}</Button><p>{copy.activation.hint}</p></footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={trialIllustration} /></aside>
       </section>}
@@ -216,14 +234,18 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
     {connecting && <section aria-label={copy.connection.confirmTitle(homeCopy.sources[connecting])} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog"><h2>{copy.connection.confirmTitle(homeCopy.sources[connecting])}</h2><p>{copy.connection.confirmBody}</p><footer><Button onPress={() => setConnecting(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={completeConnection} type="button">{copy.connection.complete}</Button></footer></div></section>}
 
     {memoryStage && <section aria-label={copy.memory.readingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-memory-dialog">
-      {memoryStage === 'reading' && <><h2>{copy.memory.readingTitle}</h2><progress max="100" value={memoryProgress}>{memoryProgress}%</progress><p>{copy.memory.reading[memoryProgress < 70 ? 0 : 1]}</p><small>{copy.memory.demo}</small></>}
-      {memoryStage === 'summary' && <><h2>{copy.memory.summaryTitle}</h2><p>{copy.memory.summary}</p><small>{copy.memory.demo}</small><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={() => setMemoryStage('building')} type="button">{copy.memory.construct}</Button></footer></>}
-      {memoryStage === 'building' && <><h2>{copy.memory.confirm}</h2><progress max="100" value="100">100%</progress><p>{copy.memory.building}</p><small>{copy.memory.demo}</small></>}
+      <h2>{copy.memory.readingTitle}</h2><progress className="onboarding-progress" max="100" value={memoryProgress}>{memoryProgress}%</progress>
+      {memoryStage === 'reading' && <p>{copy.memory.reading[memoryProgress < 70 ? 0 : 1]}</p>}
+      {memoryStage === 'ready' && <div className="onboarding-modal-result"><p>{copy.memory.summary}</p><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={() => setMemoryStage('building')} type="button">{copy.memory.construct}</Button></footer></div>}
+      {memoryStage === 'building' && <p>{copy.memory.building}</p>}
+      <small>{copy.memory.demo}</small>
     </div></section>}
 
-    {styleStage && <section aria-label={styleStage === 'extracting' ? copy.style.extractingTitle : copy.style.editTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-style-dialog">
-      {styleStage === 'extracting' && <><h2>{copy.style.extractingTitle}</h2><progress max="100" value={styleProgress}>{styleProgress}%</progress><p>{copy.style.extracting[styleProgress < 60 ? 0 : 1]}</p><small>{copy.style.demo}</small></>}
-      {styleStage === 'editing' && <><h2>{copy.style.editTitle}</h2><p>{copy.style.editHint}</p><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea onChange={(event) => setPromptDraft(event.target.value)} value={promptDraft} /></label><small>{copy.style.demo}</small><footer><Button onPress={() => setStyleStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!promptDraft.trim()} onPress={() => setStyleStage(null)} type="button">{copy.style.usePrompt}</Button></footer></>}
+    {styleStage && <section aria-label={copy.style.extractingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-style-dialog">
+      <h2>{copy.style.extractingTitle}</h2><progress className="onboarding-progress" max="100" value={styleProgress}>{styleProgress}%</progress>
+      {styleStage === 'extracting' && <p>{copy.style.extracting[styleProgress < 60 ? 0 : 1]}</p>}
+      {styleStage === 'ready' && <div className="onboarding-modal-result"><p>{copy.style.editHint}</p><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea onChange={(event) => setPromptDraft(event.target.value)} value={promptDraft} /></label><footer><Button onPress={() => setStyleStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!promptDraft.trim()} onPress={confirmStyle} type="button">{copy.style.usePrompt}</Button></footer></div>}
+      <small>{copy.style.demo}</small>
     </div></section>}
 
     {activation === 'confirm' && <section aria-label={copy.activation.confirmTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog"><h2>{copy.activation.confirmTitle}</h2><p>{copy.activation.confirmBody}</p><footer><Button onPress={() => setActivation('idle')} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={beginActivation} type="button">{copy.activation.confirm}</Button></footer></div></section>}

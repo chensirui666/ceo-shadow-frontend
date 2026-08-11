@@ -39,6 +39,19 @@ test('work style confirmation retains an edited Prompt for the current session',
   assert.equal(confirmed.workStylePrompt, '先确认事实，再给出下一步。')
 })
 
+test('skipping work-style distillation still allows a Trial without enabling formal mode', () => {
+  const prepared = onboarding.skipMemory(
+    onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),
+  )
+  const skipped = onboarding.skipWorkStyle(prepared)
+  const trial = onboarding.recordTrial(skipped, '客户问：这个项目本周能交付吗？')
+
+  assert.equal(skipped.step, 4)
+  assert.equal(skipped.workStyleConfirmed, false)
+  assert.match(trial.trial?.reply ?? '', /核实/)
+  assert.equal(onboarding.completeOnboarding(skipped).completed, false)
+})
+
 test('a Trial adjustment changes only the current Trial reply', () => {
   const connected = onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')
   const memoryConfirmed = onboarding.confirmMemory(connected)

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make onboarding progress feel deliberate, unify modal actions, and let a user refine the extracted work-style Prompt before confirmation.
+**Goal:** Make onboarding progress feel deliberate, keep its result in the same modal, and let a user refine the extracted work-style Prompt before confirmation.
 
 **Architecture:** Keep all local-demo interaction state in `OnboardingHome`. Reuse the existing modal shell and HeroUI buttons; only add small UI state for progress and the editable Prompt.
 
@@ -13,6 +13,7 @@
 - Remain a local demo: no external reads, writes, or sending.
 - Preserve the existing four onboarding states and Trial boundary.
 - Do not add dependencies or persistent storage.
+- Keep formal mode unavailable until work-style distillation is confirmed.
 
 ---
 
@@ -32,7 +33,7 @@ assert.match(stepThreeHtml, /Extract work style/)
 
 Run: `node --test src/onboardingHome.test.ts`
 
-- [ ] **Step 3: Replace the Memory timeout jump with a small-interval progress update and delay the summary until 100% is visible.**
+ - [ ] **Step 3: Replace the Memory timeout jump with a small-interval black progress update and reveal the summary below the completed bar.**
 
 ```ts
 const progressTimer = window.setInterval(() => setMemoryProgress((value) => Math.min(value + 2.5, 95)), 100)
@@ -71,7 +72,7 @@ const [promptDraft, setPromptDraft] = useState(copy.style.prompt)
 confirmWorkStyle(state, promptDraft)
 ```
 
-- [ ] **Step 3: Render extraction progress followed by an editable textarea preview; route the existing confirmation through the edited draft.**
+ - [ ] **Step 3: Render extraction progress with the editable textarea preview below the completed bar; make the Step 3 footer contain only distill and skip actions.**
 
 ```tsx
 <textarea aria-label={copy.style.promptLabel} onChange={(event) => setPromptDraft(event.target.value)} value={promptDraft} />
