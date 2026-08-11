@@ -51,17 +51,17 @@ export default function HomeActivityChart({ activity, copy, showDefaultTooltip }
           style={{ gridColumn: `${tooltipColumn} / span 1` }}
         >
           <strong>{tooltipHour.hour}:00</strong>
-          <span aria-label={`${copy.chart.processed} ${tooltipHour.processed}`} className="home-chart-tooltip-item home-chart-key-processed">
+          <span className="home-chart-tooltip-item home-chart-key-processed">
             <span className="home-chart-tooltip-label">{copy.chart.processed}</span>
-            <strong aria-hidden="true" className="home-chart-tooltip-value">{tooltipHour.processed}</strong>
+            <strong className="home-chart-tooltip-value">{tooltipHour.processed}</strong>
           </span>
-          <span aria-label={`${copy.chart.pending} ${tooltipHour.pending}`} className="home-chart-tooltip-item home-chart-key-pending">
+          <span className="home-chart-tooltip-item home-chart-key-pending">
             <span className="home-chart-tooltip-label">{copy.chart.pending}</span>
-            <strong aria-hidden="true" className="home-chart-tooltip-value">{tooltipHour.pending}</strong>
+            <strong className="home-chart-tooltip-value">{tooltipHour.pending}</strong>
           </span>
-          <span aria-label={`${copy.chart.failed} ${tooltipHour.failed}`} className="home-chart-tooltip-item home-chart-key-failed">
+          <span className="home-chart-tooltip-item home-chart-key-failed">
             <span className="home-chart-tooltip-label">{copy.chart.failed}</span>
-            <strong aria-hidden="true" className="home-chart-tooltip-value">{tooltipHour.failed}</strong>
+            <strong className="home-chart-tooltip-value">{tooltipHour.failed}</strong>
           </span>
         </aside>
       </div>}

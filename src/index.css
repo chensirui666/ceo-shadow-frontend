@@ -10,9 +10,9 @@
   --color-friday-ink: #242422;
   --color-friday-muted: #6f6d67;
   --color-friday-border: #e7e4dc;
-  --color-friday-success: #1b9876;
-  --color-friday-pending: #ffa946;
-  --color-friday-danger: #d84e52;
+  --color-friday-success: #00b89c;
+  --color-friday-pending: #ff9f1c;
+  --color-friday-danger: #ff4d4f;
 }
 
 :root {
@@ -57,11 +57,11 @@
   --danger: var(--color-friday-danger);
   --danger-foreground: var(--color-friday-ink);
   --status-success-foreground: var(--color-friday-success);
-  --status-success-text: color-mix(in srgb, var(--status-success-foreground) 72%, var(--color-friday-ink));
+  --status-success-text: color-mix(in srgb, var(--status-success-foreground) 65%, var(--color-friday-ink));
   --status-success-background: color-mix(in srgb, var(--status-success-foreground) 12%, var(--color-friday-surface));
   --status-success-border: color-mix(in srgb, var(--status-success-foreground) 28%, var(--color-friday-surface));
   --status-pending-foreground: var(--color-friday-pending);
-  --status-pending-text: color-mix(in srgb, var(--status-pending-foreground) 49%, var(--color-friday-ink));
+  --status-pending-text: color-mix(in srgb, var(--status-pending-foreground) 57%, var(--color-friday-ink));
   --status-pending-background: color-mix(in srgb, var(--status-pending-foreground) 12%, var(--color-friday-surface));
   --status-pending-border: color-mix(in srgb, var(--status-pending-foreground) 28%, var(--color-friday-surface));
   --status-danger-foreground: var(--color-friday-danger);
@@ -367,10 +367,25 @@ button, input, select, textarea { font: inherit; }
   .workspace-global-bar { position: static; height: 64px; padding: 0 24px; }
 }
 
+.home-page, .home-detail {
+  --home-status-success-foreground: #1b9876;
+  --home-status-success-text: color-mix(in srgb, var(--home-status-success-foreground) 72%, var(--color-friday-ink));
+  --home-status-success-background: color-mix(in srgb, var(--home-status-success-foreground) 12%, var(--color-friday-surface));
+  --home-status-success-border: color-mix(in srgb, var(--home-status-success-foreground) 28%, var(--color-friday-surface));
+  --home-status-pending-foreground: #ffa946;
+  --home-status-pending-text: color-mix(in srgb, var(--home-status-pending-foreground) 49%, var(--color-friday-ink));
+  --home-status-pending-background: color-mix(in srgb, var(--home-status-pending-foreground) 12%, var(--color-friday-surface));
+  --home-status-pending-border: color-mix(in srgb, var(--home-status-pending-foreground) 28%, var(--color-friday-surface));
+  --home-status-danger-foreground: #d84e52;
+  --home-status-danger-text: color-mix(in srgb, var(--home-status-danger-foreground) 79%, var(--color-friday-ink));
+  --home-status-danger-background: color-mix(in srgb, var(--home-status-danger-foreground) 12%, var(--color-friday-surface));
+  --home-status-danger-border: color-mix(in srgb, var(--home-status-danger-foreground) 28%, var(--color-friday-surface));
+}
+
 .home-page {
-  --home-chart-processed: var(--status-success-foreground);
-  --home-chart-pending: var(--status-pending-foreground);
-  --home-chart-failed: var(--status-danger-foreground);
+  --home-chart-processed: var(--home-status-success-foreground);
+  --home-chart-pending: var(--home-status-pending-foreground);
+  --home-chart-failed: var(--home-status-danger-foreground);
   --home-chart-grid: color-mix(in srgb, var(--color-friday-border) 72%, var(--color-friday-surface));
   --home-chart-focus: var(--color-friday-ink);
   --home-chart-axis: var(--color-friday-muted);
@@ -393,6 +408,9 @@ button, input, select, textarea { font: inherit; }
 .home-chart-key-processed { --home-chart-key-dot: var(--status-success-foreground); border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-text); }
 .home-chart-key-pending { --home-chart-key-dot: var(--status-pending-foreground); border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-text); }
 .home-chart-key-failed { --home-chart-key-dot: var(--status-danger-foreground); border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-text); }
+.home-page .home-chart-key-processed { --home-chart-key-dot: var(--home-status-success-foreground); border-color: var(--home-status-success-border); background: var(--home-status-success-background); color: var(--home-status-success-text); }
+.home-page .home-chart-key-pending { --home-chart-key-dot: var(--home-status-pending-foreground); border-color: var(--home-status-pending-border); background: var(--home-status-pending-background); color: var(--home-status-pending-text); }
+.home-page .home-chart-key-failed { --home-chart-key-dot: var(--home-status-danger-foreground); border-color: var(--home-status-danger-border); background: var(--home-status-danger-background); color: var(--home-status-danger-text); }
 .home-chart-empty { color: var(--color-friday-muted); font-size: var(--font-meta); }
 .home-chart-plot { position: relative; }
 .home-chart-bars { position: relative; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); align-items: end; gap: 4px; height: 144px; border-bottom: 1px solid var(--home-chart-grid); padding-top: 12px; }
@@ -433,6 +451,9 @@ button, input, select, textarea { font: inherit; }
 .home-event-status-waiting, .home-event-status-needs-confirmation { border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-text); }
 .home-event-status-processing, .home-event-status-completed { border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-text); }
 .home-event-status-send-failed, .home-event-status-connection-error { border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-text); }
+.home-page .home-event-status-waiting, .home-page .home-event-status-needs-confirmation { border-color: var(--home-status-pending-border); background: var(--home-status-pending-background); color: var(--home-status-pending-text); }
+.home-page .home-event-status-processing, .home-page .home-event-status-completed { border-color: var(--home-status-success-border); background: var(--home-status-success-background); color: var(--home-status-success-text); }
+.home-page .home-event-status-send-failed, .home-page .home-event-status-connection-error { border-color: var(--home-status-danger-border); background: var(--home-status-danger-background); color: var(--home-status-danger-text); }
 .home-event-status-trial-complete { border-color: var(--color-friday-border); background: var(--color-friday-surface-muted); color: var(--color-friday-muted); }
 .home-event-question, .home-event-reply { grid-column: 2 / -1; overflow: hidden; font-size: var(--font-ui); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
 .home-event-question { margin-top: 1px; }
@@ -608,6 +629,9 @@ button, input, select, textarea { font: inherit; }
 .home-detail-state-needs-confirmation { border-color: var(--status-pending-foreground); }
 .home-detail-state-send-failed, .home-detail-state-connection-error { border-color: var(--status-danger-foreground); }
 .home-detail-state-trial-complete { border-color: var(--color-friday-muted); }
+.home-detail .home-detail-state { border-color: var(--home-status-success-foreground); }
+.home-detail .home-detail-state-needs-confirmation { border-color: var(--home-status-pending-foreground); }
+.home-detail .home-detail-state-send-failed, .home-detail .home-detail-state-connection-error { border-color: var(--home-status-danger-foreground); }
 .home-detail-reading { width: min(720px, 100%); }
 .home-detail-section { border-bottom: 1px solid #e6e1d8; padding: 29px 0; }
 .home-detail-section h2 { margin: 0 0 12px; font-size: var(--font-section); font-weight: 600; }
