@@ -227,10 +227,10 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
 
     <section aria-labelledby="onboarding-recent-title" className="onboarding-home-events">
       {!viewingTrial && <div className="onboarding-empty-heading"><h2 id="onboarding-recent-title">{homeCopy.recent}</h2>{!trialEvent && <span>{copy.emptyTimeline}</span>}</div>}
-      {viewingTrial && trialEvent ? <HomeEventDetail busy={false} copy={homeCopy} event={trialEvent} now={trialStartedAt.current} onBack={() => setViewingTrial(false)} onResolve={() => {}} onSubmitFeedback={(feedback) => {
+      {viewingTrial && trialEvent ? <HomeEventDetail busy={false} copy={homeCopy} event={trialEvent} mode="trial" now={trialStartedAt.current} onBack={() => setViewingTrial(false)} onResolve={() => {}} onSubmitFeedback={(feedback) => {
         update(feedback.kind === 'adjust' ? regenerateTrial(state, feedback.note) : recordTrialFeedback(state, feedback))
         setViewingTrial(false)
-      }} sourceName={homeCopy.sources[trialEvent.source]} /> : <><HomeActivityChart activity={activityHours(trialEvents, trialStartedAt.current)} copy={homeCopy} />{trialEvent && <HomeEventList copy={homeCopy} events={trialEvents} now={trialStartedAt.current} onOpen={() => setViewingTrial(true)} sourceNames={homeCopy.sources} />}</>}
+      }} sourceName={homeCopy.sources[trialEvent.source]} /> : <><HomeActivityChart activity={activityHours(trialEvents, trialStartedAt.current)} copy={homeCopy} />{trialEvent && <HomeEventList copy={homeCopy} events={trialEvents} mode="trial" now={trialStartedAt.current} onOpen={() => setViewingTrial(true)} sourceNames={homeCopy.sources} />}</>}
     </section>
 
     {connecting && <section aria-label={copy.connection.confirmTitle(homeCopy.sources[connecting])} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog"><h2>{copy.connection.confirmTitle(homeCopy.sources[connecting])}</h2><p>{copy.connection.confirmBody}</p><footer><Button onPress={() => setConnecting(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={completeConnection} type="button">{copy.connection.complete}</Button></footer></div></section>}

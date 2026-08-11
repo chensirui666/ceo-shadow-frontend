@@ -7,8 +7,12 @@ type HomeActivityChartProps = {
   copy: HomeCopy
 }
 
+export const selectedActivityHour = (activity: ActivityHour[], hour: string | null) => (
+  hour ? activity.find((item) => item.hour === hour) ?? null : null
+)
+
 export default function HomeActivityChart({ activity, copy }: HomeActivityChartProps) {
-  const [tooltipHour, setTooltipHour] = useState<ActivityHour | null>(null)
+  const [tooltipHour, setTooltipHour] = useState<string | null>(null)
   const totals = activity.reduce((sum, hour) => ({
     processed: sum.processed + hour.processed,
     pending: sum.pending + hour.pending,
@@ -16,7 +20,8 @@ export default function HomeActivityChart({ activity, copy }: HomeActivityChartP
   }), { processed: 0, pending: 0, failed: 0 })
   const maximum = Math.max(3, Math.ceil(Math.max(...activity.map((hour) => hour.processed + hour.pending + hour.failed), 1) / 3) * 3)
   const ticks = [maximum, maximum / 3 * 2, maximum / 3, 0]
-  const tooltipColumn = tooltipHour ? activity.indexOf(tooltipHour) + 1 : 1
+  const tooltip = selectedActivityHour(activity, tooltipHour)
+  const tooltipColumn = tooltipHour ? activity.findIndex((hour) => hour.hour === tooltipHour) + 1 : 1
   const tooltipAlignment = tooltipColumn <= 3 ? 'start' : tooltipColumn >= activity.length - 2 ? 'end' : 'center'
 
   return <section aria-labelledby="home-activity-title" className="home-activity">
@@ -36,7 +41,7 @@ export default function HomeActivityChart({ activity, copy }: HomeActivityChartP
         <div className="home-chart-plot">
           <div aria-hidden="true" className="home-chart-grid-lines">{ticks.slice(0, -1).map((tick) => <span className="home-chart-grid-line" key={tick} />)}</div>
           <div className="home-chart-bars">
-            {activity.map((hour) => <div aria-label={copy.chart.hourLabel(hour)} className="home-chart-hour" key={hour.hour} onBlur={() => setTooltipHour(null)} onFocus={() => setTooltipHour(hour)} onMouseEnter={() => setTooltipHour(hour)} onMouseLeave={() => setTooltipHour(null)} role="img" tabIndex={0}>
+            {activity.map((hour) => <div aria-label={copy.chart.hourLabel(hour)} className="home-chart-hour" key={hour.hour} onBlur={() => setTooltipHour(null)} onFocus={() => setTooltipHour(hour.hour)} onMouseEnter={() => setTooltipHour(hour.hour)} onMouseLeave={() => setTooltipHour(null)} role="img" tabIndex={0}>
               <span className="home-chart-stack">
                 <span className="home-chart-segment home-chart-processed" style={{ height: `${hour.processed / maximum * 100}%` }} />
                 <span className="home-chart-segment home-chart-pending" style={{ height: `${hour.pending / maximum * 100}%` }} />
@@ -44,24 +49,24 @@ export default function HomeActivityChart({ activity, copy }: HomeActivityChartP
               </span>
             </div>)}
           </div>
-          {tooltipHour && <div className="home-chart-tooltip-layer">
+          {tooltip && <div className="home-chart-tooltip-layer">
             <aside
-              aria-label={copy.chart.hourLabel(tooltipHour)}
+              aria-label={copy.chart.hourLabel(tooltip)}
               className={`home-chart-tooltip home-chart-tooltip-${tooltipAlignment}`}
               style={{ gridColumn: `${tooltipColumn} / span 1` }}
             >
-              <strong>{tooltipHour.hour}:00</strong>
+              <strong>{tooltip.hour}:00</strong>
               <span className="home-chart-tooltip-item home-chart-key-processed">
                 <span className="home-chart-tooltip-label">{copy.chart.processed}</span>
-                <strong className="home-chart-tooltip-value">{tooltipHour.processed}</strong>
+                <strong className="home-chart-tooltip-value">{tooltip.processed}</strong>
               </span>
               <span className="home-chart-tooltip-item home-chart-key-pending">
                 <span className="home-chart-tooltip-label">{copy.chart.pending}</span>
-                <strong className="home-chart-tooltip-value">{tooltipHour.pending}</strong>
+                <strong className="home-chart-tooltip-value">{tooltip.pending}</strong>
               </span>
               <span className="home-chart-tooltip-item home-chart-key-failed">
                 <span className="home-chart-tooltip-label">{copy.chart.failed}</span>
-                <strong className="home-chart-tooltip-value">{tooltipHour.failed}</strong>
+                <strong className="home-chart-tooltip-value">{tooltip.failed}</strong>
               </span>
             </aside>
           </div>}

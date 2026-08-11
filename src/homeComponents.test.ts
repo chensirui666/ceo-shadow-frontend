@@ -32,6 +32,17 @@ test('formal Home chart starts without a detail panel', async () => {
   assert.doesNotMatch(html, /home-chart-tooltip/)
 })
 
+test('activity tooltip resolves its selected hour from refreshed activity data', async () => {
+  const { selectedActivityHour } = await vite.ssrLoadModule('/src/components/HomeActivityChart.tsx')
+  const firstSnapshot = [
+    { hour: '09', processed: 1, pending: 0, failed: 0 },
+    { hour: '10', processed: 0, pending: 1, failed: 0 },
+  ]
+  const refreshedActivity = firstSnapshot.map((hour) => ({ ...hour }))
+
+  assert.equal(selectedActivityHour(refreshedActivity, firstSnapshot[1].hour), refreshedActivity[1])
+})
+
 test('Home status tokens and tooltip layout use the approved palette', async () => {
   const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
 
@@ -78,12 +89,26 @@ test('event list renders a compact row with a countdown and message lines', asyn
     status: 'waiting', question: '下周的上线时间能确定吗？', reply: '目前计划在下周三完成上线，我会在周一同步最终排期。',
     rationale: '等待你先回复。', waitUntil: '2026-08-06T10:45:00.000Z',
   } satisfies import('./homeState.ts').HomeEvent
-  const html = renderToStaticMarkup(createElement(HomeEventList, { copy: translations.zh.workspace.home, events: [event], now: new Date('2026-08-06T10:42:42.000Z'), onOpen: () => {}, sourceNames: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' } }))
+  const html = renderToStaticMarkup(createElement(HomeEventList, { copy: translations.zh.workspace.home, events: [event], mode: 'active', now: new Date('2026-08-06T10:42:42.000Z'), onOpen: () => {}, sourceNames: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' } }))
 
   assert.match(html, /产品项目群 · 刘晨/)
   assert.match(html, /2分18秒后自动回复/)
   assert.match(html, /问题：下周的上线时间能确定吗？/)
   assert.match(html, /回复：目前计划在下周三完成上线/)
+})
+
+test('a paused expired waiting event shows a compact paused state in the list', async () => {
+  const { default: HomeEventList } = await vite.ssrLoadModule('/src/components/HomeEventList.tsx')
+  const event = {
+    id: 'waiting', source: 'feishu', sender: 'Liu', receivedAt: '2026-08-06T10:42:00.000Z',
+    status: 'waiting', question: 'Can this ship?', rationale: 'Waiting for you.', waitUntil: '2026-08-06T10:45:00.000Z',
+  } satisfies import('./homeState.ts').HomeEvent
+  const html = renderToStaticMarkup(createElement(HomeEventList, {
+    copy: translations.en.workspace.home, events: [event], mode: 'paused', now: new Date('2026-08-06T10:46:00.000Z'), onOpen: () => {}, sourceNames: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
+  }))
+
+  assert.match(html, />Paused</)
+  assert.doesNotMatch(html, /0m 0s until automatic reply/)
 })
 
 test('a session Trial event carries a visible Trial marker in Home', async () => {
@@ -92,7 +117,7 @@ test('a session Trial event carries a visible Trial marker in Home', async () =>
     id: 'trial', source: 'dingtalk', sender: '你', receivedAt: '2026-08-09T09:00:00.000Z', status: 'trial-complete',
     question: '客户问：当前方案有什么风险？', reply: '我会先核实当前进度、风险和需要确认的事项。', rationale: 'Trial：回复仅在当前会话中查看，未发送给任何联系人。',
   } satisfies import('./homeState.ts').HomeEvent
-  const html = renderToStaticMarkup(createElement(HomeEventList, { copy: translations.zh.workspace.home, events: [event], now: new Date('2026-08-09T09:01:00.000Z'), onOpen: () => {}, sourceNames: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' } }))
+  const html = renderToStaticMarkup(createElement(HomeEventList, { copy: translations.zh.workspace.home, events: [event], mode: 'active', now: new Date('2026-08-09T09:01:00.000Z'), onOpen: () => {}, sourceNames: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' } }))
 
   assert.match(html, /Trial · 已完成，未发送/)
 })
@@ -106,7 +131,7 @@ const createDetailEvent = (override: Partial<import('./homeState.ts').HomeEvent>
 test('confirmation detail offers an editable response with send and cancel', async () => {
   const { default: HomeEventDetail } = await vite.ssrLoadModule('/src/components/HomeEventDetail.tsx')
   const event = createDetailEvent({ status: 'needs-confirmation', reply: '建议下周三上线。', rationale: '涉及交付时间承诺，需要你确认后再回复。' })
-  const html = renderToStaticMarkup(createElement(HomeEventDetail, { busy: false, copy: translations.zh.workspace.home, event, onBack: () => {}, onResolve: () => {}, onSubmitFeedback: () => {}, sourceName: '飞书' }))
+  const html = renderToStaticMarkup(createElement(HomeEventDetail, { busy: false, copy: translations.zh.workspace.home, event, mode: 'active', now: new Date(), onBack: () => {}, onResolve: () => {}, onSubmitFeedback: () => {}, sourceName: '飞书' }))
 
   assert.match(html, /执行依据/)
   assert.match(html, /涉及交付时间承诺，需要你确认后再回复。/)
@@ -115,10 +140,21 @@ test('confirmation detail offers an editable response with send and cancel', asy
   assert.match(html, />取消</)
 })
 
+test('a paused expired waiting event shows a compact paused state in detail', async () => {
+  const { default: HomeEventDetail } = await vite.ssrLoadModule('/src/components/HomeEventDetail.tsx')
+  const event = createDetailEvent({ status: 'waiting', outcome: undefined, reply: undefined, rationale: 'Waiting for you.', waitUntil: '2026-08-06T10:45:00.000Z' })
+  const html = renderToStaticMarkup(createElement(HomeEventDetail, {
+    busy: false, copy: translations.en.workspace.home, event, mode: 'paused', now: new Date('2026-08-06T10:46:00.000Z'), onBack: () => {}, onResolve: () => {}, onSubmitFeedback: () => {}, sourceName: 'Feishu',
+  }))
+
+  assert.match(html, />Paused</)
+  assert.doesNotMatch(html, /0m 0s until automatic reply/)
+})
+
 test('sent detail includes the recipient feedback preview while a failure has no retry action', async () => {
   const { default: HomeEventDetail } = await vite.ssrLoadModule('/src/components/HomeEventDetail.tsx')
-  const sent = renderToStaticMarkup(createElement(HomeEventDetail, { busy: false, copy: translations.zh.workspace.home, event: createDetailEvent(), onBack: () => {}, onResolve: () => {}, onSubmitFeedback: () => {}, sourceName: '钉钉' }))
-  const failed = renderToStaticMarkup(createElement(HomeEventDetail, { busy: false, copy: translations.zh.workspace.home, event: createDetailEvent({ status: 'send-failed', outcome: undefined }), onBack: () => {}, onResolve: () => {}, onSubmitFeedback: () => {}, sourceName: '飞书' }))
+  const sent = renderToStaticMarkup(createElement(HomeEventDetail, { busy: false, copy: translations.zh.workspace.home, event: createDetailEvent(), mode: 'active', now: new Date(), onBack: () => {}, onResolve: () => {}, onSubmitFeedback: () => {}, sourceName: '钉钉' }))
+  const failed = renderToStaticMarkup(createElement(HomeEventDetail, { busy: false, copy: translations.zh.workspace.home, event: createDetailEvent({ status: 'send-failed', outcome: undefined }), mode: 'active', now: new Date(), onBack: () => {}, onResolve: () => {}, onSubmitFeedback: () => {}, sourceName: '飞书' }))
 
   assert.match(sent, /这条回复是否解决了你的问题？/)
   assert.match(sent, /未解决/)
@@ -139,6 +175,34 @@ test('source row renders exactly three compact mode choices without the old togg
   assert.match(html, />Try</)
   assert.match(html, />Pause</)
   assert.doesNotMatch(html, /Switch to trial mode|Enable active mode/)
+})
+
+test('Start confirmation describes local demo and backend gates in both locales', () => {
+  const english = translations.en.workspace.home.confirmation.body('active')
+  const chinese = translations.zh.workspace.home.confirmation.body('active')
+
+  assert.match(english, /local demo.*displayed mode/i)
+  assert.match(english, /backend gates/i)
+  assert.doesNotMatch(english, /automatically/i)
+  assert.match(chinese, /本地演示.*显示的运行状态/)
+  assert.match(chinese, /后端门禁/)
+  assert.doesNotMatch(chinese, /自动发送/)
+})
+
+test('mode selector has a localized label and leaves the selected mode focusable', async () => {
+  const { HomeSourceRow } = await vite.ssrLoadModule('/src/components/HomeWorkspace.tsx')
+  const english = renderToStaticMarkup(createElement(HomeSourceRow, {
+    connectedSources: ['dingtalk'] as const, copy: translations.en.workspace.home, mode: 'active',
+    onModeChange: async () => {}, onSourceChange: () => {}, source: 'all',
+  }))
+  const chinese = renderToStaticMarkup(createElement(HomeSourceRow, {
+    connectedSources: ['dingtalk'] as const, copy: translations.zh.workspace.home, mode: 'active',
+    onModeChange: async () => {}, onSourceChange: () => {}, source: 'all',
+  }))
+
+  assert.match(english, /aria-label="Operating mode" class="home-source-mode" role="group"/)
+  assert.match(chinese, /aria-label="运行模式" class="home-source-mode" role="group"/)
+  assert.match(english, /<button aria-pressed="true" class="home-mode-choice" type="button">Start<\/button>/)
 })
 
 test('workspace keeps global controls outside the white canvas and removes the rail account', async () => {

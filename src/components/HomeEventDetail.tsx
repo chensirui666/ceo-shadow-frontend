@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@heroui/react'
 import type { HomeCopy } from '../content/translations.ts'
-import type { HomeEvent, OwnerFeedback } from '../homeState.ts'
+import type { HomeEvent, OperatingMode, OwnerFeedback } from '../homeState.ts'
 
 type HomeEventDetailProps = {
   busy: boolean
   copy: HomeCopy
   event: HomeEvent
+  mode: OperatingMode
   now: Date
   onBack: () => void
   onResolve: (decision: 'send' | 'cancel', reply: string) => void
@@ -23,7 +24,7 @@ const replyContent = (event: HomeEvent, copy: HomeCopy) => {
   return event.reply ?? copy.status[event.status]
 }
 
-export default function HomeEventDetail({ busy, copy, event, now, onBack, onResolve, onSubmitFeedback, sourceName }: HomeEventDetailProps) {
+export default function HomeEventDetail({ busy, copy, event, mode, now, onBack, onResolve, onSubmitFeedback, sourceName }: HomeEventDetailProps) {
   const [reply, setReply] = useState(event.reply ?? '')
   const [feedbackKind, setFeedbackKind] = useState<OwnerFeedback['kind'] | null>(event.ownerFeedback?.kind ?? null)
   const [feedbackNote, setFeedbackNote] = useState(event.ownerFeedback?.note ?? '')
@@ -37,7 +38,9 @@ export default function HomeEventDetail({ busy, copy, event, now, onBack, onReso
   }, [event])
 
   const canGiveFeedback = Boolean(event.reply) && ['completed', 'trial-complete', 'send-failed'].includes(event.status)
-  const stateSummary = event.status === 'waiting' && event.waitUntil
+  const stateSummary = mode === 'paused' && event.status === 'waiting' && event.waitUntil
+    ? copy.detail.paused
+    : event.status === 'waiting' && event.waitUntil
     ? copy.countdown(Math.max(0, Math.floor((new Date(event.waitUntil).getTime() - now.getTime()) / 1000)))
     : copy.status[event.status]
   const stateNote = event.status === 'needs-confirmation'

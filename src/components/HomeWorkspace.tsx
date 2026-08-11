@@ -53,10 +53,10 @@ export function HomeSourceRow({ connectedSources, copy, mode, onModeChange, onSo
 
   return <div className="home-source-row">
     <label className="home-source-filter">{copy.source}<select onChange={(event) => onSourceChange(event.target.value as HomeSource | 'all')} value={source}><option value="all">{copy.allSources}</option>{connectedSources.map((item) => <option key={item} value={item}>{copy.sources[item]}</option>)}</select></label>
-    <div className="home-source-mode" role="group">
+    <div aria-label={copy.mode.label} className="home-source-mode" role="group">
       {modes.map((nextMode) => modeChangeNeedsConfirmation(mode, nextMode)
         ? <ModeConfirmation copy={copy} key={nextMode} mode={nextMode} onConfirm={() => onModeChange(nextMode)} triggerLabel={copy.mode.choices[nextMode]} />
-        : <button aria-pressed="true" className="home-mode-choice" disabled key={nextMode} type="button">{copy.mode.choices[nextMode]}</button>)}
+        : <button aria-pressed="true" className="home-mode-choice" key={nextMode} type="button">{copy.mode.choices[nextMode]}</button>)}
     </div>
   </div>
 }
@@ -129,13 +129,13 @@ export default function HomeWorkspace({ locale, onOpenSettings, service = homeSe
   if (!snapshot.connectedSources.length) return <section className="home-state"><p>{copy.empty.noConnections}</p><Button onPress={onOpenSettings}>{copy.actions.goToSettings}</Button></section>
 
   const selectedEvent = snapshot.events.find((event) => event.id === selectedEventId)
-  if (selectedEvent) return <HomeEventDetail busy={busy} copy={copy} event={selectedEvent} now={now} onBack={returnToList} onResolve={(decision, reply) => resolveEvent(selectedEvent.id, decision, reply)} onSubmitFeedback={(feedback) => submitFeedback(selectedEvent.id, feedback)} sourceName={copy.sources[selectedEvent.source]} />
+  if (selectedEvent) return <HomeEventDetail busy={busy} copy={copy} event={selectedEvent} mode={snapshot.mode} now={now} onBack={returnToList} onResolve={(decision, reply) => resolveEvent(selectedEvent.id, decision, reply)} onSubmitFeedback={(feedback) => submitFeedback(selectedEvent.id, feedback)} sourceName={copy.sources[selectedEvent.source]} />
 
   const events = selectHomeEvents(snapshot, source)
 
   return <section className="home-page" ref={pageRef}>
     <HomeActivityChart activity={activityHours(events, now)} copy={copy} />
     <HomeSourceRow connectedSources={snapshot.connectedSources} copy={copy} mode={snapshot.mode} onModeChange={updateMode} onSourceChange={setSource} source={source} />
-    {events.length ? <HomeEventList copy={copy} events={events} now={now} onOpen={openEvent} sourceNames={copy.sources} /> : <section className="home-state"><p>{source === 'all' ? copy.empty.events : copy.empty.source(copy.sources[source])}</p>{source !== 'all' && <Button onPress={() => setSource('all')} variant="secondary">{copy.actions.clearSource}</Button>}</section>}
+    {events.length ? <HomeEventList copy={copy} events={events} mode={snapshot.mode} now={now} onOpen={openEvent} sourceNames={copy.sources} /> : <section className="home-state"><p>{source === 'all' ? copy.empty.events : copy.empty.source(copy.sources[source])}</p>{source !== 'all' && <Button onPress={() => setSource('all')} variant="secondary">{copy.actions.clearSource}</Button>}</section>}
   </section>
 }
