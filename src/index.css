@@ -10,9 +10,9 @@
   --color-friday-ink: #242422;
   --color-friday-muted: #6f6d67;
   --color-friday-border: #e7e4dc;
-  --color-friday-success: #00b89c;
-  --color-friday-pending: #ff9f1c;
-  --color-friday-danger: #ff4d4f;
+  --color-friday-success: #1b9876;
+  --color-friday-pending: #ffa946;
+  --color-friday-danger: #d84e52;
 }
 
 :root {
@@ -56,18 +56,18 @@
   --warning-foreground: var(--color-friday-ink);
   --danger: var(--color-friday-danger);
   --danger-foreground: var(--color-friday-ink);
-  --status-success-foreground: var(--color-friday-success);
-  --status-success-text: color-mix(in srgb, var(--status-success-foreground) 65%, var(--color-friday-ink));
-  --status-success-background: color-mix(in srgb, var(--status-success-foreground) 12%, var(--color-friday-surface));
-  --status-success-border: color-mix(in srgb, var(--status-success-foreground) 28%, var(--color-friday-surface));
-  --status-pending-foreground: var(--color-friday-pending);
-  --status-pending-text: color-mix(in srgb, var(--status-pending-foreground) 57%, var(--color-friday-ink));
-  --status-pending-background: color-mix(in srgb, var(--status-pending-foreground) 12%, var(--color-friday-surface));
-  --status-pending-border: color-mix(in srgb, var(--status-pending-foreground) 28%, var(--color-friday-surface));
-  --status-danger-foreground: var(--color-friday-danger);
-  --status-danger-text: color-mix(in srgb, var(--status-danger-foreground) 79%, var(--color-friday-ink));
-  --status-danger-background: color-mix(in srgb, var(--status-danger-foreground) 12%, var(--color-friday-surface));
-  --status-danger-border: color-mix(in srgb, var(--status-danger-foreground) 28%, var(--color-friday-surface));
+  --status-success-foreground: #1b9876;
+  --status-success-text: #1e785e;
+  --status-success-background: #e4f2ed;
+  --status-success-border: #bfe1d7;
+  --status-pending-foreground: #ffa946;
+  --status-pending-text: #8f6534;
+  --status-pending-background: #fff4e7;
+  --status-pending-border: #ffe6ca;
+  --status-danger-foreground: #d84e52;
+  --status-danger-text: #b24548;
+  --status-danger-background: #fae9e8;
+  --status-danger-border: #f4cdcd;
   --border: var(--color-friday-border);
   --separator: var(--color-friday-border);
   --focus: var(--focus-ring);
@@ -360,32 +360,17 @@ button, input, select, textarea { font: inherit; }
 
 .account-profile-email { min-width: 0; color: #403c36; font-size: var(--font-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .account-menu { outline: none; padding: 5px; }
-.account-menu-item { border-radius: var(--radius-control); color: var(--color-friday-danger); cursor: pointer; padding: 10px 12px; font-size: var(--font-ui); }
+.account-menu-item { border-radius: var(--radius-control); color: var(--status-danger-text); cursor: pointer; padding: 10px 12px; font-size: var(--font-ui); }
 .account-menu-item[data-focused] { background: #f8efed; outline: none; }
 
 @media (max-width: 1000px) {
   .workspace-global-bar { position: static; height: 64px; padding: 0 24px; }
 }
 
-.home-page, .home-detail {
-  --home-status-success-foreground: #1b9876;
-  --home-status-success-text: color-mix(in srgb, var(--home-status-success-foreground) 72%, var(--color-friday-ink));
-  --home-status-success-background: color-mix(in srgb, var(--home-status-success-foreground) 12%, var(--color-friday-surface));
-  --home-status-success-border: color-mix(in srgb, var(--home-status-success-foreground) 28%, var(--color-friday-surface));
-  --home-status-pending-foreground: #ffa946;
-  --home-status-pending-text: color-mix(in srgb, var(--home-status-pending-foreground) 49%, var(--color-friday-ink));
-  --home-status-pending-background: color-mix(in srgb, var(--home-status-pending-foreground) 12%, var(--color-friday-surface));
-  --home-status-pending-border: color-mix(in srgb, var(--home-status-pending-foreground) 28%, var(--color-friday-surface));
-  --home-status-danger-foreground: #d84e52;
-  --home-status-danger-text: color-mix(in srgb, var(--home-status-danger-foreground) 79%, var(--color-friday-ink));
-  --home-status-danger-background: color-mix(in srgb, var(--home-status-danger-foreground) 12%, var(--color-friday-surface));
-  --home-status-danger-border: color-mix(in srgb, var(--home-status-danger-foreground) 28%, var(--color-friday-surface));
-}
-
 .home-page {
-  --home-chart-processed: var(--home-status-success-foreground);
-  --home-chart-pending: var(--home-status-pending-foreground);
-  --home-chart-failed: var(--home-status-danger-foreground);
+  --home-chart-processed: var(--status-success-foreground);
+  --home-chart-pending: var(--status-pending-foreground);
+  --home-chart-failed: var(--status-danger-foreground);
   --home-chart-grid: color-mix(in srgb, var(--color-friday-border) 72%, var(--color-friday-surface));
   --home-chart-focus: var(--color-friday-ink);
   --home-chart-axis: var(--color-friday-muted);
@@ -408,9 +393,6 @@ button, input, select, textarea { font: inherit; }
 .home-chart-key-processed { --home-chart-key-dot: var(--status-success-foreground); border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-text); }
 .home-chart-key-pending { --home-chart-key-dot: var(--status-pending-foreground); border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-text); }
 .home-chart-key-failed { --home-chart-key-dot: var(--status-danger-foreground); border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-text); }
-.home-page .home-chart-key-processed { --home-chart-key-dot: var(--home-status-success-foreground); border-color: var(--home-status-success-border); background: var(--home-status-success-background); color: var(--home-status-success-text); }
-.home-page .home-chart-key-pending { --home-chart-key-dot: var(--home-status-pending-foreground); border-color: var(--home-status-pending-border); background: var(--home-status-pending-background); color: var(--home-status-pending-text); }
-.home-page .home-chart-key-failed { --home-chart-key-dot: var(--home-status-danger-foreground); border-color: var(--home-status-danger-border); background: var(--home-status-danger-background); color: var(--home-status-danger-text); }
 .home-chart-empty { color: var(--color-friday-muted); font-size: var(--font-meta); }
 .home-chart-plot { position: relative; }
 .home-chart-bars { position: relative; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); align-items: end; gap: 4px; height: 144px; border-bottom: 1px solid var(--home-chart-grid); padding-top: 12px; }
@@ -451,9 +433,6 @@ button, input, select, textarea { font: inherit; }
 .home-event-status-waiting, .home-event-status-needs-confirmation { border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-text); }
 .home-event-status-processing, .home-event-status-completed { border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-text); }
 .home-event-status-send-failed, .home-event-status-connection-error { border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-text); }
-.home-page .home-event-status-waiting, .home-page .home-event-status-needs-confirmation { border-color: var(--home-status-pending-border); background: var(--home-status-pending-background); color: var(--home-status-pending-text); }
-.home-page .home-event-status-processing, .home-page .home-event-status-completed { border-color: var(--home-status-success-border); background: var(--home-status-success-background); color: var(--home-status-success-text); }
-.home-page .home-event-status-send-failed, .home-page .home-event-status-connection-error { border-color: var(--home-status-danger-border); background: var(--home-status-danger-background); color: var(--home-status-danger-text); }
 .home-event-status-trial-complete { border-color: var(--color-friday-border); background: var(--color-friday-surface-muted); color: var(--color-friday-muted); }
 .home-event-question, .home-event-reply { grid-column: 2 / -1; overflow: hidden; font-size: var(--font-ui); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
 .home-event-question { margin-top: 1px; }
@@ -629,9 +608,6 @@ button, input, select, textarea { font: inherit; }
 .home-detail-state-needs-confirmation { border-color: var(--status-pending-foreground); }
 .home-detail-state-send-failed, .home-detail-state-connection-error { border-color: var(--status-danger-foreground); }
 .home-detail-state-trial-complete { border-color: var(--color-friday-muted); }
-.home-detail .home-detail-state { border-color: var(--home-status-success-foreground); }
-.home-detail .home-detail-state-needs-confirmation { border-color: var(--home-status-pending-foreground); }
-.home-detail .home-detail-state-send-failed, .home-detail .home-detail-state-connection-error { border-color: var(--home-status-danger-foreground); }
 .home-detail .home-detail-state-trial-complete { border-color: var(--color-friday-muted); }
 .home-detail-reading { width: min(720px, 100%); }
 .home-detail-section { border-bottom: 1px solid #e6e1d8; padding: 29px 0; }
@@ -1055,9 +1031,9 @@ button, input, select, textarea { font: inherit; }
 .memory-add-menu [role="menuitem"]:hover, .memory-add-menu [role="menuitem"]:focus-visible { background: #f3f0e9; outline: none; }
 
 .memory-task { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; border-radius: 999px; padding: 6px 10px; font-size: var(--font-meta); font-weight: 600; }
-.memory-task-processing { background: #f2eee5; color: #6b6257; }
-.memory-task-completed { background: #e7f2ed; color: #28614d; }
-.memory-task-failed { background: #f9efed; color: #81372f; }
+.memory-task-processing { background: var(--status-pending-background); color: var(--status-pending-text); }
+.memory-task-completed { background: var(--status-success-background); color: var(--status-success-text); }
+.memory-task-failed { background: var(--status-danger-background); color: var(--status-danger-text); }
 .memory-task button, .memory-empty button { border: 0; background: transparent; color: inherit; cursor: pointer; padding: 0; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 
 .memory-map-area { display: grid; min-height: 0; flex: 1; margin-top: 9px; }
@@ -1246,8 +1222,8 @@ button, input, select, textarea { font: inherit; }
 .connector-action > .settings-button { width: 144px; justify-content: center; }
 .connection-status { display: inline-flex; align-items: center; gap: 6px; color: #7d776e; font-size: var(--font-meta); font-weight: 600; white-space: nowrap; }
 .connection-status::before { width: 6px; height: 6px; border-radius: 50%; background: #aaa49a; content: ""; }
-.connection-status-connected { color: var(--color-friday-success); }
-.connection-status-connected::before { background: var(--color-friday-success); }
+.connection-status-connected { color: var(--status-success-text); }
+.connection-status-connected::before { background: var(--status-success-foreground); }
 
 .settings-inline-link:hover, .settings-inline-link:focus-visible { color: #242422; text-decoration: underline; outline: none; }
 
@@ -1259,7 +1235,7 @@ button, input, select, textarea { font: inherit; }
 .settings-button-secondary:hover { background: #f6f3ec; }
 .settings-button-danger { background: var(--color-friday-danger); color: #fff; }
 .settings-button-danger:hover { background: color-mix(in srgb, var(--color-friday-danger) 88%, #000); }
-.settings-text-danger { border: 0; background: transparent; color: var(--color-friday-danger); cursor: pointer; padding: 0; font-size: var(--font-ui); font-weight: 700; }
+.settings-text-danger { border: 0; background: transparent; color: var(--status-danger-text); cursor: pointer; padding: 0; font-size: var(--font-ui); font-weight: 700; }
 .settings-text-danger:hover, .settings-text-danger:focus-visible { color: #792d27; outline: none; text-decoration: underline; }
 
 .settings-topic { margin-top: 36px; }

@@ -47,12 +47,12 @@ test('formal Home exposes the latest non-zero hour in an opt-in tooltip', async 
 test('Home status tokens and tooltip layout use the approved palette', async () => {
   const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
 
-  assert.match(css, /--color-friday-success: #00b89c;/)
-  assert.match(css, /--color-friday-pending: #ff9f1c;/)
-  assert.match(css, /--color-friday-danger: #ff4d4f;/)
-  assert.match(css, /\.home-page, \.home-detail \{[\s\S]*?--home-status-success-foreground: #1b9876;/)
-  assert.match(css, /\.home-page, \.home-detail \{[\s\S]*?--home-status-pending-foreground: #ffa946;/)
-  assert.match(css, /\.home-page, \.home-detail \{[\s\S]*?--home-status-danger-foreground: #d84e52;/)
+  assert.match(css, /--color-friday-success: #1b9876;/)
+  assert.match(css, /--color-friday-pending: #ffa946;/)
+  assert.match(css, /--color-friday-danger: #d84e52;/)
+  assert.match(css, /--status-danger-text: #b24548;/)
+  assert.match(css, /\.home-source-dingtalk \{ background: #82957d; \}/)
+  assert.doesNotMatch(css, /--home-status-success-foreground/)
   assert.match(css, /--accent-foreground: var\(--color-friday-surface\);/)
   assert.match(css, /\.home-chart-tooltip \{[\s\S]*?box-shadow: 0 10px 24px rgb\(54 48 39 \/ 12%\);/)
   assert.match(css, /\.home-chart-tooltip-item \{[\s\S]*?grid-template-columns: 8px minmax\(0, 1fr\) auto;/)
