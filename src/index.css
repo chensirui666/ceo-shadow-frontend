@@ -49,20 +49,23 @@
   --default: var(--color-friday-surface-muted);
   --default-foreground: var(--color-friday-ink);
   --accent: var(--color-friday-ink);
-  --accent-foreground: var(--color-friday-surface);
+  --accent-foreground: var(--color-friday-ink);
   --success: var(--color-friday-success);
-  --success-foreground: var(--color-friday-surface);
+  --success-foreground: var(--color-friday-ink);
   --warning: var(--color-friday-pending);
-  --warning-foreground: var(--color-friday-surface);
+  --warning-foreground: var(--color-friday-ink);
   --danger: var(--color-friday-danger);
-  --danger-foreground: var(--color-friday-surface);
+  --danger-foreground: var(--color-friday-ink);
   --status-success-foreground: var(--color-friday-success);
+  --status-success-text: color-mix(in srgb, var(--status-success-foreground) 65%, var(--color-friday-ink));
   --status-success-background: color-mix(in srgb, var(--status-success-foreground) 12%, var(--color-friday-surface));
   --status-success-border: color-mix(in srgb, var(--status-success-foreground) 28%, var(--color-friday-surface));
   --status-pending-foreground: var(--color-friday-pending);
+  --status-pending-text: color-mix(in srgb, var(--status-pending-foreground) 57%, var(--color-friday-ink));
   --status-pending-background: color-mix(in srgb, var(--status-pending-foreground) 12%, var(--color-friday-surface));
   --status-pending-border: color-mix(in srgb, var(--status-pending-foreground) 28%, var(--color-friday-surface));
   --status-danger-foreground: var(--color-friday-danger);
+  --status-danger-text: color-mix(in srgb, var(--status-danger-foreground) 79%, var(--color-friday-ink));
   --status-danger-background: color-mix(in srgb, var(--status-danger-foreground) 12%, var(--color-friday-surface));
   --status-danger-border: color-mix(in srgb, var(--status-danger-foreground) 28%, var(--color-friday-surface));
   --border: var(--color-friday-border);
@@ -386,10 +389,10 @@ button, input, select, textarea { font: inherit; }
 .home-section-heading h2 { margin: 0; font-size: var(--font-section); font-weight: 600; }
 .home-chart-legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 12px 0 16px; color: var(--color-friday-muted); font-size: var(--font-ui); }
 .home-chart-key { display: inline-flex; align-items: center; gap: 6px; border: 1px solid currentColor; border-radius: 999px; background: var(--color-friday-surface); padding: 3px 7px; box-shadow: none; }
-.home-chart-key::before { width: 8px; height: 8px; border-radius: 50%; background: currentColor; content: ''; }
-.home-chart-key-processed { border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-foreground); }
-.home-chart-key-pending { border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-foreground); }
-.home-chart-key-failed { border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-foreground); }
+.home-chart-key::before, .home-chart-tooltip-item::before { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: var(--home-chart-key-dot); content: ''; }
+.home-chart-key-processed { --home-chart-key-dot: var(--status-success-foreground); border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-text); }
+.home-chart-key-pending { --home-chart-key-dot: var(--status-pending-foreground); border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-text); }
+.home-chart-key-failed { --home-chart-key-dot: var(--status-danger-foreground); border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-text); }
 .home-chart-empty { color: var(--color-friday-muted); font-size: var(--font-meta); }
 .home-chart-plot { position: relative; }
 .home-chart-bars { position: relative; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); align-items: end; gap: 4px; height: 144px; border-bottom: 1px solid var(--home-chart-grid); padding-top: 12px; }
@@ -397,6 +400,7 @@ button, input, select, textarea { font: inherit; }
 .home-chart-tooltip-layer { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 4px; pointer-events: none; }
 .home-chart-tooltip { z-index: 1; align-self: start; width: max-content; border: 1px solid var(--color-friday-border); border-radius: var(--radius-control); background: var(--color-friday-surface); box-shadow: none; color: var(--color-friday-ink); padding: 8px 10px; font-size: var(--font-meta); line-height: 1.5; }
 .home-chart-tooltip strong, .home-chart-tooltip-item { display: block; }
+.home-chart-tooltip-item { display: flex; align-items: center; gap: 6px; border: 0; background: transparent; padding: 0; }
 .home-chart-tooltip-start { justify-self: start; }
 .home-chart-tooltip-center { justify-self: center; }
 .home-chart-tooltip-end { justify-self: end; }
@@ -418,16 +422,16 @@ button, input, select, textarea { font: inherit; }
 
 .home-page > .home-event-list { overflow: hidden; border: 1px solid var(--color-friday-border); border-radius: var(--radius-card); box-shadow: none; }
 .home-event-row { display: grid; width: 100%; grid-template-columns: 24px minmax(0, 1fr) max-content; gap: 5px 10px; border: 0; border-bottom: 1px solid var(--color-friday-border); background: transparent; color: #302d29; cursor: pointer; padding: 16px 18px; text-align: left; }
-.home-event-row:hover { background: #fbfaf6; }
+.home-event-row:hover { background: var(--color-friday-surface-selected); }
 .home-source-mark { display: grid; width: 20px; height: 20px; place-items: center; border-radius: var(--radius-control); color: #fff; font-size: var(--font-meta); font-weight: 700; }
 .home-source-dingtalk { background: #82957d; }
 .home-source-feishu { background: #839eb3; }
 .home-source-teams { background: #9990a8; }
 .home-event-meta, .home-event-status { overflow: hidden; color: var(--color-friday-muted); font-size: var(--font-meta); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
 .home-event-status { width: fit-content; border: 1px solid var(--color-friday-border); border-radius: 999px; background: var(--color-friday-surface-muted); padding: 0 7px; box-shadow: none; }
-.home-event-status-waiting, .home-event-status-needs-confirmation { border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-foreground); }
-.home-event-status-processing, .home-event-status-completed { border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-foreground); }
-.home-event-status-send-failed, .home-event-status-connection-error { border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-foreground); }
+.home-event-status-waiting, .home-event-status-needs-confirmation { border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-text); }
+.home-event-status-processing, .home-event-status-completed { border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-text); }
+.home-event-status-send-failed, .home-event-status-connection-error { border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-text); }
 .home-event-status-trial-complete { border-color: var(--color-friday-border); background: var(--color-friday-surface-muted); color: var(--color-friday-muted); }
 .home-event-question, .home-event-reply { grid-column: 2 / -1; overflow: hidden; font-size: var(--font-ui); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
 .home-event-question { margin-top: 1px; }
