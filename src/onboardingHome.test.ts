@@ -53,6 +53,21 @@ test('later onboarding steps render their matching decorative artwork', async ()
   assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepFour })), /onboarding-trial-editorial/)
 })
 
+test('onboarding keeps a visible primary Continue action and compact work-style benefits', async () => {
+  const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
+  const { translations } = await vite.ssrLoadModule('/src/content/translations.ts')
+  const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')
+  const props = { locale: 'zh' as const, onComplete: () => {}, onOpenMemory: () => {} }
+  const stepOneHtml = renderToStaticMarkup(createElement(OnboardingHome, props))
+  const stepThree = onboarding.skipMemory(onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')))
+  const stepThreeHtml = renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepThree }))
+
+  assert.match(stepOneHtml, /onboarding-continue-action/)
+  assert.equal(translations.zh.workspace.onboarding.style.extracting.length, 4)
+  assert.match(stepThreeHtml, /onboarding-style-benefits/)
+  assert.match(stepThreeHtml, /清晰的工作风格能让 Friday 的回复更稳妥、更有用/)
+})
+
 test('Step 4 keeps its composer in the fixed panel and places a Trial event in the Home event area', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
   const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')

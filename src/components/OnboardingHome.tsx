@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
-import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, ShieldCheck } from 'lucide-react'
+import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, ShieldCheck, Sparkles } from 'lucide-react'
 import connectIllustration from '../assets/onboarding-connect-editorial.png'
 import memoryIllustration from '../assets/onboarding-memory-editorial.png'
 import trialIllustration from '../assets/onboarding-trial-editorial.png'
@@ -33,6 +33,7 @@ const memorySignalIcons = { messages: MessageCircle, documents: FileText, calend
 const memoryFindingIcons = { messages: MessageCircle, documents: FileText, topics: Repeat2 }
 const memoryFindingKeys = ['messages', 'documents', 'topics'] as const
 const stylePointIcons = [MessageCircle, Scale, ArrowRight, ShieldCheck]
+const styleBenefitIcons = [MessageCircle, ArrowRight, ShieldCheck]
 
 export default function OnboardingHome({ initialState, locale, onComplete, onOpenMemory, onStateChange }: OnboardingHomeProps) {
   const copy = translations[locale].workspace.onboarding
@@ -171,7 +172,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
               </div>
             })}
           </div>
-          <footer className="onboarding-section-footer"><Button isDisabled={!state.connectedSources.length} onPress={() => update(continueToMemory(state))} type="button">{copy.actions.continue}</Button><p>{copy.connection.continueHint}</p></footer>
+          <footer className="onboarding-section-footer"><Button className="onboarding-continue-action" isDisabled={!state.connectedSources.length} onPress={() => update(continueToMemory(state))} type="button">{copy.actions.continue}</Button><p>{copy.connection.continueHint}</p></footer>
         </div>
         <aside aria-hidden="true" className="onboarding-connect-artwork">
           <img alt="" src={connectIllustration} />
@@ -208,7 +209,10 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
             const PointIcon = stylePointIcons[index]
             return <li className="onboarding-style-point" key={point}><span className="onboarding-style-point-icon"><PointIcon aria-hidden="true" /></span>{point}</li>
           })}</ul></div>
-          <footer className="onboarding-section-footer onboarding-style-actions"><Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button><Button onPress={() => update(skipWorkStyle(state))} type="button" variant="secondary">{copy.style.skip}</Button></footer>
+          <footer className="onboarding-section-footer onboarding-style-actions"><div className="onboarding-style-button-group"><Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button><Button onPress={() => update(skipWorkStyle(state))} type="button" variant="secondary">{copy.style.skip}</Button></div><section aria-label={copy.style.benefits.summary} className="onboarding-style-benefits"><p><Sparkles aria-hidden="true" />{copy.style.benefits.summary}</p><ul>{copy.style.benefits.items.map((item, index) => {
+            const BenefitIcon = styleBenefitIcons[index]
+            return <li key={item}><BenefitIcon aria-hidden="true" /><span>{item}</span></li>
+          })}</ul></section></footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={workStyleIllustration} /></aside>
       </section>}
@@ -249,7 +253,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
 
     {styleStage && <section aria-label={copy.style.extractingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-style-dialog">
       <h2>{copy.style.extractingTitle}</h2><progress className="onboarding-progress" max="100" value={styleProgress}>{styleProgress}%</progress>
-      {styleStage === 'extracting' && <p>{copy.style.extracting[styleProgress < 60 ? 0 : 1]}</p>}
+      {styleStage === 'extracting' && <p>{copy.style.extracting[Math.min(Math.floor(styleProgress / 25), copy.style.extracting.length - 1)]}</p>}
       {styleStage === 'ready' && <div className="onboarding-modal-result"><p>{copy.style.editHint}</p><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea onChange={(event) => setPromptDraft(event.target.value)} value={promptDraft} /></label><footer><Button onPress={() => setStyleStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!promptDraft.trim()} onPress={confirmStyle} type="button">{copy.style.usePrompt}</Button></footer></div>}
       <small>{copy.style.demo}</small>
     </div></section>}
