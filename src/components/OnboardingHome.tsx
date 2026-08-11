@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
-import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, ShieldCheck } from 'lucide-react'
 import connectIllustration from '../assets/onboarding-connect-editorial.png'
 import memoryIllustration from '../assets/onboarding-memory-editorial.png'
 import trialIllustration from '../assets/onboarding-trial-editorial.png'
@@ -33,7 +33,6 @@ const memorySignalIcons = { messages: MessageCircle, documents: FileText, calend
 const memoryFindingIcons = { messages: MessageCircle, documents: FileText, topics: Repeat2 }
 const memoryFindingKeys = ['messages', 'documents', 'topics'] as const
 const stylePointIcons = [MessageCircle, Scale, ArrowRight, ShieldCheck]
-const styleBenefitIcons = [MessageCircle, ArrowRight, ShieldCheck]
 
 export default function OnboardingHome({ initialState, locale, onComplete, onOpenMemory, onStateChange }: OnboardingHomeProps) {
   const copy = translations[locale].workspace.onboarding
@@ -209,10 +208,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
             const PointIcon = stylePointIcons[index]
             return <li className="onboarding-style-point" key={point}><span className="onboarding-style-point-icon"><PointIcon aria-hidden="true" /></span>{point}</li>
           })}</ul></div>
-          <footer className="onboarding-section-footer onboarding-style-actions"><div className="onboarding-style-button-group"><Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button><Button onPress={() => update(skipWorkStyle(state))} type="button" variant="secondary">{copy.style.skip}</Button></div><section aria-label={copy.style.benefits.summary} className="onboarding-style-benefits"><p><Sparkles aria-hidden="true" />{copy.style.benefits.summary}</p><ul>{copy.style.benefits.items.map((item, index) => {
-            const BenefitIcon = styleBenefitIcons[index]
-            return <li key={item}><BenefitIcon aria-hidden="true" /><span>{item}</span></li>
-          })}</ul></section></footer>
+          <footer className="onboarding-section-footer onboarding-style-actions"><Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button><Button onPress={() => update(skipWorkStyle(state))} type="button" variant="secondary">{copy.style.skip}</Button></footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={workStyleIllustration} /></aside>
       </section>}
