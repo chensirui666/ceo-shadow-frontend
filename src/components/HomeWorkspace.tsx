@@ -34,7 +34,7 @@ function ModeConfirmation({ copy, mode, onConfirm, triggerLabel }: ModeConfirmat
   }
 
   return <Modal state={dialog}>
-    <Modal.Trigger className="home-mode-trigger">{triggerLabel}</Modal.Trigger>
+    <Modal.Trigger aria-pressed="false" className="home-mode-choice">{triggerLabel}</Modal.Trigger>
     <Modal.Backdrop className="home-mode-backdrop"><Modal.Container className="home-mode-container" placement="center"><Modal.Dialog className="home-mode-dialog"><Modal.Header><Modal.Heading>{copy.confirmation.title(mode)}</Modal.Heading></Modal.Header><Modal.Body>{copy.confirmation.body(mode)}</Modal.Body><Modal.Footer><Button isDisabled={busy} onPress={dialog.close} variant="secondary">{copy.actions.cancel}</Button><Button isPending={busy} onPress={confirm}>{copy.confirmation.confirm(mode)}</Button></Modal.Footer></Modal.Dialog></Modal.Container></Modal.Backdrop>
   </Modal>
 }
@@ -49,14 +49,15 @@ type HomeSourceRowProps = {
 }
 
 export function HomeSourceRow({ connectedSources, copy, mode, onModeChange, onSourceChange, source }: HomeSourceRowProps) {
-  const nextMode = mode === 'active' ? 'trial' : 'active'
-  const modeAction = modeChangeNeedsConfirmation(mode, nextMode)
-    ? <ModeConfirmation copy={copy} mode={nextMode} onConfirm={() => onModeChange(nextMode)} triggerLabel={copy.mode.action(mode)} />
-    : <Button onPress={() => { void onModeChange(nextMode) }}>{copy.mode.action(mode)}</Button>
+  const modes: OperatingMode[] = ['active', 'trial', 'paused']
 
   return <div className="home-source-row">
     <label className="home-source-filter">{copy.source}<select onChange={(event) => onSourceChange(event.target.value as HomeSource | 'all')} value={source}><option value="all">{copy.allSources}</option>{connectedSources.map((item) => <option key={item} value={item}>{copy.sources[item]}</option>)}</select></label>
-    <div className="home-source-mode">{modeAction}</div>
+    <div className="home-source-mode" role="group">
+      {modes.map((nextMode) => modeChangeNeedsConfirmation(mode, nextMode)
+        ? <ModeConfirmation copy={copy} key={nextMode} mode={nextMode} onConfirm={() => onModeChange(nextMode)} triggerLabel={copy.mode.choices[nextMode]} />
+        : <button aria-pressed="true" className="home-mode-choice" disabled key={nextMode} type="button">{copy.mode.choices[nextMode]}</button>)}
+    </div>
   </div>
 }
 

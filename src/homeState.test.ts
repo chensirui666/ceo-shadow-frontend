@@ -51,6 +51,23 @@ test('an expired waiting event progresses to processing in the local demo', () =
   assert.equal(advanced.events[0].waitUntil, undefined)
 })
 
+test('a paused snapshot does not progress an expired waiting event', () => {
+  const snapshot = {
+    mode: 'paused',
+    connectedSources: ['feishu'],
+    events: [{
+      id: 'waiting', source: 'feishu', sender: '刘晨', receivedAt: '2026-08-06T10:39:00.000Z',
+      status: 'waiting', question: '下周的上线时间能确定吗？', reply: '目前计划在下周三完成上线。',
+      rationale: '等待你先回复，尚未开始处理。', waitUntil: '2026-08-06T10:44:00.000Z',
+    }],
+  } satisfies import('./homeState.ts').HomeSnapshot
+
+  const advanced = homeState.progressWaitingEvents(snapshot, new Date('2026-08-06T10:44:00.000Z'))
+
+  assert.equal(advanced, snapshot)
+  assert.equal(advanced.events[0].status, 'waiting')
+})
+
 test('mode confirmation and owner feedback preserve the current event result', () => {
   const snapshot = homeState.createDemoHomeSnapshot(new Date('2026-08-06T12:00:00.000Z'))
   const updated = homeState.recordOwnerFeedback(snapshot, 'trial-complete', { kind: 'adjust', note: '承诺时间前先确认资源。' })

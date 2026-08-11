@@ -84,7 +84,7 @@ export type HomeCopy = {
   countdown: (seconds: number) => string
   status: Record<HomeStatus, string>
   outcome: Record<HomeOutcome, string>
-  mode: { action: (mode: OperatingMode) => string }
+  mode: { choices: Record<OperatingMode, string> }
   chart: { title: string; processed: string; pending: string; failed: string; legend: (totals: Pick<ActivityHour, 'processed' | 'pending' | 'failed'>) => string; hourLabel: (hour: ActivityHour) => string; empty: string }
   empty: { loading: string; error: string; noConnections: string; events: string; source: (source: string) => string }
   detail: { back: string; eventInformation: string; source: string; conversation: string; sender: string; time: string; status: string; result: string; originalMessage: string; rationale: string; response: string; waiting: string; processing: string; needsConfirmation: string; trialNote: string; editReply: string }
@@ -228,7 +228,7 @@ export const translations: Record<Locale, Translation> = {
         status: { waiting: 'Waiting for you', processing: 'Processing', 'needs-confirmation': 'Needs your confirmation', completed: 'Processed', 'trial-complete': 'Trial · complete, not sent', 'send-failed': 'Send failed', 'connection-error': 'Connection issue' },
         outcome: { sent: 'Sent', cancelled: 'Cancelled, Friday did not send', 'self-replied': 'You replied, Friday did not send', 'no-reply': 'No reply needed' },
         mode: {
-          action: (mode) => ({ trial: 'Enable active mode', active: 'Switch to trial mode' })[mode],
+          choices: { active: 'Start', trial: 'Try', paused: 'Pause' },
         },
         chart: {
           title: '24-hour message activity', processed: 'Processed', pending: 'Pending', failed: 'Send failed',
@@ -240,7 +240,7 @@ export const translations: Record<Locale, Translation> = {
         detail: { back: 'Back to recent 24 hours', eventInformation: 'Event information', source: 'Source', conversation: 'Conversation', sender: 'Sender', time: 'Time', status: 'Status', result: 'Result', originalMessage: 'Original message', rationale: 'Why this happened', response: 'Reply', waiting: 'Waiting for you to reply.', processing: 'Generating a reply…', needsConfirmation: 'Your judgment is needed.', trialNote: 'This reply was not sent.', editReply: 'Edit reply' },
         feedback: { title: 'Your feedback', matched: 'Matches me', adjust: 'Needs adjustment', placeholder: 'What should be different next time?', save: 'Save feedback', saved: 'Feedback recorded', recipientTitle: 'Recipient feedback', recipientQuestion: 'Did this reply resolve your question?', helpful: 'Helpful', unresolved: 'Not resolved', recipientPending: 'Recipient feedback will appear here when it is available.' },
         actions: { send: 'Send', cancel: 'Cancel', retry: 'Retry', goToSettings: 'Go to Settings', clearSource: 'View all apps' },
-        confirmation: { title: (mode) => mode === 'active' ? 'Enable active mode?' : 'Switch to trial mode?', body: (mode) => mode === 'active' ? 'Future replies can be sent automatically under your rules.' : 'Future replies will no longer be sent.', confirm: (mode) => mode === 'active' ? 'Enable active mode' : 'Switch to trial mode' },
+        confirmation: { title: (mode) => ({ active: 'Start Friday?', trial: 'Use Try mode?', paused: 'Pause Friday?' })[mode], body: (mode) => ({ active: 'Future replies can be sent automatically under your rules.', trial: 'Future replies will stay available for your review and will not be sent.', paused: 'Friday will stop processing new messages until you start or try again.' })[mode], confirm: (mode) => ({ active: 'Start Friday', trial: 'Use Try mode', paused: 'Pause Friday' })[mode] },
       },
       onboarding: {
         progressLabel: 'Onboarding progress', steps: ['Connect apps', 'Build Memory', 'Confirm work style', 'Trial'], stepKicker: (step) => `Step ${step} of 4`, actions: { cancel: 'Cancel', continue: 'Continue' },
@@ -430,7 +430,7 @@ export const translations: Record<Locale, Translation> = {
         status: { waiting: '等待你先回复', processing: '正在处理', 'needs-confirmation': '待你确认', completed: '已处理', 'trial-complete': 'Trial · 已完成，未发送', 'send-failed': '发送失败', 'connection-error': '连接异常' },
         outcome: { sent: '已发送', cancelled: '已取消，Friday 未发送', 'self-replied': '你已回复，Friday 未发送', 'no-reply': '无需回复' },
         mode: {
-          action: (mode) => ({ trial: '正式启用', active: '切回试运行' })[mode],
+          choices: { active: '启动', trial: '尝试', paused: '暂停' },
         },
         chart: {
           title: '24 小时消息处理总览', processed: '已处理', pending: '待处理', failed: '发送失败',
@@ -442,7 +442,7 @@ export const translations: Record<Locale, Translation> = {
         detail: { back: '返回最近 24 小时', eventInformation: '事件信息', source: '来源应用', conversation: '会话', sender: '发送人', time: '发生时间', status: '当前状态', result: '处理结果', originalMessage: '原消息', rationale: '执行依据', response: '回复', waiting: '等待你先回复，尚未开始处理。', processing: '正在生成回复…', needsConfirmation: '需要你判断。', trialNote: '这条回复未发送。', editReply: '编辑回复' },
         feedback: { title: '内部反馈', matched: '符合我', adjust: '需要调整', placeholder: '哪里不对、以后应怎样处理或表达？', save: '保存反馈', saved: '反馈已记录', recipientTitle: '收件人反馈', recipientQuestion: '这条回复是否解决了你的问题？', helpful: '有帮助', unresolved: '未解决', recipientPending: '收件人反馈可用后会在这里展示。' },
         actions: { send: '发送', cancel: '取消', retry: '重试', goToSettings: '前往设置', clearSource: '查看全部应用' },
-        confirmation: { title: (mode) => mode === 'active' ? '正式启用 Friday？' : '切回试运行？', body: (mode) => mode === 'active' ? '后续回复会按当前规则自动发送。' : '后续回复不再发送。', confirm: (mode) => mode === 'active' ? '正式启用' : '切回试运行' },
+        confirmation: { title: (mode) => ({ active: '启动 Friday？', trial: '切换到尝试模式？', paused: '暂停 Friday？' })[mode], body: (mode) => ({ active: '后续回复会按当前规则自动发送。', trial: '后续回复只供你查看，不会发送。', paused: 'Friday 将停止处理新消息，直到你再次启动或尝试。' })[mode], confirm: (mode) => ({ active: '启动 Friday', trial: '切换到尝试', paused: '暂停 Friday' })[mode] },
       },
       onboarding: {
         progressLabel: '引导进度', steps: ['连接应用', '建立 Memory', '确认工作风格', 'Trial'], stepKicker: (step) => `第 ${step} 步，共 4 步`, actions: { cancel: '取消', continue: '继续' },

@@ -1,7 +1,7 @@
 export const homeSources = ['dingtalk', 'feishu', 'teams'] as const
 
 export type HomeSource = typeof homeSources[number]
-export type OperatingMode = 'trial' | 'active'
+export type OperatingMode = 'trial' | 'active' | 'paused'
 export type HomeStatus = 'waiting' | 'processing' | 'needs-confirmation' | 'completed' | 'trial-complete' | 'send-failed' | 'connection-error'
 export type HomeOutcome = 'sent' | 'cancelled' | 'self-replied' | 'no-reply'
 export type OwnerFeedback = { kind: 'matched' | 'adjust'; note: string }
@@ -68,6 +68,7 @@ export const modeChangeNeedsConfirmation = (from: OperatingMode, to: OperatingMo
 export const setOperatingMode = (snapshot: HomeSnapshot, mode: OperatingMode): HomeSnapshot => ({ ...snapshot, mode })
 
 export const progressWaitingEvents = (snapshot: HomeSnapshot, now: Date): HomeSnapshot => {
+  if (snapshot.mode === 'paused') return snapshot
   let progressed = false
   const events = snapshot.events.map((event) => {
     if (event.status !== 'waiting' || !event.waitUntil || new Date(event.waitUntil).getTime() > now.getTime()) return event

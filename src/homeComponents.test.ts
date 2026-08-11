@@ -47,7 +47,8 @@ test('Home status tokens and tooltip layout use the approved palette', async () 
   assert.match(css, /--memory-source-teams: #9990a8;/)
   assert.doesNotMatch(css, /--home-status-success-foreground/)
   assert.match(css, /--button-primary-background: var\(--color-friday-ink\);/)
-  assert.match(css, /\.home-mode-trigger \{[^}]*background: var\(--button-primary-background\);/)
+  assert.match(css, /\.home-mode-choice\[aria-pressed='true'\] \{[^}]*background: var\(--button-primary-background\);/)
+  assert.match(css, /\.home-mode-choice:focus-visible \{[^}]*outline: 2px solid var\(--focus-ring\);/)
   assert.match(css, /\.home-detail-state \{[^}]*border-left: 2px solid var\(--status-success-foreground\);/)
   assert.match(css, /\.settings-button-danger \{ background: var\(--status-danger-text\); color: var\(--color-friday-surface\); \}/)
   assert.match(css, /\.onboarding-connect-content \.onboarding-section-footer \.onboarding-continue-action \{[^}]*background: var\(--button-inverse-background\);/)
@@ -124,7 +125,7 @@ test('sent detail includes the recipient feedback preview while a failure has no
   assert.doesNotMatch(failed, /重试|重新连接/)
 })
 
-test('source row switches the formal Home back to Trial with filtering', async () => {
+test('source row renders exactly three compact mode choices without the old toggle wording', async () => {
   const { HomeSourceRow } = await vite.ssrLoadModule('/src/components/HomeWorkspace.tsx')
   const html = renderToStaticMarkup(createElement(HomeSourceRow, {
     connectedSources: ['dingtalk', 'feishu'] as const, copy: translations.en.workspace.home, mode: 'active',
@@ -133,8 +134,11 @@ test('source row switches the formal Home back to Trial with filtering', async (
 
   assert.match(html, /Source/)
   assert.match(html, /All apps/)
-  assert.match(html, />Switch to trial mode</)
-  assert.doesNotMatch(html, />Pause</)
+  assert.equal((html.match(/home-mode-choice/g) ?? []).length, 3)
+  assert.match(html, />Start</)
+  assert.match(html, />Try</)
+  assert.match(html, />Pause</)
+  assert.doesNotMatch(html, /Switch to trial mode|Enable active mode/)
 })
 
 test('workspace keeps global controls outside the white canvas and removes the rail account', async () => {
