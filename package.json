@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "VITE_CACHE_DIR=node_modules/.vite-button-preview vite",
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test src/*.test.ts",
