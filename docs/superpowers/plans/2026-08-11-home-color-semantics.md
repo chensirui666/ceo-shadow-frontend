@@ -255,7 +255,7 @@ Expected: 四个命令全部以 `0` 退出；现有 Home 状态流转、Onboardi
 
 - [ ] **Step 3: 验证窄屏和复用图表**
 
-在 `390px` 宽度确认图表、浮层和筛选控件没有横向溢出，事件状态标签仍可读。进入 Onboarding 的 Trial 预览，确认它仍显示原有图表和文字图例，但没有 `.home-chart-tooltip`。
+在 `390px` 宽度确认图表、浮层和筛选控件没有横向溢出，事件状态标签仍可读。进入 Onboarding 的 Trial 预览，确认它保持现有的紧凑图表呈现且没有 `.home-chart-tooltip`；本方案不改变 Onboarding 既有的隐藏标题/图例规则。
 
 - [ ] **Step 4: 检查最终改动范围并提交验收完成状态**
 
