@@ -1,0 +1,29 @@
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]: Friday
+    - generic "Sign in · Build work memory · Confirm work style · Trial" [ref=e6]:
+      - generic [ref=e7]: Sign in
+      - generic [ref=e9]:
+        - generic [ref=e10]: ›
+        - generic [ref=e11]: Build work memory
+      - generic [ref=e12]:
+        - generic [ref=e13]: ›
+        - generic [ref=e14]: Confirm work style
+      - generic [ref=e15]:
+        - generic [ref=e16]: ›
+        - generic [ref=e17]: Trial
+  - generic [ref=e18]:
+    - generic [ref=e21]:
+      - paragraph [ref=e22]: Verify your identity
+      - heading "Enter your code." [level=1] [ref=e33]
+      - paragraph [ref=e24]:
+        - strong [ref=e25]: Demo mode
+        - text: · This local demo accepts 123456.
+      - generic [ref=e26]: Six-digit code
+      - textbox "Six-digit code" [ref=e34]:
+        - /placeholder: "000000"
+      - button "Verify and enter Friday" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "Edit email" [ref=e37] [cursor=pointer]
+        - button "Resend in 60s" [disabled]
+    - complementary "Friday work scene" [ref=e32]

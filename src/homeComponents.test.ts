@@ -116,3 +116,13 @@ test('workspace keeps the seeded demo account on the normal Home', async () => {
   assert.doesNotMatch(html, /连接你的工作应用/)
   assert.match(html, /正在加载最近事件…/)
 })
+
+test('workspace renders FeedbackWorkspace instead of the feedback placeholder', async () => {
+  const { default: Workspace } = await vite.ssrLoadModule('/src/components/Workspace.tsx')
+  const html = renderToStaticMarkup(createElement(Workspace, {
+    locale: 'zh', onLocaleChange: () => {}, onSignOut: () => {}, session: { email: 'sirui@example.com', route: 'feedback' },
+  }))
+
+  assert.match(html, /正在载入演示反馈…/)
+  assert.doesNotMatch(html, /你和同事对回复的反馈，会在这里帮助 Friday 持续校准/)
+})

@@ -11,10 +11,14 @@ import type { OnboardingState } from '../onboardingState.ts'
 import { saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
+import FeedbackWorkspace from './FeedbackWorkspace.tsx'
 import HomeWorkspace from './HomeWorkspace.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
 import OnboardingHome from './OnboardingHome.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
+import Brand from './Brand.tsx'
+import TasksWorkspace from './TasksWorkspace.tsx'
+import type { TasksDetailHeader } from './TasksWorkspace.tsx'
 
 type WorkspaceProps = {
   locale: Locale
@@ -38,6 +42,8 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const [onboarding, setOnboarding] = useState(() => needsOnboarding(session.email))
   const [onboardingState, setOnboardingState] = useState(() => createOnboardingState())
   const sessionHomeService = useRef(createHomeService(createDemoHomeSnapshot()))
+  const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
+  const [tasksListRequest, setTasksListRequest] = useState(0)
   const exitDialog = useOverlayState()
   const name = session.email.split('@')[0]
   const copy = translations[locale].workspace
@@ -54,7 +60,11 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const goTo = (nextRoute: unknown) => {
     const next = resolveRoute(nextRoute)
     if (next === 'settings') openSettings()
-    else setRoute(next)
+    else if (next === 'tasks' && route === 'tasks' && tasksDetailHeader) setTasksListRequest((request) => request + 1)
+    else {
+      setTasksDetailHeader(null)
+      setRoute(next)
+    }
   }
 
   const finishOnboarding = (completedState: OnboardingState) => {
@@ -94,7 +104,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       </header>
 
       <aside aria-hidden={settingsOpen} className="workspace-rail" inert={settingsOpen || undefined}>
-        <span className="workspace-brand">Friday</span>
+        <Brand className="workspace-brand" />
         <nav aria-label={copy.primaryNavigation} className="workspace-nav">
           {pages.slice(0, 4).map((page) => (
             <Button className={route === page.id ? 'nav-item nav-item-active' : 'nav-item'} key={page.id} onPress={() => goTo(page.id)} type="button">
@@ -113,15 +123,19 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
         {!(route === 'home' && onboarding) && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
-          <h1>{route === 'home' ? copy.greeting(name) : currentLabel}</h1>
+          <div className="workspace-header-title"><h1>{route === 'home' ? copy.greeting(name) : tasksDetailHeader?.title ?? currentLabel}</h1>{route === 'tasks' && tasksDetailHeader && <span className={`task-status task-status-${tasksDetailHeader.status}`}>{copy.tasks.projectStatus[tasksDetailHeader.status]}</span>}</div>
         </header>}
 
-        {route === 'memory' ? (
+        {route === 'feedback' ? (
+          <FeedbackWorkspace locale={locale} />
+        ) : route === 'memory' ? (
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
           onboarding
             ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onOpenMemory={() => goTo('memory')} onStateChange={setOnboardingState} />
             : <HomeWorkspace locale={locale} onOpenSettings={openSettings} service={sessionHomeService.current} />
+        ) : route === 'tasks' ? (
+          <TasksWorkspace currentUser={name} locale={locale} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />
         ) : (
           <section className="empty-page">
             <p className="eyebrow">{currentLabel}</p>

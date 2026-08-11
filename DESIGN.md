@@ -20,48 +20,65 @@ colors:
   critical: "#B42318"
 
 typography:
-  page-title:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "26px"
-    fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: "-0.02em"
-  body-md:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "14px"
-    fontWeight: 400
-    lineHeight: 1.5
-  label:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+  meta:
+    fontFamily: "Figtree, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
     fontSize: "12px"
+    fontWeight: 600
+    lineHeight: 1.45
+  ui:
+    fontFamily: "Figtree, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "14px"
     fontWeight: 500
-    lineHeight: 1.3
-    letterSpacing: "0.04em"
-  editorial:
-    fontFamily: "Georgia, Times New Roman, serif"
-    fontSize: "30px"
+    lineHeight: 1.45
+  body:
+    fontFamily: "Figtree, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "15px"
     fontWeight: 400
-    lineHeight: 1.1
-    letterSpacing: "-0.03em"
-  metric:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    lineHeight: 1.65
+  section-title:
+    fontFamily: "Figtree, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "18px"
+    fontWeight: 600
+    lineHeight: 1.3
+  dialog-title:
+    fontFamily: "Figtree, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "24px"
+    fontWeight: 600
+    lineHeight: 1.25
+  page-title:
+    fontFamily: "Figtree, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
     fontSize: "28px"
     fontWeight: 600
-    lineHeight: 1
+    lineHeight: 1.2
+    letterSpacing: "-0.03em"
+  display:
+    fontFamily: "Figtree, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "32px–46px"
+    fontWeight: 600
+    lineHeight: 1.15
+    letterSpacing: "-0.05em"
+  label:
+    fontFamily: "Figtree, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
+    lineHeight: 1.45
+    letterSpacing: "0.04em"
 
 rounded:
-  control: "6px"
+  control: "8px"
   card: "12px"
+  dialog: "16px"
   canvas: "24px"
   full: "999px"
 
 spacing:
   xs: "4px"
   sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
-  page: "40px"
+  md: "12px"
+  lg: "16px"
+  xl: "24px"
+  2xl: "32px"
+  page: "48px"
 
 components:
   application-frame:
@@ -72,7 +89,7 @@ components:
   content-card:
     backgroundColor: "{colors.surface-muted}"
     rounded: "{rounded.card}"
-    padding: "{spacing.lg}"
+    padding: "{spacing.xl}"
   nav-item-selected:
     backgroundColor: "{colors.surface-selected}"
     rounded: "{rounded.control}"
@@ -81,38 +98,38 @@ components:
     backgroundColor: "{colors.border}"
   metadata:
     textColor: "{colors.text-secondary}"
-    typography: "{typography.label}"
+    typography: "{typography.meta}"
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
-    typography: "{typography.label}"
+    typography: "{typography.ui}"
     rounded: "{rounded.control}"
-    height: "36px"
+    height: "40px"
   button-secondary:
     backgroundColor: "{colors.surface-muted}"
     textColor: "{colors.primary}"
-    typography: "{typography.label}"
+    typography: "{typography.ui}"
     rounded: "{rounded.control}"
-    height: "36px"
+    height: "40px"
   status-active:
     backgroundColor: "{colors.teal-soft}"
     textColor: "{colors.teal}"
-    typography: "{typography.label}"
+    typography: "{typography.meta}"
     rounded: "{rounded.full}"
   status-trial:
     backgroundColor: "{colors.lilac-soft}"
     textColor: "{colors.lilac}"
-    typography: "{typography.label}"
+    typography: "{typography.meta}"
     rounded: "{rounded.full}"
   status-warning:
     backgroundColor: "{colors.surface-muted}"
     textColor: "{colors.warning}"
-    typography: "{typography.label}"
+    typography: "{typography.meta}"
     rounded: "{rounded.full}"
   status-critical:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.critical}"
-    typography: "{typography.label}"
+    typography: "{typography.meta}"
     rounded: "{rounded.full}"
 ---
 
@@ -147,13 +164,13 @@ reuse another product's name, copy, imagery, logo, or brand assets.
 ## Typography
 
 Use the sans-serif tokens for navigation, page titles, tables, settings, and
-all operational information. The default body size is 14px. Labels are small,
-uppercase only when they describe metadata or a metric category, and must not
-become the dominant visual element.
+all operational information. The default UI size is 14px; long-form reading
+uses 15px. Labels are small, uppercase only when they describe metadata or a
+metric category, and must not become the dominant visual element.
 
-Use `editorial` only for a welcome message, a setup invitation, or an empty
-state headline. It is an emotional accent, not a data-display font. Do not use
-it for a task title, a reply, an event, a table, or a setting.
+Use `display` only for a welcome message, an event-detail headline, or an empty
+state headline. It is an emotional accent, not a data-display style. Do not use
+it for a task title, a reply, an event row, a table, or a setting.
 
 ## Layout
 

@@ -1,0 +1,119 @@
+- main [ref=f8e3]:
+  - generic [ref=f8e5]:
+    - button "Notifications are unavailable" [disabled]
+    - button "Open account menu" [ref=f8e6] [cursor=pointer]
+  - complementary [ref=f8e10]:
+    - generic [ref=f8e11]: Friday
+    - navigation "Primary navigation" [ref=f8e12]:
+      - button "Home" [ref=f8e13] [cursor=pointer]
+      - button "Tasks" [ref=f8e15] [cursor=pointer]
+      - button "Memory" [ref=f8e17] [cursor=pointer]
+      - button "Feedback" [ref=f8e19] [cursor=pointer]
+  - region "Home content" [ref=f8e21]:
+    - generic [ref=f8e22]:
+      - list "Onboarding progress" [ref=f8e23]:
+        - listitem [ref=f8e24]:
+          - button "1 Connect apps" [ref=f8e25] [cursor=pointer]:
+            - generic [ref=f8e26]: "1"
+            - strong [ref=f8e27]: Connect apps
+        - listitem [ref=f8e28]:
+          - button "2 Build Memory" [disabled] [ref=f8e29]:
+            - generic [ref=f8e30]: "2"
+            - strong [ref=f8e31]: Build Memory
+        - listitem [ref=f8e32]:
+          - button "3 Confirm work style" [disabled] [ref=f8e33]:
+            - generic [ref=f8e34]: "3"
+            - strong [ref=f8e35]: Confirm work style
+        - listitem [ref=f8e36]:
+          - button "4 Trial" [disabled] [ref=f8e37]:
+            - generic [ref=f8e38]: "4"
+            - strong [ref=f8e39]: Trial
+      - generic [ref=f8e41]:
+        - generic [ref=f8e42]:
+          - generic [ref=f8e43]:
+            - paragraph [ref=f8e44]: Step 1 of 4
+            - heading "Connect your work apps" [level=2] [ref=f8e45]
+            - paragraph [ref=f8e46]: Connect one app to begin. You can refine detailed rules later in Settings.
+          - paragraph [ref=f8e47]: "Local demo only: this does not begin real authorisation or read any work content."
+          - generic [ref=f8e48]:
+            - generic [ref=f8e49]:
+              - generic [ref=f8e51]:
+                - strong [ref=f8e52]: DingTalk
+                - generic [ref=f8e53]: Work messages and calendar
+              - button "Connect" [active] [ref=f8e54] [cursor=pointer]
+            - generic [ref=f8e55]:
+              - generic [ref=f8e57]:
+                - strong [ref=f8e58]: Feishu
+                - generic [ref=f8e59]: Team messages and shared documents
+              - button "Connect" [ref=f8e60] [cursor=pointer]
+            - generic [ref=f8e61]:
+              - generic [ref=f8e63]:
+                - strong [ref=f8e64]: Teams
+                - generic [ref=f8e65]: Messages and channel updates
+              - button "Connect" [ref=f8e66] [cursor=pointer]
+          - generic [ref=f8e67]:
+            - button "Continue" [disabled]
+            - paragraph [ref=f8e68]: Connect at least one app to continue.
+        - complementary [ref=f8e69]
+      - region [ref=f8e70]:
+        - generic [ref=f8e71]:
+          - heading "Recent 24 hours" [level=2] [ref=f8e72]
+          - generic [ref=f8e73]: No work events yet
+        - region "Recent 24 hours" [ref=f8e74]:
+          - paragraph [ref=f8e75]: No messages in the last 24 hours.
+          - generic [ref=f8e76]:
+            - 'img "05:00: Processed 0, Pending 0, Send failed 0" [ref=f8e77]':
+              - generic [ref=f8e79]: "05"
+            - 'img "06:00: Processed 0, Pending 0, Send failed 0" [ref=f8e80]':
+              - generic [ref=f8e82]: "06"
+            - 'img "07:00: Processed 0, Pending 0, Send failed 0" [ref=f8e83]':
+              - generic [ref=f8e85]: "07"
+            - 'img "08:00: Processed 0, Pending 0, Send failed 0" [ref=f8e86]':
+              - generic [ref=f8e88]: "08"
+            - 'img "09:00: Processed 0, Pending 0, Send failed 0" [ref=f8e89]':
+              - generic [ref=f8e91]: "09"
+            - 'img "10:00: Processed 0, Pending 0, Send failed 0" [ref=f8e92]':
+              - generic [ref=f8e94]: "10"
+            - 'img "11:00: Processed 0, Pending 0, Send failed 0" [ref=f8e95]':
+              - generic [ref=f8e97]: "11"
+            - 'img "12:00: Processed 0, Pending 0, Send failed 0" [ref=f8e98]':
+              - generic [ref=f8e100]: "12"
+            - 'img "13:00: Processed 0, Pending 0, Send failed 0" [ref=f8e101]':
+              - generic [ref=f8e103]: "13"
+            - 'img "14:00: Processed 0, Pending 0, Send failed 0" [ref=f8e104]':
+              - generic [ref=f8e106]: "14"
+            - 'img "15:00: Processed 0, Pending 0, Send failed 0" [ref=f8e107]':
+              - generic [ref=f8e109]: "15"
+            - 'img "16:00: Processed 0, Pending 0, Send failed 0" [ref=f8e110]':
+              - generic [ref=f8e112]: "16"
+            - 'img "17:00: Processed 0, Pending 0, Send failed 0" [ref=f8e113]':
+              - generic [ref=f8e115]: "17"
+            - 'img "18:00: Processed 0, Pending 0, Send failed 0" [ref=f8e116]':
+              - generic [ref=f8e118]: "18"
+            - 'img "19:00: Processed 0, Pending 0, Send failed 0" [ref=f8e119]':
+              - generic [ref=f8e121]: "19"
+            - 'img "20:00: Processed 0, Pending 0, Send failed 0" [ref=f8e122]':
+              - generic [ref=f8e124]: "20"
+            - 'img "21:00: Processed 0, Pending 0, Send failed 0" [ref=f8e125]':
+              - generic [ref=f8e127]: "21"
+            - 'img "22:00: Processed 0, Pending 0, Send failed 0" [ref=f8e128]':
+              - generic [ref=f8e130]: "22"
+            - 'img "23:00: Processed 0, Pending 0, Send failed 0" [ref=f8e131]':
+              - generic [ref=f8e133]: "23"
+            - 'img "00:00: Processed 0, Pending 0, Send failed 0" [ref=f8e134]':
+              - generic [ref=f8e136]: "00"
+            - 'img "01:00: Processed 0, Pending 0, Send failed 0" [ref=f8e137]':
+              - generic [ref=f8e139]: "01"
+            - 'img "02:00: Processed 0, Pending 0, Send failed 0" [ref=f8e140]':
+              - generic [ref=f8e142]: "02"
+            - 'img "03:00: Processed 0, Pending 0, Send failed 0" [ref=f8e143]':
+              - generic [ref=f8e145]: "03"
+            - 'img "04:00: Processed 0, Pending 0, Send failed 0" [ref=f8e146]':
+              - generic [ref=f8e148]: "04"
+      - dialog "Connect DingTalk" [ref=f8e149]:
+        - generic [ref=f8e150]:
+          - heading "Connect DingTalk" [level=2] [ref=f8e151]
+          - paragraph [ref=f8e152]: This local demo will only show the connection as complete. It does not open a real authorisation flow.
+          - generic [ref=f8e153]:
+            - button "Cancel" [ref=f8e154] [cursor=pointer]
+            - button "Complete connection" [ref=f8e155] [cursor=pointer]

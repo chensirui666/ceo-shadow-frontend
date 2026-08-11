@@ -15,7 +15,7 @@ type SettingsAppsPanelProps = {
   saved: FridaySettings
 }
 
-const appNames: Record<ConnectorId, string> = { dingtalk: 'DingTalk', feishu: 'Feishu' }
+const appNames: Record<ConnectorId, string> = { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' }
 
 export default function SettingsAppsPanel({ busyConnector, confirmation, copy, notice, onConnect, onRequestDisconnect, saved }: SettingsAppsPanelProps) {
   return <>

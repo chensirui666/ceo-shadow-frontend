@@ -1,0 +1,136 @@
+- main [ref=f8e3]:
+  - generic [ref=f8e5]:
+    - button "Notifications are unavailable" [disabled]
+    - button "Open account menu" [ref=f8e6] [cursor=pointer]
+  - complementary [ref=f8e10]:
+    - generic [ref=f8e11]: Friday
+    - navigation "Primary navigation" [ref=f8e12]:
+      - button "Home" [ref=f8e13] [cursor=pointer]
+      - button "Tasks" [ref=f8e15] [cursor=pointer]
+      - button "Memory" [ref=f8e17] [cursor=pointer]
+      - button "Feedback" [ref=f8e19] [cursor=pointer]
+  - region "Home content" [ref=f8e21]:
+    - generic [ref=f8e22]:
+      - list "Onboarding progress" [ref=f8e23]:
+        - listitem [ref=f8e24]:
+          - button "1 Connect apps" [ref=f8e25] [cursor=pointer]:
+            - generic [ref=f8e26]: "1"
+            - strong [ref=f8e27]: Connect apps
+        - listitem [ref=f8e28]:
+          - button "2 Build Memory" [ref=f8e29] [cursor=pointer]:
+            - generic [ref=f8e30]: "2"
+            - strong [ref=f8e31]: Build Memory
+        - listitem [ref=f8e32]:
+          - button "3 Confirm work style" [disabled] [ref=f8e33]:
+            - generic [ref=f8e34]: "3"
+            - strong [ref=f8e35]: Confirm work style
+        - listitem [ref=f8e36]:
+          - button "4 Trial" [disabled] [ref=f8e37]:
+            - generic [ref=f8e38]: "4"
+            - strong [ref=f8e39]: Trial
+      - generic [ref=f8e158]:
+        - generic [ref=f8e159]:
+          - generic [ref=f8e160]:
+            - paragraph [ref=f8e161]: Step 2 of 4
+            - heading "Build your Memory" [level=2] [ref=f8e162]
+            - paragraph [ref=f8e163]: Review what Friday would read before you create the first work Memory.
+          - generic [ref=f8e164]:
+            - paragraph [ref=f8e165]: Connected apps
+            - generic [ref=f8e167]:
+              - generic [ref=f8e168]:
+                - strong [ref=f8e169]: DingTalk
+                - generic [ref=f8e170]: Connected
+              - generic [ref=f8e171]: Read-only
+            - generic [ref=f8e174]:
+              - paragraph [ref=f8e175]: What Friday can read
+              - list [ref=f8e176]:
+                - listitem [ref=f8e177]:
+                  - generic [ref=f8e180]:
+                    - strong [ref=f8e181]: Work messages
+                    - generic [ref=f8e182]: Chats, decisions, and follow-ups
+                - listitem [ref=f8e183]:
+                  - generic [ref=f8e187]:
+                    - strong [ref=f8e188]: Work documents
+                    - generic [ref=f8e189]: Project context and key conclusions
+                - listitem [ref=f8e190]:
+                  - generic [ref=f8e194]:
+                    - strong [ref=f8e195]: Calendar context
+                    - generic [ref=f8e196]: Meetings, events, and timing
+          - generic [ref=f8e197]:
+            - button "Build Memory" [active] [ref=f8e198] [cursor=pointer]
+            - button "Skip" [ref=f8e199] [cursor=pointer]
+        - complementary [ref=f8e200]
+      - region [ref=f8e70]:
+        - generic [ref=f8e71]:
+          - heading "Recent 24 hours" [level=2] [ref=f8e72]
+          - generic [ref=f8e73]: No work events yet
+        - region "Recent 24 hours" [ref=f8e74]:
+          - paragraph [ref=f8e75]: No messages in the last 24 hours.
+          - generic [ref=f8e76]:
+            - 'img "05:00: Processed 0, Pending 0, Send failed 0" [ref=f8e77]':
+              - generic [ref=f8e79]: "05"
+            - 'img "06:00: Processed 0, Pending 0, Send failed 0" [ref=f8e80]':
+              - generic [ref=f8e82]: "06"
+            - 'img "07:00: Processed 0, Pending 0, Send failed 0" [ref=f8e83]':
+              - generic [ref=f8e85]: "07"
+            - 'img "08:00: Processed 0, Pending 0, Send failed 0" [ref=f8e86]':
+              - generic [ref=f8e88]: "08"
+            - 'img "09:00: Processed 0, Pending 0, Send failed 0" [ref=f8e89]':
+              - generic [ref=f8e91]: "09"
+            - 'img "10:00: Processed 0, Pending 0, Send failed 0" [ref=f8e92]':
+              - generic [ref=f8e94]: "10"
+            - 'img "11:00: Processed 0, Pending 0, Send failed 0" [ref=f8e95]':
+              - generic [ref=f8e97]: "11"
+            - 'img "12:00: Processed 0, Pending 0, Send failed 0" [ref=f8e98]':
+              - generic [ref=f8e100]: "12"
+            - 'img "13:00: Processed 0, Pending 0, Send failed 0" [ref=f8e101]':
+              - generic [ref=f8e103]: "13"
+            - 'img "14:00: Processed 0, Pending 0, Send failed 0" [ref=f8e104]':
+              - generic [ref=f8e106]: "14"
+            - 'img "15:00: Processed 0, Pending 0, Send failed 0" [ref=f8e107]':
+              - generic [ref=f8e109]: "15"
+            - 'img "16:00: Processed 0, Pending 0, Send failed 0" [ref=f8e110]':
+              - generic [ref=f8e112]: "16"
+            - 'img "17:00: Processed 0, Pending 0, Send failed 0" [ref=f8e113]':
+              - generic [ref=f8e115]: "17"
+            - 'img "18:00: Processed 0, Pending 0, Send failed 0" [ref=f8e116]':
+              - generic [ref=f8e118]: "18"
+            - 'img "19:00: Processed 0, Pending 0, Send failed 0" [ref=f8e119]':
+              - generic [ref=f8e121]: "19"
+            - 'img "20:00: Processed 0, Pending 0, Send failed 0" [ref=f8e122]':
+              - generic [ref=f8e124]: "20"
+            - 'img "21:00: Processed 0, Pending 0, Send failed 0" [ref=f8e125]':
+              - generic [ref=f8e127]: "21"
+            - 'img "22:00: Processed 0, Pending 0, Send failed 0" [ref=f8e128]':
+              - generic [ref=f8e130]: "22"
+            - 'img "23:00: Processed 0, Pending 0, Send failed 0" [ref=f8e131]':
+              - generic [ref=f8e133]: "23"
+            - 'img "00:00: Processed 0, Pending 0, Send failed 0" [ref=f8e134]':
+              - generic [ref=f8e136]: "00"
+            - 'img "01:00: Processed 0, Pending 0, Send failed 0" [ref=f8e137]':
+              - generic [ref=f8e139]: "01"
+            - 'img "02:00: Processed 0, Pending 0, Send failed 0" [ref=f8e140]':
+              - generic [ref=f8e142]: "02"
+            - 'img "03:00: Processed 0, Pending 0, Send failed 0" [ref=f8e143]':
+              - generic [ref=f8e145]: "03"
+            - 'img "04:00: Processed 0, Pending 0, Send failed 0" [ref=f8e146]':
+              - generic [ref=f8e148]: "04"
+      - dialog "Reading connected work context" [ref=f8e201]:
+        - generic [ref=f8e202]:
+          - heading "Reading connected work context" [level=2] [ref=f8e203]
+          - progressbar [ref=f8e204]: 100%
+          - generic [ref=f8e207]:
+            - generic "Work context found" [ref=f8e208]:
+              - generic [ref=f8e209]:
+                - strong [ref=f8e212]: "126"
+                - generic [ref=f8e213]: work messages
+              - generic [ref=f8e214]:
+                - strong [ref=f8e218]: "18"
+                - generic [ref=f8e219]: documents
+              - generic [ref=f8e220]:
+                - strong [ref=f8e226]: "7"
+                - generic [ref=f8e227]: recurring topics
+            - generic [ref=f8e228]:
+              - button "Cancel" [ref=f8e229] [cursor=pointer]
+              - button "Build Memory now" [ref=f8e230] [cursor=pointer]
+          - generic [ref=f8e206]: "Local demo only: no connected content is read or written to Memory."

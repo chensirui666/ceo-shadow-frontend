@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { FormEvent } from 'react'
 import { Button, Input } from '@heroui/react'
 import { canResend, isValidEmail, verifyDemoCode } from '../appState.ts'
 import type { Locale, Session } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import type { Translation } from '../content/translations.ts'
+import Brand from './Brand.tsx'
 
 type LoginProps = {
   locale: Locale
@@ -24,10 +25,6 @@ function Journey({ copy }: { copy: Translation }) {
       ))}
     </div>
   )
-}
-
-function DemoNote({ children, label }: { children: ReactNode; label: string }) {
-  return <p className="demo-note"><strong>{label}</strong> · {children}</p>
 }
 
 export default function Login({ locale, onAuthenticated }: LoginProps) {
@@ -92,7 +89,7 @@ export default function Login({ locale, onAuthenticated }: LoginProps) {
   return (
     <main className="auth-shell">
       <header className="auth-header">
-        <span className="brand">Friday</span>
+        <Brand className="brand" />
         <Journey copy={copy} />
       </header>
 
@@ -103,7 +100,6 @@ export default function Login({ locale, onAuthenticated }: LoginProps) {
               <form className="auth-form" onSubmit={requestCode} noValidate>
                 <p className="eyebrow">{copy.login.email.eyebrow}</p>
                 <h1>{copy.login.email.title}</h1>
-                <DemoNote label={copy.login.email.demoLabel}>{copy.login.email.demo} <b>123456</b>{copy.login.email.demoEnding}</DemoNote>
 
                 <label className="field-label" htmlFor="work-email">{copy.login.email.label}</label>
                 <Input
@@ -131,7 +127,6 @@ export default function Login({ locale, onAuthenticated }: LoginProps) {
               }} noValidate>
                 <p className="eyebrow">{copy.login.code.eyebrow}</p>
                 <h1>{copy.login.code.title}</h1>
-                <DemoNote label={copy.login.code.demoLabel}>{copy.login.code.demo} <b>123456</b>{copy.login.code.demoEnding}</DemoNote>
 
                 <label className="field-label" htmlFor="verification-code">{copy.login.code.label}</label>
                 <Input
