@@ -12,7 +12,7 @@
 
 - 核心基础色固定为 `#242422`、`#FFFEFD`、`#F7F5EF`、`#F4F2EC`、`#ECEAE2`、`#E7E4DC`、`#6F6D67`、`#00B89C`、`#FF9F1C`、`#FF4D4F`。
 - `warning` 只能映射到 pending；Trial 是模式，使用暖中性与墨色，不建立第四种功能色。
-- 成功、待处理、失败的前景色、浅底和细边必须分别从同一基础色派生；不增加近似状态色、渐变或阴影。
+- 成功、待处理、失败的前景色、深色文字、浅底和细边必须分别从同一基础色派生；不增加近似状态色、渐变或阴影。小字号文字在 surface 上至少达到 4.5:1 对比度。
 - Home 图表保留圆角极浅外框、虚线网格、基线、时间刻度和默认浮层；图表与事件列表均无阴影。
 - 相邻小时柱在桌面端保持 `4px` 间隔，在窄屏保持 `2px` 间隔，露出网格并保留呼吸感。
 - Memory 的五个来源数据色只保留在来源标识/关系可视化，不进入 Home 状态或图表。
@@ -168,17 +168,20 @@ Expected: 命中全局旧 token、Home 图表、Home 行状态或 Home 详情状
 
 ```css
 --status-success-foreground: var(--color-friday-success);
+--status-success-text: color-mix(in srgb, var(--status-success-foreground) 65%, var(--color-friday-ink));
 --status-success-background: color-mix(in srgb, var(--status-success-foreground) 12%, var(--color-friday-surface));
 --status-success-border: color-mix(in srgb, var(--status-success-foreground) 28%, var(--color-friday-surface));
 --status-pending-foreground: var(--color-friday-pending);
+--status-pending-text: color-mix(in srgb, var(--status-pending-foreground) 57%, var(--color-friday-ink));
 --status-pending-background: color-mix(in srgb, var(--status-pending-foreground) 12%, var(--color-friday-surface));
 --status-pending-border: color-mix(in srgb, var(--status-pending-foreground) 28%, var(--color-friday-surface));
 --status-danger-foreground: var(--color-friday-danger);
+--status-danger-text: color-mix(in srgb, var(--status-danger-foreground) 79%, var(--color-friday-ink));
 --status-danger-background: color-mix(in srgb, var(--status-danger-foreground) 12%, var(--color-friday-surface));
 --status-danger-border: color-mix(in srgb, var(--status-danger-foreground) 28%, var(--color-friday-surface));
 ```
 
-将 `--success-foreground`、`--warning-foreground`、`--danger-foreground` 和 `--accent-foreground` 指向 `var(--color-friday-surface)`，避免再引入纯白基础色。
+将 `--success-foreground`、`--warning-foreground`、`--danger-foreground` 和 `--accent-foreground` 指向 `var(--color-friday-ink)`，避免再引入纯白基础色并满足实色功能背景的文字对比度。
 
 - [ ] **Step 3: 按组件层级应用 Home 样式，不产生全局卡片副作用**
 
@@ -203,7 +206,7 @@ Expected: 命中全局旧 token、Home 图表、Home 行状态或 Home 详情状
 
 将 `.home-chart-bars` 放进 `.home-chart-plot` 的相对定位上下文，并以重复的水平虚线背景表现网格；保留更清晰的 `border-bottom` 基线。桌面端设置 `gap: 4px`，沿用现有窄屏媒体查询将其覆盖为 `gap: 2px`。`home-chart-tooltip-layer` 使用与柱图相同的 24 列 grid；浮层用 surface、border、`box-shadow: none`，并让 `start`、`center`、`end` class 分别贴齐首列、中间和尾列以避免溢出。
 
-把 `.home-chart-key` 和 `.home-event-status` 变为无阴影的细边圆角标签：成功/处理中使用 `status-success-*`，等待/待确认使用 `status-pending-*`，发送失败/连接异常使用 `status-danger-*`，Trial 完成使用 `friday-muted`、`friday-surface-muted`、`friday-border`。将 Home 详情的 `needs-confirmation`、失败、Trial 左边线和 Trial 提示也替换到同一套 pending、danger、muted 语义。
+把 `.home-chart-key` 和 `.home-event-status` 变为无阴影的细边圆角标签：成功/处理中使用 `status-success-*`，等待/待确认使用 `status-pending-*`，发送失败/连接异常使用 `status-danger-*`，Trial 完成使用 `friday-muted`、`friday-surface-muted`、`friday-border`。标签文字使用 `status-*-text`，圆点使用 `status-*-foreground`；tooltip 项必须有同色前景圆点、透明背景和深色同色系文字。将 Home 详情的 `needs-confirmation`、失败、Trial 左边线和 Trial 提示也替换到同一套 pending、danger、muted 语义；行悬停使用 `friday-surface-selected`。
 
 来源圆点保留原有 `#82957D`、`#839EB3`、`#9990A8` 数据色，不把它们改成功能色。
 
