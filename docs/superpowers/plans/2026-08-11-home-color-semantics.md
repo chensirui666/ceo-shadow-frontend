@@ -213,11 +213,11 @@ Run:
 
 ```bash
 rg -n -- '--color-friday-(subtle|warning|trial|lilac)' src/index.css
-rg -n '#(176c69|8a4f0f|b42318|8649c9|f7edff|9a7a40|a3655e|d9d6ce)' src/index.css
+rg -n '#(176c69|8a4f0f|b42318|8649c9|f7edff|9a7a40|a3655e|d9d6ce)' src/index.css | rg -v -- '--memory-edge: #d9d6ce' || true
 git diff --check
 ```
 
-Expected: 前两条命令没有输出；第三条命令以 `0` 退出。允许 `#9990A8` 只出现在 Teams 来源色，而不作为全局 token。
+Expected: 前两条命令没有输出；第三条命令以 `0` 退出。允许 `#9990A8` 只出现在 Teams 来源色，而不作为全局 token；允许 Memory 既有的 `--memory-edge: #d9d6ce` 保持不变，因为它不属于本次 Home/token 收敛范围。
 
 - [ ] **Step 5: 提交样式收敛**
 
