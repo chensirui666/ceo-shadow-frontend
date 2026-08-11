@@ -602,7 +602,7 @@ button, input, select, textarea { font: inherit; }
 .home-detail-source, .home-detail-sender { margin: 0; color: var(--color-friday-muted); font-size: var(--font-ui); line-height: 1.5; }
 .home-detail-source { color: #49433b; font-weight: 600; }
 .home-detail-hero h2 { max-width: 720px; margin: 16px 0 12px; color: var(--color-friday-ink); font-size: var(--font-display); font-weight: 600; letter-spacing: -0.055em; line-height: 1.15; }
-.home-detail-state { align-self: center; border-left: 2px solid #82957d; padding: 4px 0 4px 18px; }
+.home-detail-state { align-self: center; border-left: 2px solid var(--status-success-foreground); padding: 4px 0 4px 18px; }
 .home-detail-state strong { color: #49433b; font-size: var(--font-ui); font-weight: 600; line-height: 1.4; }
 .home-detail-state p { margin: 7px 0 0; color: var(--color-friday-muted); font-size: var(--font-ui); line-height: 1.55; }
 .home-detail-state-needs-confirmation { border-color: var(--status-pending-foreground); }
@@ -1233,8 +1233,8 @@ button, input, select, textarea { font: inherit; }
 .settings-button-dark:hover { background: #161512; }
 .settings-button-secondary { border-color: #dcd6cc; background: #fffefd; color: #3e3a34; }
 .settings-button-secondary:hover { background: #f6f3ec; }
-.settings-button-danger { background: var(--color-friday-danger); color: #fff; }
-.settings-button-danger:hover { background: color-mix(in srgb, var(--color-friday-danger) 88%, #000); }
+.settings-button-danger { background: var(--status-danger-text); color: var(--color-friday-surface); }
+.settings-button-danger:hover { background: color-mix(in srgb, var(--status-danger-text) 88%, #000); }
 .settings-text-danger { border: 0; background: transparent; color: var(--status-danger-text); cursor: pointer; padding: 0; font-size: var(--font-ui); font-weight: 700; }
 .settings-text-danger:hover, .settings-text-danger:focus-visible { color: #792d27; outline: none; text-decoration: underline; }
 
