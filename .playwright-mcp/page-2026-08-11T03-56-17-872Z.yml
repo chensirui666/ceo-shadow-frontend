@@ -1,0 +1,105 @@
+- main [ref=f4e3]:
+  - generic [ref=f4e5]:
+    - button "Notifications are unavailable" [disabled]
+    - button "Open account menu" [ref=f4e6] [cursor=pointer]
+  - complementary [ref=f4e10]:
+    - generic [ref=f4e11]: Friday
+    - navigation "Primary navigation" [ref=f4e12]:
+      - button "Home" [ref=f4e13] [cursor=pointer]
+      - button "Tasks" [ref=f4e15] [cursor=pointer]
+      - button "Memory" [ref=f4e17] [cursor=pointer]
+      - button "Feedback" [ref=f4e19] [cursor=pointer]
+  - region "Home content" [ref=f4e24]:
+    - generic [ref=f4e25]:
+      - list "Onboarding progress" [ref=f4e26]:
+        - listitem [ref=f4e27]:
+          - button "1 Connect apps" [ref=f4e28] [cursor=pointer]:
+            - generic [ref=f4e29]: "1"
+            - strong [ref=f4e30]: Connect apps
+        - listitem [ref=f4e31]:
+          - button "2 Build Memory" [ref=f4e32] [cursor=pointer]:
+            - generic [ref=f4e33]: "2"
+            - strong [ref=f4e34]: Build Memory
+        - listitem [ref=f4e35]:
+          - button "3 Confirm work style" [ref=f4e36] [cursor=pointer]:
+            - generic [ref=f4e37]: "3"
+            - strong [ref=f4e38]: Confirm work style
+        - listitem [ref=f4e39]:
+          - button "4 Trial" [ref=f4e40] [cursor=pointer]:
+            - generic [ref=f4e41]: "4"
+            - strong [ref=f4e42]: Trial
+      - generic [ref=f4e264]:
+        - generic [ref=f4e265]:
+          - generic [ref=f4e266]:
+            - paragraph [ref=f4e267]: Step 4 of 4
+            - heading "Try one question" [level=2] [ref=f4e268]
+            - paragraph [ref=f4e269]: In Trial, your message only goes to Friday. It is never sent to a colleague.
+          - generic [ref=f4e270]:
+            - generic [ref=f4e271]: Not sure what to ask?
+            - 'button "Customer asks: Can this project ship this week?" [ref=f4e272] [cursor=pointer]'
+            - 'button "Teammate asks: What should we prepare for next week’s meeting?" [ref=f4e273] [cursor=pointer]'
+            - 'button "Customer asks: What risks does the current plan have?" [ref=f4e274] [cursor=pointer]'
+          - generic [ref=f4e275]:
+            - generic [ref=f4e276]: Trial question
+            - textbox "Trial question" [ref=f4e277]:
+              - /placeholder: Type a work question for Friday…
+          - button "Send to Friday" [disabled]
+          - generic [ref=f4e278]:
+            - button "Start formal mode" [ref=f4e279] [cursor=pointer]
+            - paragraph [ref=f4e280]: Available after you confirm your work style. A Trial is optional.
+        - complementary [ref=f4e281]
+      - region [ref=f4e73]:
+        - generic [ref=f4e74]:
+          - heading "Recent 24 hours" [level=2] [ref=f4e75]
+          - generic [ref=f4e76]: No work events yet
+        - region "Recent 24 hours" [ref=f4e77]:
+          - paragraph [ref=f4e78]: No messages in the last 24 hours.
+          - generic [ref=f4e79]:
+            - 'img "04:00: Processed 0, Pending 0, Send failed 0" [ref=f4e80]':
+              - generic [ref=f4e82]: "04"
+            - 'img "05:00: Processed 0, Pending 0, Send failed 0" [ref=f4e83]':
+              - generic [ref=f4e85]: "05"
+            - 'img "06:00: Processed 0, Pending 0, Send failed 0" [ref=f4e86]':
+              - generic [ref=f4e88]: "06"
+            - 'img "07:00: Processed 0, Pending 0, Send failed 0" [ref=f4e89]':
+              - generic [ref=f4e91]: "07"
+            - 'img "08:00: Processed 0, Pending 0, Send failed 0" [ref=f4e92]':
+              - generic [ref=f4e94]: "08"
+            - 'img "09:00: Processed 0, Pending 0, Send failed 0" [ref=f4e95]':
+              - generic [ref=f4e97]: "09"
+            - 'img "10:00: Processed 0, Pending 0, Send failed 0" [ref=f4e98]':
+              - generic [ref=f4e100]: "10"
+            - 'img "11:00: Processed 0, Pending 0, Send failed 0" [ref=f4e101]':
+              - generic [ref=f4e103]: "11"
+            - 'img "12:00: Processed 0, Pending 0, Send failed 0" [ref=f4e104]':
+              - generic [ref=f4e106]: "12"
+            - 'img "13:00: Processed 0, Pending 0, Send failed 0" [ref=f4e107]':
+              - generic [ref=f4e109]: "13"
+            - 'img "14:00: Processed 0, Pending 0, Send failed 0" [ref=f4e110]':
+              - generic [ref=f4e112]: "14"
+            - 'img "15:00: Processed 0, Pending 0, Send failed 0" [ref=f4e113]':
+              - generic [ref=f4e115]: "15"
+            - 'img "16:00: Processed 0, Pending 0, Send failed 0" [ref=f4e116]':
+              - generic [ref=f4e118]: "16"
+            - 'img "17:00: Processed 0, Pending 0, Send failed 0" [ref=f4e119]':
+              - generic [ref=f4e121]: "17"
+            - 'img "18:00: Processed 0, Pending 0, Send failed 0" [ref=f4e122]':
+              - generic [ref=f4e124]: "18"
+            - 'img "19:00: Processed 0, Pending 0, Send failed 0" [ref=f4e125]':
+              - generic [ref=f4e127]: "19"
+            - 'img "20:00: Processed 0, Pending 0, Send failed 0" [ref=f4e128]':
+              - generic [ref=f4e130]: "20"
+            - 'img "21:00: Processed 0, Pending 0, Send failed 0" [ref=f4e131]':
+              - generic [ref=f4e133]: "21"
+            - 'img "22:00: Processed 0, Pending 0, Send failed 0" [ref=f4e134]':
+              - generic [ref=f4e136]: "22"
+            - 'img "23:00: Processed 0, Pending 0, Send failed 0" [ref=f4e137]':
+              - generic [ref=f4e139]: "23"
+            - 'img "00:00: Processed 0, Pending 0, Send failed 0" [ref=f4e140]':
+              - generic [ref=f4e142]: "00"
+            - 'img "01:00: Processed 0, Pending 0, Send failed 0" [ref=f4e143]':
+              - generic [ref=f4e145]: "01"
+            - 'img "02:00: Processed 0, Pending 0, Send failed 0" [ref=f4e146]':
+              - generic [ref=f4e148]: "02"
+            - 'img "03:00: Processed 0, Pending 0, Send failed 0" [ref=f4e149]':
+              - generic [ref=f4e151]: "03"
