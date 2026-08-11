@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Button, Modal, useOverlayState } from '@heroui/react'
+import { Button, Dropdown, ListBox, Modal, Select, useOverlayState } from '@heroui/react'
+import { ChevronDown } from 'lucide-react'
 import type { Locale } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import type { HomeCopy } from '../content/translations.ts'
@@ -47,9 +48,10 @@ function ModePicker({ copy, mode, onModeChange }: ModePickerProps) {
   }
 
   return <div className="home-source-mode">
-    <select aria-label={copy.mode.label} className="home-mode-select" onChange={(event) => choose(event.target.value as OperatingMode)} value={mode}>
-      {modes.map((item) => <option key={item} value={item}>{copy.mode.choices[item]}</option>)}
-    </select>
+    <Dropdown>
+      <Button aria-label={copy.mode.label} className="home-mode-trigger" type="button">{copy.mode.choices[mode]}<ChevronDown aria-hidden="true" /></Button>
+      <Dropdown.Popover className="home-mode-menu" placement="bottom right"><Dropdown.Menu aria-label={copy.mode.label} onAction={(key) => choose(key as OperatingMode)} selectedKeys={[mode]} selectionMode="single">{modes.map((item) => <Dropdown.Item id={item} key={item} textValue={copy.mode.choices[item]}>{copy.mode.choices[item]}<Dropdown.ItemIndicator /></Dropdown.Item>)}</Dropdown.Menu></Dropdown.Popover>
+    </Dropdown>
     <Modal state={dialog}>
       {pendingMode && <Modal.Backdrop className="home-mode-backdrop"><Modal.Container className="home-mode-container" placement="center"><Modal.Dialog className="home-mode-dialog"><Modal.Header><Modal.Heading>{copy.confirmation.title(pendingMode)}</Modal.Heading></Modal.Header><Modal.Body>{copy.confirmation.body(pendingMode)}</Modal.Body><Modal.Footer><Button isDisabled={busy} onPress={close} variant="secondary">{copy.actions.cancel}</Button><Button isPending={busy} onPress={confirm}>{copy.confirmation.confirm(pendingMode)}</Button></Modal.Footer></Modal.Dialog></Modal.Container></Modal.Backdrop>}
     </Modal>
@@ -67,7 +69,7 @@ type HomeSourceRowProps = {
 
 export function HomeSourceRow({ connectedSources, copy, mode, onModeChange, onSourceChange, source }: HomeSourceRowProps) {
   return <div className="home-source-row">
-    <label className="home-source-filter">{copy.source}<select onChange={(event) => onSourceChange(event.target.value as HomeSource | 'all')} value={source}><option value="all">{copy.allSources}</option>{connectedSources.map((item) => <option key={item} value={item}>{copy.sources[item]}</option>)}</select></label>
+    <div className="home-source-filter"><span>{copy.source}</span><Select aria-label={copy.source} className="home-source-select" onSelectionChange={(key) => onSourceChange(key as HomeSource | 'all')} selectedKey={source} variant="secondary"><Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger><Select.Popover><ListBox><ListBox.Item id="all" textValue={copy.allSources}>{copy.allSources}<ListBox.ItemIndicator /></ListBox.Item>{connectedSources.map((item) => <ListBox.Item id={item} key={item} textValue={copy.sources[item]}>{copy.sources[item]}<ListBox.ItemIndicator /></ListBox.Item>)}</ListBox></Select.Popover></Select></div>
     <ModePicker copy={copy} mode={mode} onModeChange={onModeChange} />
   </div>
 }
