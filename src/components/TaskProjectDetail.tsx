@@ -86,7 +86,7 @@ export default function TaskProjectDetail({ copy, locale, onOpenAiProduct, onOpe
       <dl className="tasks-project-facts tasks-detail-panel">
         <div><dt>{copy.detail.started}</dt><dd>{formatDate(project.startedAt, locale)}</dd></div>
         <div><dt>{copy.detail.owner}</dt><dd>{project.owner}</dd></div>
-        <div><dt>{copy.detail.participants}</dt><dd>{project.participants.join('、')}</dd></div>
+        <div><dt>{copy.detail.participants}</dt><dd>{project.participants.join(locale === 'zh' ? '、' : ', ')}</dd></div>
         <div><dt>{copy.detail.priority}</dt><dd>{copy.priority[project.priority]}</dd></div>
         <div><dt>{copy.document.detail}</dt><dd><Button aria-label={copy.document.open} className="task-project-detail-action" data-project-detail-action onPress={onOpenProjectDetail} type="button" variant="ghost"><FileText aria-hidden="true" />{copy.document.open}</Button></dd></div>
       </dl>

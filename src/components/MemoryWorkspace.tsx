@@ -6,6 +6,7 @@ import { translations } from '../content/translations.ts'
 import {
   finishMaterialTask,
   initialMemoryGraph,
+  localizedMemoryGraph,
   resolveMaterialTask,
   startMaterialTask,
   visibleMemoryGraph,
@@ -66,7 +67,7 @@ export default function MemoryWorkspace({ initialGraph = initialMemoryGraph, loc
     runTask(startMaterialTask(kind, selectedFile.name, selectedFile.size))
   }
 
-  const visible = visibleMemoryGraph(graph, { layer, source, keyword })
+  const visible = visibleMemoryGraph(localizedMemoryGraph(graph, locale), { layer, source, keyword })
   const applyPositions = useCallback((positions: Record<string, MemoryPosition>) => {
     if (!Object.keys(positions).length) return
     setGraph((current) => ({

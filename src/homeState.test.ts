@@ -22,6 +22,32 @@ test('source filtering and activity totals use the same events and exclude conne
   assert.equal(homeState.activityHours(snapshot.events, new Date('2026-08-06T10:40:00.000Z')).at(-1)?.processed, 1)
 })
 
+test('English Home fixtures keep messages, replies, and rationales in English', () => {
+  const snapshot = homeState.createDemoHomeSnapshot(new Date('2026-08-06T12:00:00.000Z'), 'en')
+  const content = snapshot.events.flatMap((event) => [event.conversation, event.sender, event.question, event.reply, event.rationale]).join(' ')
+
+  assert.equal(snapshot.events[0].question, 'Can we confirm next week’s launch date?')
+  assert.doesNotMatch(content, /[\p{Script=Han}]/u)
+})
+
+test('English Home view localizes the existing session fixture without changing its event ids', () => {
+  const base = homeState.createDemoHomeSnapshot(new Date('2026-08-06T12:00:00.000Z'))
+  const localized = homeState.localizedHomeSnapshot(base, 'en')
+  const content = localized.events.flatMap((event) => [event.conversation, event.sender, event.question, event.reply, event.rationale]).join(' ')
+
+  assert.deepEqual(localized.events.map((event) => event.id), base.events.map((event) => event.id))
+  assert.doesNotMatch(content, /[\p{Script=Han}]/u)
+})
+
+test('English Home view keeps an in-progress fixture event free of Chinese copy', () => {
+  const base = homeState.createDemoHomeSnapshot(new Date('2026-08-06T12:00:00.000Z'))
+  const progressed = homeState.progressWaitingEvents(base, new Date('2026-08-06T12:02:01.000Z'))
+  const event = homeState.localizedHomeSnapshot(progressed, 'en').events.find((item) => item.id === 'waiting')
+
+  assert.equal(event?.status, 'processing')
+  assert.doesNotMatch([event?.reply, event?.rationale].join(' '), /[\p{Script=Han}]/u)
+})
+
 test('a confirmation decision updates one event into completed with its distinct outcome', () => {
   const snapshot = homeState.createDemoHomeSnapshot(new Date('2026-08-06T12:00:00.000Z'))
   const confirmed = homeState.resolveConfirmation(snapshot, 'needs-confirmation', 'send', '确认下周三上线。')

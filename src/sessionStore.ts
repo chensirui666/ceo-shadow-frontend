@@ -37,3 +37,21 @@ export const saveLocale = (storage: Pick<StorageLike, 'setItem'>, locale: unknow
   storage.setItem('friday-language', resolvedLocale)
   return resolvedLocale
 }
+
+const onboardingWelcomeKey = (email: string): string => `friday-onboarding-welcome:${email.trim().toLowerCase()}`
+
+export const hasSeenOnboardingWelcome = (storage: Pick<StorageLike, 'getItem'>, email: string): boolean => {
+  try {
+    return storage.getItem(onboardingWelcomeKey(email)) === 'seen'
+  } catch {
+    return false
+  }
+}
+
+export const markOnboardingWelcomeSeen = (storage: Pick<StorageLike, 'setItem'>, email: string): void => {
+  try {
+    storage.setItem(onboardingWelcomeKey(email), 'seen')
+  } catch {
+    // The welcome remains dismissible even when browser storage is unavailable.
+  }
+}

@@ -62,6 +62,36 @@ test('Tasks labels priorities as P0, P1, and P2', () => {
   assert.deepEqual(translations.zh.workspace.tasks.priority, { high: 'P0', medium: 'P1', low: 'P2' })
 })
 
+test('English Tasks localization replaces every canned project field', () => {
+  const localizedTasksSnapshot = (tasksState as unknown as {
+    localizedTasksSnapshot?: (snapshot: ReturnType<typeof tasksState.createDemoTasksSnapshot>, locale: 'en' | 'zh') => ReturnType<typeof tasksState.createDemoTasksSnapshot>
+  }).localizedTasksSnapshot
+  assert.equal(typeof localizedTasksSnapshot, 'function', 'Tasks should localize fixture content before it reaches the English UI')
+  if (typeof localizedTasksSnapshot !== 'function') return
+
+  const english = localizedTasksSnapshot(tasksState.createDemoTasksSnapshot('chen'), 'en')
+
+  assert.equal(english.projects[0].name, 'Client delivery preparation')
+  assert.equal(english.projects[0].participants[0], 'Mia Lin')
+  assert.equal(english.projects[0].todos[0].aiProduct?.title, 'Client acceptance checklist')
+  assert.doesNotMatch(JSON.stringify(english), /\p{Script=Han}/u)
+})
+
+test('English Tasks localization retains completed work and its generated update', () => {
+  const localizedTasksSnapshot = (tasksState as unknown as {
+    localizedTasksSnapshot?: (snapshot: ReturnType<typeof tasksState.createDemoTasksSnapshot>, locale: 'en' | 'zh') => ReturnType<typeof tasksState.createDemoTasksSnapshot>
+  }).localizedTasksSnapshot
+  assert.equal(typeof localizedTasksSnapshot, 'function', 'Tasks should preserve the session snapshot while changing its language')
+  if (typeof localizedTasksSnapshot !== 'function') return
+
+  const completed = tasksState.updateTodoStatus(tasksState.createDemoTasksSnapshot('chen'), 'acceptance-scope', 'completed', new Date('2026-08-08T12:00:00.000Z'))
+  const english = localizedTasksSnapshot(completed, 'en')
+
+  assert.equal(english.projects[0].todos[0].status, 'completed')
+  assert.equal(english.projects[0].recentChange.summary, 'Completed “Confirm client acceptance scope.”')
+  assert.doesNotMatch(JSON.stringify(english), /\p{Script=Han}/u)
+})
+
 test('completing or cancelling an open TODO records its terminal time and updates the latest project change', () => {
   const before = tasksState.createDemoTasksSnapshot('陈思睿')
   const completed = tasksState.updateTodoStatus(before, 'acceptance-scope', 'completed', new Date('2026-08-08T12:00:00.000Z'))

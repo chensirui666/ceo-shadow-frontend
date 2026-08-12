@@ -63,6 +63,9 @@ test('Home status tokens and tooltip layout use the approved palette', async () 
   assert.match(css, /\.home-detail-state \{[^}]*border-left: 2px solid var\(--status-success-foreground\);/)
   assert.match(css, /\.settings-button-danger \{ background: var\(--status-danger-text\); color: var\(--color-friday-surface\); \}/)
   assert.match(css, /\.onboarding-connect-content \.onboarding-section-footer \.onboarding-continue-action \{[^}]*background: var\(--button-inverse-background\);/)
+  assert.match(css, /\.onboarding-trial-submit \{[^}]*background: #1f1a16;[^}]*color: #fffaf2;/)
+  assert.match(css, /\.onboarding-formal-action \{[^}]*background: transparent;/)
+  assert.match(css, /\.onboarding-formal-action \.button\.button--secondary \{[^}]*background: #efe6d4;[^}]*color: #30231d;/)
   assert.match(css, /\.settings-button-danger:hover \{ background: color-mix\(in srgb, var\(--status-danger-text\) 88%, #000\); \}/)
   assert.match(css, /--accent-foreground: var\(--color-friday-surface\);/)
   assert.match(css, /\.home-chart-tooltip \{[^}]*box-shadow: 0 10px 24px rgb\(54 48 39 \/ 12%\);/)
@@ -111,15 +114,15 @@ test('a paused expired waiting event shows a compact paused state in the list', 
   assert.doesNotMatch(html, /0m 0s until automatic reply/)
 })
 
-test('a session Trial event carries a visible Trial marker in Home', async () => {
+test('a session trial event carries a visible trial marker in Home', async () => {
   const { default: HomeEventList } = await vite.ssrLoadModule('/src/components/HomeEventList.tsx')
   const event = {
     id: 'trial', source: 'dingtalk', sender: '你', receivedAt: '2026-08-09T09:00:00.000Z', status: 'trial-complete',
-    question: '客户问：当前方案有什么风险？', reply: '我会先核实当前进度、风险和需要确认的事项。', rationale: 'Trial：回复仅在当前会话中查看，未发送给任何联系人。',
+    question: '客户问：当前方案有什么风险？', reply: '我会先核实当前进度、风险和需要确认的事项。', rationale: '试运行：回复仅在当前会话中查看，未发送给任何联系人。',
   } satisfies import('./homeState.ts').HomeEvent
   const html = renderToStaticMarkup(createElement(HomeEventList, { copy: translations.zh.workspace.home, events: [event], mode: 'active', now: new Date('2026-08-09T09:01:00.000Z'), onOpen: () => {}, sourceNames: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' } }))
 
-  assert.match(html, /Trial · 已完成，未发送/)
+  assert.match(html, /试运行 · 已完成，未发送/)
 })
 
 const createDetailEvent = (override: Partial<import('./homeState.ts').HomeEvent> = {}): import('./homeState.ts').HomeEvent => ({
@@ -227,7 +230,7 @@ test('workspace starts onboarding for every non-seeded demo account', async () =
   }))
 
   assert.match(html, /连接你的工作应用/)
-  assert.match(html, /暂无工作事件/)
+  assert.doesNotMatch(html, /暂无工作事件|最近 24 小时/)
 })
 
 test('workspace keeps the seeded demo account on the normal Home', async () => {

@@ -8,7 +8,7 @@ import { createHomeService } from '../homeService.ts'
 import { createDemoHomeSnapshot } from '../homeState.ts'
 import { createOnboardingState, createTrialEvent, needsOnboarding } from '../onboardingState.ts'
 import type { OnboardingState } from '../onboardingState.ts'
-import { saveSession } from '../sessionStore.ts'
+import { hasSeenOnboardingWelcome, markOnboardingWelcomeSeen, saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
 import FeedbackWorkspace from './FeedbackWorkspace.tsx'
@@ -41,7 +41,8 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const [settingsOpen, setSettingsOpen] = useState(() => storedRoute === 'settings')
   const [onboarding, setOnboarding] = useState(() => needsOnboarding(session.email))
   const [onboardingState, setOnboardingState] = useState(() => createOnboardingState())
-  const sessionHomeService = useRef(createHomeService(createDemoHomeSnapshot()))
+  const [welcomeOpen, setWelcomeOpen] = useState(() => typeof window === 'undefined' || !hasSeenOnboardingWelcome(window.localStorage, session.email))
+  const sessionHomeService = useRef(createHomeService(createDemoHomeSnapshot(new Date(), locale)))
   const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
   const [tasksListRequest, setTasksListRequest] = useState(0)
   const exitDialog = useOverlayState()
@@ -57,6 +58,11 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
 
   const openSettings = () => setSettingsOpen(true)
 
+  const dismissWelcome = () => {
+    markOnboardingWelcomeSeen(window.localStorage, session.email)
+    setWelcomeOpen(false)
+  }
+
   const goTo = (nextRoute: unknown) => {
     const next = resolveRoute(nextRoute)
     if (next === 'settings') openSettings()
@@ -68,8 +74,8 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   }
 
   const finishOnboarding = (completedState: OnboardingState) => {
-    const fixture = createDemoHomeSnapshot()
-    const trialEvent = createTrialEvent(completedState, new Date())
+    const fixture = createDemoHomeSnapshot(new Date(), locale)
+    const trialEvent = createTrialEvent(completedState, new Date(), locale)
     sessionHomeService.current = createHomeService({
       ...fixture,
       mode: 'active',
@@ -132,7 +138,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
           onboarding
-            ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onOpenMemory={() => goTo('memory')} onStateChange={setOnboardingState} />
+            ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onOpenMemory={() => goTo('memory')} onStateChange={setOnboardingState} onWelcomeDismiss={dismissWelcome} welcomeOpen={welcomeOpen} />
             : <HomeWorkspace locale={locale} onOpenSettings={openSettings} service={sessionHomeService.current} />
         ) : route === 'tasks' ? (
           <TasksWorkspace currentUser={name} locale={locale} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />

@@ -11,9 +11,9 @@ test('only the seeded demo account skips onboarding', () => {
 
 test('completed step titles remain reachable without exposing an unfinished future step', () => {
   const complete = onboarding.confirmWorkStyle(
-    onboarding.skipMemory(
+    onboarding.advanceFromMemory(onboarding.confirmMemory(
       onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),
-    ),
+    )),
   )
 
   assert.equal(onboarding.selectOnboardingStep(complete, 2).step, 2)
@@ -21,40 +21,43 @@ test('completed step titles remain reachable without exposing an unfinished futu
   assert.equal(onboarding.selectOnboardingStep(onboarding.createOnboardingState(), 4).step, 1)
 })
 
-test('Memory construction stays on Step 2 until the user confirms continuation', () => {
+test('Memory confirmation stays on step 2 until the user continues', () => {
   const built = onboarding.confirmMemory(
     onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'feishu')),
   )
 
   assert.equal(built.step, 2)
+  assert.equal(built.memoryConfirmed, true)
   assert.equal(onboarding.advanceFromMemory(built).step, 3)
+  assert.equal('memorySkipped' in built, false)
 })
 
 test('work style confirmation retains an edited Prompt for the current session', () => {
-  const prepared = onboarding.skipMemory(
+  const prepared = onboarding.advanceFromMemory(onboarding.confirmMemory(
     onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),
-  )
+  ))
   const confirmed = onboarding.confirmWorkStyle(prepared, '先确认事实，再给出下一步。')
 
   assert.equal(confirmed.workStylePrompt, '先确认事实，再给出下一步。')
 })
 
-test('skipping work-style distillation still allows a Trial without enabling formal mode', () => {
-  const prepared = onboarding.skipMemory(
+test('work-style confirmation is required before formal mode can start', () => {
+  const built = onboarding.confirmMemory(
     onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),
   )
-  const skipped = onboarding.skipWorkStyle(prepared)
-  const trial = onboarding.recordTrial(skipped, '客户问：这个项目本周能交付吗？')
+  const prepared = onboarding.advanceFromMemory(built)
+  const trial = onboarding.recordTrial(prepared, '客户问：这个项目本周能交付吗？')
 
-  assert.equal(skipped.step, 4)
-  assert.equal(skipped.workStyleConfirmed, false)
-  assert.match(trial.trial?.reply ?? '', /核实/)
-  assert.equal(onboarding.completeOnboarding(skipped).completed, false)
+  assert.equal(onboarding.confirmWorkStyle(built).workStyleConfirmed, false)
+  assert.equal(prepared.step, 3)
+  assert.equal(prepared.workStyleConfirmed, false)
+  assert.equal(trial.trial, undefined)
+  assert.equal(onboarding.completeOnboarding(prepared).completed, false)
 })
 
 test('a Trial adjustment changes only the current Trial reply', () => {
   const connected = onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')
-  const memoryConfirmed = onboarding.confirmMemory(connected)
+  const memoryConfirmed = onboarding.advanceFromMemory(onboarding.confirmMemory(connected))
   const styleConfirmed = onboarding.confirmWorkStyle(memoryConfirmed)
   const recorded = onboarding.recordTrial(styleConfirmed, '客户问：这个项目本周能交付吗？')
   const adjusted = onboarding.regenerateTrial(recorded, '语气更保守，先说明风险。')
@@ -69,7 +72,7 @@ test('a Trial adjustment changes only the current Trial reply', () => {
 
 test('a completed Trial becomes a visible session-only Home event', () => {
   const state = onboarding.recordTrial(
-    onboarding.confirmWorkStyle(onboarding.confirmMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'feishu'))),
+    onboarding.confirmWorkStyle(onboarding.advanceFromMemory(onboarding.confirmMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'feishu')))),
     '同事问：下周会议要准备什么？',
   )
   const event = onboarding.createTrialEvent(state, new Date('2026-08-09T09:00:00.000Z'))
@@ -82,13 +85,13 @@ test('a completed Trial becomes a visible session-only Home event', () => {
     status: 'trial-complete',
     question: '同事问：下周会议要准备什么？',
     reply: '我会先梳理会议目标、待确认事项和需要带齐的材料，再在会前同步一份简短清单。',
-    rationale: 'Trial：回复仅在当前会话中查看，未发送给任何联系人。',
+    rationale: '试运行：回复仅在当前会话中查看，未发送给任何联系人。',
   })
 })
 
 test('a Trial adjustment is retained as feedback material without changing the work style', () => {
   const prepared = onboarding.recordTrial(
-    onboarding.confirmWorkStyle(onboarding.confirmMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk'))),
+    onboarding.confirmWorkStyle(onboarding.advanceFromMemory(onboarding.confirmMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')))),
     '客户问：当前方案有什么风险？',
   )
   const adjusted = onboarding.regenerateTrial(prepared, '先说明依赖风险，再给结论。')
@@ -100,7 +103,7 @@ test('a Trial adjustment is retained as feedback material without changing the w
 
 test('matching a Trial reply records feedback without changing its reply', () => {
   const trial = onboarding.recordTrial(
-    onboarding.confirmWorkStyle(onboarding.skipMemory(onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')))),
+    onboarding.confirmWorkStyle(onboarding.advanceFromMemory(onboarding.confirmMemory(onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk'))))),
     '客户问：这个项目本周能交付吗？',
   )
   const matched = onboarding.recordTrialFeedback(trial, { kind: 'matched', note: '' })

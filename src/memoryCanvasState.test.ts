@@ -28,6 +28,42 @@ test('edge gradients anchor each end to its node color', () => {
   )
 })
 
+test('deterministic radial layout keeps denser nodes closer to the center without a perfect ring', () => {
+  const nodes = [
+    { id: 'a', source: 'dingtalk' },
+    { id: 'b', source: 'feishu' },
+    { id: 'c', source: 'teams' },
+    { id: 'd', source: 'file' },
+    { id: 'e', source: 'conversation' },
+    { id: 'f', source: 'dingtalk' },
+    { id: 'g', source: 'feishu' },
+  ]
+  const edges = [
+    { from: 'a', to: 'b' },
+    { from: 'a', to: 'c' },
+    { from: 'a', to: 'd' },
+    { from: 'b', to: 'c' },
+    { from: 'd', to: 'e' },
+    { from: 'e', to: 'f' },
+  ]
+  const positions = memoryCanvasState.radialMemoryPositions(nodes, edges)
+  const radius = (id: string) => Math.hypot(positions[id].x - 800, positions[id].y - 450)
+
+  assert.deepEqual(positions, memoryCanvasState.radialMemoryPositions(nodes, edges))
+  assert.ok(radius('a') < radius('d'))
+  assert.ok(radius('d') < radius('f'))
+  assert.notEqual(radius('f'), radius('g'))
+})
+
+test('edge emphasis keeps the graph quiet until a connected node is active', () => {
+  const edge = { from: 'source', to: 'target' }
+
+  assert.equal(memoryCanvasState.edgeVisualState(edge, null), 'default')
+  assert.equal(memoryCanvasState.edgeVisualState(edge, 'source'), 'active')
+  assert.equal(memoryCanvasState.edgeVisualState(edge, 'target'), 'active')
+  assert.equal(memoryCanvasState.edgeVisualState(edge, 'other'), 'muted')
+})
+
 test('force links preserve a 72px node-edge gap', () => {
   assert.equal(memoryCanvasState.forceLinkDistance(15, 11), 98)
 })

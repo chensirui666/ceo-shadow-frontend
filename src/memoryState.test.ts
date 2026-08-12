@@ -30,6 +30,45 @@ test('every graph node owns its server-provided canvas coordinate', () => {
   )
 })
 
+test('English Memory nodes use English titles and summaries', () => {
+  const graph = memoryState.localizedMemoryGraph(memoryState.initialMemoryGraph, 'en')
+  const content = graph.nodes.flatMap((node) => [node.title, node.summary]).join(' ')
+
+  assert.equal(graph.nodes[0].title, 'Weekly product cadence')
+  assert.doesNotMatch(content, /[\p{Script=Han}]/u)
+})
+
+test('the context layer starts with 50 connected work-memory nodes', () => {
+  const context = memoryState.initialMemoryGraph.nodes.filter((node) => node.layer === 'context')
+  const contextIds = new Set(context.map((node) => node.id))
+
+  assert.equal(context.length, 50)
+  assert.equal(memoryState.initialMemoryGraph.edges.filter((edge) => contextIds.has(edge.from) && contextIds.has(edge.to)).length, 60)
+})
+
+test('context nodes start on stable radial layers ordered by connection density', () => {
+  const context = memoryState.initialMemoryGraph.nodes.filter((node) => node.layer === 'context')
+  const degrees = context.reduce<Record<string, number>>((result, node) => ({ ...result, [node.id]: 0 }), {})
+  memoryState.initialMemoryGraph.edges.forEach((edge) => {
+    if (degrees[edge.from] !== undefined) degrees[edge.from] += 1
+    if (degrees[edge.to] !== undefined) degrees[edge.to] += 1
+  })
+  const averageRadius = (degree: number) => {
+    const matching = context.filter((node) => degrees[node.id] === degree)
+    return matching.reduce((total, node) => total + Math.hypot(node.position.x - 800, node.position.y - 450), 0) / matching.length
+  }
+
+  assert.ok(averageRadius(3) < averageRadius(2))
+  assert.ok(averageRadius(2) < averageRadius(1))
+  const centroid = context.reduce((result, node) => ({
+    x: result.x + node.position.x / context.length,
+    y: result.y + node.position.y / context.length,
+  }), { x: 0, y: 0 })
+
+  assert.ok(Math.abs(centroid.x - 800) < 12)
+  assert.ok(Math.abs(centroid.y - 450) < 12)
+})
+
 test('material tasks preserve the graph on failure and add the matching source on completion', () => {
   const processingTask = memoryState.startMaterialTask('file', 'brief.pdf', 32)
   assert.equal(processingTask.status, 'processing')

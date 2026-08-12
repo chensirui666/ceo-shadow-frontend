@@ -4,12 +4,12 @@ import type { Edge, EdgeProps, EdgeTypes, Node, NodeProps, NodeTypes, OnNodesCha
 import { forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force'
 import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force'
 import '@xyflow/react/dist/style.css'
-import { changedPositions, displayPosition, edgeGradientColors, forceLinkDistance, forceLinkIterations, forceLinkStrength, forceParticipantIds, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
+import { changedPositions, displayPosition, edgeGradientColors, edgeVisualState, forceLinkDistance, forceLinkIterations, forceLinkStrength, forceParticipantIds, nodeDegrees, nodeDiameterForDegree } from '../memoryCanvasState.ts'
 import type { MemoryPosition } from '../memoryCanvasState.ts'
 import type { MemoryEdge, MemoryNode } from '../memoryState.ts'
 
-type MemoryFlowNode = Node<MemoryNode & { diameter: number }, 'memory'>
-type MemoryFlowEdge = Edge<{ sourceColor: string; targetColor: string }, 'memory'>
+type MemoryFlowNode = Node<MemoryNode & { diameter: number; onActiveChange: (id: string | null) => void }, 'memory'>
+type MemoryFlowEdge = Edge<{ sourceColor: string; targetColor: string; visualState: ReturnType<typeof edgeVisualState> }, 'memory'>
 type ForceNode = SimulationNodeDatum & { id: string; radius: number }
 type ForceLink = SimulationLinkDatum<ForceNode> & { source: ForceNode | string; target: ForceNode | string }
 type DragState = {
@@ -31,10 +31,12 @@ type MemoryGraphProps = {
   summary: string
 }
 
-const MemoryCanvasNode = memo(({ data }: NodeProps<MemoryFlowNode>) => (
+const MemoryCanvasNode = memo(({ data, id }: NodeProps<MemoryFlowNode>) => (
   <div
     aria-label={data.summary ? `${data.title}: ${data.summary}` : data.title}
     className="memory-flow-node"
+    onMouseEnter={() => data.onActiveChange(id)}
+    onMouseLeave={() => data.onActiveChange(null)}
     style={{ backgroundColor: data.visual?.color ?? 'var(--memory-node-fallback)', height: data.diameter, width: data.diameter }}
   >
     <Handle className="memory-flow-handle" isConnectable={false} position={Position.Top} type="target" />
@@ -46,6 +48,9 @@ const MemoryCanvasNode = memo(({ data }: NodeProps<MemoryFlowNode>) => (
 const MemoryGradientEdge = ({ data, id, sourceX, sourceY, targetX, targetY }: EdgeProps<MemoryFlowEdge>) => {
   const gradientId = useId()
   const [path] = getStraightPath({ sourceX, sourceY, targetX, targetY })
+  const visualState = data?.visualState ?? 'default'
+  const opacity = visualState === 'active' ? .88 : visualState === 'muted' ? .06 : .24
+  const strokeWidth = visualState === 'active' ? 2.1 : 1.2
   return (
     <>
       <defs>
@@ -54,7 +59,7 @@ const MemoryGradientEdge = ({ data, id, sourceX, sourceY, targetX, targetY }: Ed
           <stop offset="100%" stopColor={data?.targetColor ?? '#969189'} />
         </linearGradient>
       </defs>
-      <BaseEdge id={id} path={path} style={{ stroke: `url(#${gradientId})`, strokeWidth: 1.6 }} />
+      <BaseEdge id={id} path={path} style={{ opacity, stroke: `url(#${gradientId})`, strokeWidth }} />
     </>
   )
 }
@@ -65,6 +70,7 @@ const edgeTypes: EdgeTypes = { memory: MemoryGradientEdge }
 const createFlowNodes = (
   nodes: MemoryNode[],
   degrees: Record<string, number>,
+  onActiveChange: (id: string | null) => void,
   current: MemoryFlowNode[] = [],
 ): MemoryFlowNode[] => {
   const previous = new Map(current.map((node) => [node.id, node]))
@@ -74,7 +80,7 @@ const createFlowNodes = (
     return {
       ...existing,
       ariaLabel: node.title,
-      data: { ...node, diameter },
+      data: { ...node, diameter, onActiveChange },
       id: node.id,
       position: displayPosition(existing?.position, node.position),
       selectable: false,
@@ -89,10 +95,12 @@ const reducedMotionPreferred = () => window.matchMedia('(prefers-reduced-motion:
 export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange, summary }: MemoryGraphProps) {
   const dragState = useRef<DragState | null>(null)
   const degrees = useMemo(() => nodeDegrees(allEdges), [allEdges])
-  const [flowNodes, setFlowNodes] = useState<MemoryFlowNode[]>(() => createFlowNodes(nodes, degrees))
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
+  const onActiveChange = useCallback((id: string | null) => setActiveNodeId(id), [])
+  const [flowNodes, setFlowNodes] = useState<MemoryFlowNode[]>(() => createFlowNodes(nodes, degrees, onActiveChange))
   useEffect(() => {
-    setFlowNodes((current) => createFlowNodes(nodes, degrees, current))
-  }, [degrees, nodes])
+    setFlowNodes((current) => createFlowNodes(nodes, degrees, onActiveChange, current))
+  }, [degrees, nodes, onActiveChange])
   useEffect(() => () => {
     const current = dragState.current
     if (!current) return
@@ -103,13 +111,16 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
   const flowEdges = useMemo<MemoryFlowEdge[]>(() => {
     const nodeById = new Map(nodes.map((node) => [node.id, node]))
     return edges.map((edge) => ({
-      data: edgeGradientColors(nodeById.get(edge.from)?.visual?.color, nodeById.get(edge.to)?.visual?.color),
+      data: {
+        ...edgeGradientColors(nodeById.get(edge.from)?.visual?.color, nodeById.get(edge.to)?.visual?.color),
+        visualState: edgeVisualState(edge, activeNodeId),
+      },
       id: `${edge.from}-${edge.to}`,
       source: edge.from,
       target: edge.to,
       type: 'memory',
     }))
-  }, [edges, nodes])
+  }, [activeNodeId, edges, nodes])
 
   const updateForcePositions = useCallback((state: DragState) => {
     if (state.frame !== null) return
@@ -146,7 +157,7 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
         edgesFocusable={false}
         elementsSelectable={false}
         fitView
-        fitViewOptions={{ padding: 2 }}
+        fitViewOptions={{ padding: .08 }}
         maxZoom={2}
         minZoom={0.4}
         nodeOrigin={[0.5, 0.5]}

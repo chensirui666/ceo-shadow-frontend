@@ -9,20 +9,25 @@ export type OnboardingState = {
   maxReached: OnboardingStep
   connectedSources: HomeSource[]
   memoryConfirmed: boolean
-  memorySkipped: boolean
   workStyleConfirmed: boolean
   workStylePrompt?: string
   trial?: TrialReply
   completed: boolean
 }
 
-const trialReplyFor = (question: string): string => (
-  question.includes('会议')
+const trialReplyFor = (question: string, locale: 'en' | 'zh'): string => {
+  if (locale === 'en') return question.toLocaleLowerCase().includes('meeting')
+    ? 'I’ll first clarify the meeting goal, open decisions, and required materials, then share a short checklist before the meeting.'
+    : question.toLocaleLowerCase().includes('risk')
+      ? 'I’ll first verify progress, dependencies, and resourcing risks before making a clear commitment.'
+      : 'I’ll first verify the current progress, risks, and open decisions, then reply only with what the available information supports.'
+
+  return question.includes('会议')
     ? '我会先梳理会议目标、待确认事项和需要带齐的材料，再在会前同步一份简短清单。'
     : question.includes('风险')
       ? '当前方案需要先核实进度、依赖和资源风险；确认后再给出明确承诺。'
       : '我会先核实当前进度、风险和需要确认的事项，再给出不超出已有信息的回复。'
-)
+}
 
 export const needsOnboarding = (email: string): boolean => email.trim().toLowerCase() !== seededDemoEmail
 
@@ -31,7 +36,6 @@ export const createOnboardingState = (): OnboardingState => ({
   maxReached: 1,
   connectedSources: [],
   memoryConfirmed: false,
-  memorySkipped: false,
   workStyleConfirmed: false,
   completed: false,
 })
@@ -45,35 +49,27 @@ export const continueToMemory = (state: OnboardingState): OnboardingState => (
 )
 
 export const confirmMemory = (state: OnboardingState): OnboardingState => (
-  state.connectedSources.length ? { ...state, memoryConfirmed: true, memorySkipped: false } : state
-)
-
-export const skipMemory = (state: OnboardingState): OnboardingState => (
-  state.connectedSources.length ? { ...state, memorySkipped: true, step: 3, maxReached: 3 } : state
+  state.connectedSources.length ? { ...state, memoryConfirmed: true } : state
 )
 
 export const advanceFromMemory = (state: OnboardingState): OnboardingState => (
-  state.memoryConfirmed || state.memorySkipped ? { ...state, step: 3, maxReached: 3 } : state
+  state.memoryConfirmed ? { ...state, step: 3, maxReached: 3 } : state
 )
 
 export const confirmWorkStyle = (state: OnboardingState, prompt?: string): OnboardingState => (
-  state.memoryConfirmed || state.memorySkipped
+  state.step === 3 && state.memoryConfirmed
     ? { ...state, ...(prompt?.trim() ? { workStylePrompt: prompt.trim() } : {}), workStyleConfirmed: true, step: 4, maxReached: 4 }
     : state
-)
-
-export const skipWorkStyle = (state: OnboardingState): OnboardingState => (
-  state.memoryConfirmed || state.memorySkipped ? { ...state, step: 4, maxReached: 4 } : state
 )
 
 export const selectOnboardingStep = (state: OnboardingState, step: OnboardingStep): OnboardingState => (
   step <= state.maxReached ? { ...state, step } : state
 )
 
-export const recordTrial = (state: OnboardingState, question: string): OnboardingState => {
+export const recordTrial = (state: OnboardingState, question: string, locale: 'en' | 'zh' = 'zh'): OnboardingState => {
   const trimmedQuestion = question.trim()
   return state.step === 4 && trimmedQuestion
-    ? { ...state, trial: { question: trimmedQuestion, reply: trialReplyFor(trimmedQuestion) } }
+    ? { ...state, trial: { question: trimmedQuestion, reply: trialReplyFor(trimmedQuestion, locale) } }
     : state
 }
 
@@ -99,16 +95,16 @@ export const completeOnboarding = (state: OnboardingState): OnboardingState => (
   state.workStyleConfirmed ? { ...state, completed: true } : state
 )
 
-export const createTrialEvent = (state: OnboardingState, now: Date): HomeEvent | null => (
+export const createTrialEvent = (state: OnboardingState, now: Date, locale: 'en' | 'zh' = 'zh'): HomeEvent | null => (
   state.trial ? {
     id: 'onboarding-trial',
     source: state.connectedSources[0] ?? 'dingtalk',
-    sender: '你',
+    sender: locale === 'en' ? 'You' : '你',
     receivedAt: now.toISOString(),
     status: 'trial-complete',
     question: state.trial.question,
     reply: state.trial.reply,
-    rationale: 'Trial：回复仅在当前会话中查看，未发送给任何联系人。',
+    rationale: locale === 'en' ? 'Trial run: this reply is available only in this session and was not sent to anyone.' : '试运行：回复仅在当前会话中查看，未发送给任何联系人。',
     ...(state.trial.feedback ? { ownerFeedback: state.trial.feedback } : {}),
   } : null
 )

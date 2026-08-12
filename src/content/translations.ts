@@ -95,16 +95,15 @@ export type HomeCopy = {
 
 type OnboardingCopy = {
   progressLabel: string
-  steps: [string, string, string, string]
+  steps: [{ label: string; description: string }, { label: string; description: string }, { label: string; description: string }, { label: string; description: string }]
+  welcome: { eyebrow: string; storyTitle: string; title: string; duration: string; start: string; dismiss: string; memoryAlt: string }
   stepKicker: (step: number) => string
   actions: { cancel: string; continue: string }
-  connection: { title: string; subtitle: string; demo: string; scope: Record<HomeSource, string>; connect: string; connected: string; confirmTitle: (name: string) => string; confirmBody: string; complete: string; continueHint: string }
-  memory: { title: string; subtitle: string; connectedTitle: string; connected: string; readOnly: string; signalsTitle: string; signals: Record<'messages' | 'documents' | 'calendar', [string, string]>; findingsLabel: string; findings: Record<'messages' | 'documents' | 'topics', [number, string]>; demo: string; confirm: string; view: string; skip: string; proceed: string; readingTitle: string; reading: [string, string]; construct: string; building: string }
-  style: { title: string; subtitle: string; summary: string; points: string[]; extract: string; skip: string; extractingTitle: string; extracting: [string, string, string, string]; editHint: string; promptLabel: string; usePrompt: string; demo: string; prompt: string }
+  connection: { title: string; subtitle: string; scope: Record<HomeSource, string>; connect: string; connected: string; confirmTitle: (name: string) => string; confirmBody: string; complete: string; continueHint: string }
+  memory: { title: string; subtitle: string; connectedTitle: string; connected: string; readOnly: string; signalsTitle: string; signals: Record<'messages' | 'documents' | 'calendar', [string, string]>; findingsLabel: string; findings: Record<'messages' | 'documents' | 'topics', [number, string]>; migration: { title: string; body: string }; confirm: string; view: string; proceed: string; readingTitle: string; reading: [string, string] }
+  style: { title: string; subtitle: string; summary: string; points: string[]; benefitTitle: string; benefit: string; extract: string; extractingTitle: string; extracting: [string, string, string, string]; editHint: string; promptLabel: string; usePrompt: string; prompt: string }
   trial: { title: string; subtitle: string; suggestions: string; questions: string[]; inputLabel: string; placeholder: string; submit: string; contextTitle: string; context: string; replyTitle: string; note: string; adjustLabel: string; adjustPlaceholder: string; adjustAction: string }
-  activation: { start: string; hint: string; confirmTitle: string; confirmBody: string; confirm: string; celebrating: string }
-  contacts: { label: string; title: string; body: string; demo: string; close: string; notify: (name: string) => string }
-  emptyTimeline: string
+  activation: { start: string; confirmTitle: string; confirmBody: string; confirm: string; celebrating: string; completeTitle: string; completeBody: string; completeAction: string }
 }
 
 export type FeedbackCopy = {
@@ -244,14 +243,12 @@ export const translations: Record<Locale, Translation> = {
         confirmation: { title: (mode) => ({ active: 'Start Friday?', trial: 'Use Try mode?', paused: 'Pause Friday?' })[mode], body: (mode) => ({ active: 'This local demo only changes the displayed mode. Real sending still requires backend gates.', trial: 'Future replies will stay available for your review and will not be sent.', paused: 'Friday will stop processing new messages until you start or try again.' })[mode], confirm: (mode) => ({ active: 'Start Friday', trial: 'Use Try mode', paused: 'Pause Friday' })[mode] },
       },
       onboarding: {
-        progressLabel: 'Onboarding progress', steps: ['Connect apps', 'Build Memory', 'Confirm work style', 'Trial'], stepKicker: (step) => `Step ${step} of 4`, actions: { cancel: 'Cancel', continue: 'Continue' },
-        connection: { title: 'Connect your work apps', subtitle: 'Connect one app to begin. You can refine detailed rules later in Settings.', demo: 'Local demo only: this does not begin real authorisation or read any work content.', scope: { dingtalk: 'Work messages and calendar', feishu: 'Team messages and shared documents', teams: 'Messages and channel updates' }, connect: 'Connect', connected: 'Connected', confirmTitle: (name) => `Connect ${name}`, confirmBody: 'This local demo will only show the connection as complete. It does not open a real authorisation flow.', complete: 'Complete connection', continueHint: 'Connect at least one app to continue.' },
-        memory: { title: 'Build your Memory', subtitle: 'Review what Friday would read before you create the first work Memory.', connectedTitle: 'Connected apps', connected: 'Connected', readOnly: 'Read-only', signalsTitle: 'What Friday can read', signals: { messages: ['Work messages', 'Chats, decisions, and follow-ups'], documents: ['Work documents', 'Project context and key conclusions'], calendar: ['Calendar context', 'Meetings, events, and timing'] }, findingsLabel: 'Work context found', findings: { messages: [126, 'work messages'], documents: [18, 'documents'], topics: [7, 'recurring topics'] }, demo: 'Local demo only: no connected content is read or written to Memory.', confirm: 'Build Memory', view: 'View Memory', skip: 'Skip', proceed: 'Confirm', readingTitle: 'Reading connected work context', reading: ['Reading recent work messages…', 'Organising documents and meeting context…'], construct: 'Build Memory now', building: 'Building your local Memory preview…' },
-        style: { title: 'Confirm your work style', subtitle: 'Review the work habits Friday distilled from your work context.', summary: 'Friday distilled these four work habits from your work context.', points: ['Expression: concise and explicit about uncertainty.', 'Judgment: check facts, risks, and owner first.', 'Next step: make the next action clear.', 'Boundaries: hand off commitments and sensitive or missing context.'], extract: 'Distill work style', skip: 'Skip', extractingTitle: 'Distilling your work style', extracting: ['Reviewing the connected work context…', 'Identifying your communication habits…', 'Checking how you weigh risk and ownership…', 'Preparing the first work-style Prompt…'], editHint: 'Review and refine this work-style Prompt before you use it.', promptLabel: 'Work-style Prompt', usePrompt: 'Use this Prompt', demo: 'Local demo only: this preview is not stored or sent anywhere.', prompt: 'Expression\nUse concise language. State uncertainty directly.\n\nDecision order\nConfirm current facts, risks, owners, and due dates before committing.\n\nScenario rules\nFor project and meeting updates, give the next step and owner.\n\nBoundaries\nHand off commitments, sensitive content, and missing context.' },
+        progressLabel: 'Onboarding progress', steps: [{ label: 'Connect work sources', description: 'Choose the work sources Friday can use.' }, { label: 'Build work Memory', description: 'Confirm the scope for your first work Memory.' }, { label: 'Confirm work style', description: 'Review Friday’s draft of your work style.' }, { label: 'Try it out', description: 'Preview one reply before formal use.' }], welcome: { eyebrow: 'Welcome to Friday', storyTitle: 'Ready to meet your work twin?', title: 'Set up in 4 steps', duration: 'Estimated time: 3 min', start: 'Start setup', dismiss: 'Close welcome dialog', memoryAlt: 'Memory overview' }, stepKicker: (step) => `Step ${step} of 4`, actions: { cancel: 'Cancel', continue: 'Continue' },
+        connection: { title: 'Connect your work apps', subtitle: 'Connect one app to begin. You can refine detailed rules later in Settings.', scope: { dingtalk: 'Work messages and calendar', feishu: 'Team messages and shared documents', teams: 'Messages and channel updates' }, connect: 'Connect', connected: 'Connected', confirmTitle: (name) => `Connect ${name}`, confirmBody: 'Confirm this connection to continue.', complete: 'Complete connection', continueHint: 'Connect at least one app to continue.' },
+        memory: { title: 'Build your Memory', subtitle: 'Review what Friday would read before you create the first work Memory.', connectedTitle: 'Connected apps', connected: 'Connected', readOnly: 'Read-only', signalsTitle: 'What Friday can read', signals: { messages: ['Work messages', 'Chats, decisions, and follow-ups'], documents: ['Work documents', 'Project context and key conclusions'], calendar: ['Calendar context', 'Meetings, events, and timing'] }, findingsLabel: 'Work context found', findings: { messages: [126, 'work messages'], documents: [18, 'documents'], topics: [7, 'recurring topics'] }, migration: { title: 'Bring existing Memory with you', body: 'Complete data migration in Memory when you are ready.' }, confirm: 'Build Memory', view: 'View Memory', proceed: 'Confirm', readingTitle: 'Reading connected work context', reading: ['Reading recent work messages…', 'Organising documents and meeting context…'] },
+        style: { title: 'Confirm your work style', subtitle: 'Review the work habits Friday distilled from your work context.', summary: 'Friday distilled these four work habits from your work context.', points: ['Expression: concise and explicit about uncertainty.', 'Judgment: check facts, risks, and owner first.', 'Next step: make the next action clear.', 'Boundaries: hand off commitments and sensitive or missing context.'], benefitTitle: 'Work style', benefit: 'A confirmed work style helps Friday answer in a way that is closer to how you think and speak every day.', extract: 'Distill work style', extractingTitle: 'Distilling your work style', extracting: ['Reviewing the connected work context…', 'Identifying your communication habits…', 'Checking how you weigh risk and ownership…', 'Preparing the first work-style Prompt…'], editHint: 'Review and refine this work-style Prompt before you use it.', promptLabel: 'Work-style Prompt', usePrompt: 'Use this Prompt', prompt: 'Expression\nUse concise language. State uncertainty directly.\n\nDecision order\nConfirm current facts, risks, owners, and due dates before committing.\n\nScenario rules\nFor project and meeting updates, give the next step and owner.\n\nBoundaries\nHand off commitments, sensitive content, and missing context.' },
         trial: { title: 'Try one question', subtitle: 'In Trial, your message only goes to Friday. It is never sent to a colleague.', suggestions: 'Not sure what to ask?', questions: ['Customer asks: Can this project ship this week?', 'Teammate asks: What should we prepare for next week’s meeting?', 'Customer asks: What risks does the current plan have?'], inputLabel: 'Trial question', placeholder: 'Type a work question for Friday…', submit: 'Send to Friday', contextTitle: 'What Friday understood', context: 'This is a Trial based on the current connected-app scope and confirmed work style.', replyTitle: 'Suggested reply', note: 'Trial only: this reply is kept in this session and is not sent to any contact. An adjustment is retained as later calibration material and does not rewrite your work style now.', adjustLabel: 'Adjust this reply', adjustPlaceholder: 'Write one adjustment for this Trial reply', adjustAction: 'Regenerate' },
-        activation: { start: 'Start formal mode', hint: 'Available after you confirm your work style. A Trial is optional.', confirmTitle: 'Start formal mode?', confirmBody: 'Future replies may be handled under the rules you set. Real sending still requires backend gates.', confirm: 'Confirm formal mode', celebrating: 'Friday is ready to work with you' },
-        contacts: { label: 'Optional', title: 'Notify a work contact?', body: 'Choose one contact with whom you have worked in your connected apps. Friday will prepare a short notification from the current work context.', demo: 'Local demo only: no contact is notified and no message is sent.', close: 'Not now', notify: (name) => `Notify ${name}` },
-        emptyTimeline: 'No work events yet',
+        activation: { start: 'Start formal mode', confirmTitle: 'Start formal mode?', confirmBody: 'Future replies may be handled under the rules you set. Real sending still requires backend gates.', confirm: 'Confirm formal mode', celebrating: 'Friday is getting ready for you', completeTitle: 'Your work avatar is now active', completeBody: 'Friday is ready to start helping you work', completeAction: 'Start exploring' },
       },
 
       feedback: {
@@ -421,14 +418,14 @@ export const translations: Record<Locale, Translation> = {
       signOut: '退出登录',
       home: {
         recent: '最近 24 小时',
-        sources: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' },
+        sources: { dingtalk: '钉钉', feishu: '飞书', teams: '微软 Teams' },
         source: '来源',
         allSources: '全部应用',
         question: '问题',
         reply: '回复',
         labelSeparator: '：',
         countdown: (seconds) => `${Math.floor(seconds / 60)}分${seconds % 60}秒后自动回复`,
-        status: { waiting: '等待你先回复', processing: '正在处理', 'needs-confirmation': '待你确认', completed: '已处理', 'trial-complete': 'Trial · 已完成，未发送', 'send-failed': '发送失败', 'connection-error': '连接异常' },
+        status: { waiting: '等待你先回复', processing: '正在处理', 'needs-confirmation': '待你确认', completed: '已处理', 'trial-complete': '试运行 · 已完成，未发送', 'send-failed': '发送失败', 'connection-error': '连接异常' },
         outcome: { sent: '已发送', cancelled: '已取消，Friday 未发送', 'self-replied': '你已回复，Friday 未发送', 'no-reply': '无需回复' },
         mode: {
           label: '运行模式',
@@ -447,21 +444,19 @@ export const translations: Record<Locale, Translation> = {
         confirmation: { title: (mode) => ({ active: '启动 Friday？', trial: '切换到尝试模式？', paused: '暂停 Friday？' })[mode], body: (mode) => ({ active: '此本地演示只会改变显示的运行状态；真实发送仍需要后端门禁。', trial: '后续回复只供你查看，不会发送。', paused: 'Friday 将停止处理新消息，直到你再次启动或尝试。' })[mode], confirm: (mode) => ({ active: '启动 Friday', trial: '切换到尝试', paused: '暂停 Friday' })[mode] },
       },
       onboarding: {
-        progressLabel: '引导进度', steps: ['连接应用', '建立 Memory', '确认工作风格', 'Trial'], stepKicker: (step) => `第 ${step} 步，共 4 步`, actions: { cancel: '取消', continue: '继续' },
-        connection: { title: '连接你的工作应用', subtitle: '先连接一个应用即可开始，详细规则稍后在设置中调整。', demo: '仅为本地演示：不会发起真实授权，也不会读取任何工作内容。', scope: { dingtalk: '工作消息与日程', feishu: '团队消息与共享文档', teams: '消息与频道动态' }, connect: 'Connect', connected: '已连接', confirmTitle: (name) => `连接${name}`, confirmBody: '此本地演示只会将应用标记为已连接，不会打开真实授权流程。', complete: '完成连接', continueHint: '至少连接一个应用后继续。' },
-        memory: { title: '建立你的 Memory', subtitle: '先确认 Friday 将读取的范围，再建立第一份工作 Memory。', connectedTitle: '已连接的应用', connected: '已连接', readOnly: '只读', signalsTitle: 'Friday 会读取什么', signals: { messages: ['工作消息', '对话、决策与待办'], documents: ['工作文档', '项目背景与关键结论'], calendar: ['日历信息', '会议、事件与时间安排'] }, findingsLabel: '已发现的工作信息', findings: { messages: [126, '工作消息'], documents: [18, '文档'], topics: [7, '重复工作主题'] }, demo: '仅为本地演示：不会读取已连接应用的内容，也不会写入真实 Memory。', confirm: '建立 Memory', view: '查看 Memory', skip: 'Skip', proceed: '确认', readingTitle: '正在读取已连接的工作信息', reading: ['正在读取近期工作消息…', '正在整理文档与会议上下文…'], construct: '开始构造 Memory', building: '正在构造本地 Memory 预览…' },
-        style: { title: '确认你的工作风格', subtitle: '查看 Friday 从你的工作材料中提炼出的工作习惯。', summary: 'Friday 从你的工作材料里提炼出四类习惯。', points: ['表达：简洁直接；不确定会说清楚。', '判断：先确认事实、风险与负责人。', '下一步：更新后说清下一步。', '边界：承诺、敏感事项或信息不足，交给你。'], extract: '蒸馏工作风格', skip: '跳过', extractingTitle: '正在蒸馏你的工作风格', extracting: ['正在梳理已连接的工作上下文…', '正在识别你的表达习惯…', '正在确认你对风险与负责人的判断方式…', '正在生成初版工作风格 Prompt…'], editHint: '确认前可直接修改这份工作风格。', promptLabel: '工作风格 Prompt', usePrompt: '使用这个 Prompt', demo: '仅为本地演示：此预览不会被持久保存或发送。', prompt: '表达方式\n使用简洁语言，直接说明不确定性。\n\n决策顺序\n先确认当前事实、风险、负责人和截止时间，再做出承诺。\n\n场景规则\n项目和会议更新后，给出下一步与负责人。\n\n必须交由本人\n承诺、敏感内容和信息不足时必须交由本人。' },
-        trial: { title: '用一条问题试运行', subtitle: 'Trial 中，消息只会发给 Friday，不会发给同事。', suggestions: '不知道问什么？', questions: ['客户问：这个项目本周能交付吗？', '同事问：下周会议要准备什么？', '客户问：当前方案有什么风险？'], inputLabel: '试运行问题', placeholder: '输入一句工作问题，让 Friday 试着回复…', submit: '发送给 Friday', contextTitle: 'Friday 理解到的背景', context: '这是一次基于当前连接范围与已确认工作风格的 Trial。', replyTitle: '建议回复', note: 'Trial：本次回复只保留在当前会话，不会发送给任何联系人。调整要求会作为后续校准材料，但不会立即改写长期工作风格。', adjustLabel: '调整这次回复', adjustPlaceholder: '输入一句对当前 Trial 回复的调整要求', adjustAction: '重新生成' },
-        activation: { start: '正式运行', hint: '完成工作风格确认后即可正式运行，不要求先完成 Trial。', confirmTitle: '正式启用 Friday？', confirmBody: '后续回复会按你设定的规则处理；真实发送仍需要后端门禁。', confirm: '确认正式运行', celebrating: 'Friday 已准备好和你一起工作' },
-        contacts: { label: '可选', title: '要通知一位工作联系人吗？', body: '选择一位已在连接应用中与你发生过工作互动的联系人。Friday 会基于当前工作上下文生成简短通知。', demo: '仅为本地演示：不会通知联系人，也不会真实发送消息。', close: '暂不通知', notify: (name) => `通知${name}` },
-        emptyTimeline: '暂无工作事件',
+        progressLabel: '引导进度', steps: [{ label: '连接工作来源', description: '选择 Friday 可以使用的工作来源。' }, { label: '建立工作记忆', description: '确认范围，建立第一份工作记忆。' }, { label: '确认工作风格', description: '检查 Friday 提炼出的工作方式。' }, { label: '试运行', description: '先预览一条仅在本会话显示的回复。' }], welcome: { eyebrow: '欢迎使用 Friday', storyTitle: '准备好认识你的工作分身了吗？', title: '4 步完成配置', duration: '预计耗时 3 分钟', start: '开始配置', dismiss: '关闭欢迎弹窗', memoryAlt: '工作记忆概览' }, stepKicker: (step) => `第 ${step} 步，共 4 步`, actions: { cancel: '取消', continue: '继续' },
+        connection: { title: '连接你的工作应用', subtitle: '先连接一个应用即可开始，详细规则稍后在设置中调整。', scope: { dingtalk: '工作消息与日程', feishu: '团队消息与共享文档', teams: '消息与频道动态' }, connect: '连接', connected: '已连接', confirmTitle: (name) => `连接${name}`, confirmBody: '确认连接后继续。', complete: '完成连接', continueHint: '至少连接一个应用后继续。' },
+        memory: { title: '建立你的工作记忆', subtitle: '先确认 Friday 将读取的范围，再建立第一份工作记忆。', connectedTitle: '已连接的应用', connected: '已连接', readOnly: '只读', signalsTitle: 'Friday 会读取什么', signals: { messages: ['工作消息', '对话、决策与待办'], documents: ['工作文档', '项目背景与关键结论'], calendar: ['日历信息', '会议、事件与时间安排'] }, findingsLabel: '已发现的工作信息', findings: { messages: [126, '工作消息'], documents: [18, '文档'], topics: [7, '重复工作主题'] }, migration: { title: '迁移已有工作记忆', body: '你可以在 Memory 中完成数据迁移。' }, confirm: '建立工作记忆', view: '查看工作记忆', proceed: '确认', readingTitle: '正在读取已连接的工作信息', reading: ['正在读取近期工作消息…', '正在整理文档与会议上下文…'] },
+        style: { title: '确认你的工作风格', subtitle: '查看 Friday 从你的工作材料中提炼出的工作习惯。', summary: 'Friday 从你的工作材料里提炼出四类习惯。', points: ['表达：简洁直接；不确定会说清楚。', '判断：先确认事实、风险与负责人。', '下一步：更新后说清下一步。', '边界：承诺、敏感事项或信息不足，交给你。'], benefitTitle: '工作风格', benefit: '让 Friday 的回答更接近你日常的思考方式和表达风格。', extract: '蒸馏工作风格', extractingTitle: '正在蒸馏你的工作风格', extracting: ['正在梳理已连接的工作上下文…', '正在识别你的表达习惯…', '正在确认你对风险与负责人的判断方式…', '正在生成初版工作风格提示词…'], editHint: '确认前可直接修改这份工作风格。', promptLabel: '工作风格提示词', usePrompt: '使用这份提示词', prompt: '表达方式\n使用简洁语言，直接说明不确定性。\n\n决策顺序\n先确认当前事实、风险、负责人和截止时间，再做出承诺。\n\n场景规则\n项目和会议更新后，给出下一步与负责人。\n\n必须交由本人\n承诺、敏感内容和信息不足时必须交由本人。' },
+        trial: { title: '用一条问题试运行', subtitle: '试运行中，消息只会发给 Friday，不会发给同事。', suggestions: '不知道问什么？', questions: ['客户问：这个项目本周能交付吗？', '同事问：下周会议要准备什么？', '客户问：当前方案有什么风险？'], inputLabel: '试运行问题', placeholder: '输入一句工作问题，让 Friday 试着回复…', submit: '发送给 Friday', contextTitle: 'Friday 理解到的背景', context: '这是一次基于当前连接范围与已确认工作风格的试运行。', replyTitle: '建议回复', note: '试运行：本次回复只保留在当前会话，不会发送给任何联系人。调整要求会作为后续校准材料，但不会立即改写长期工作风格。', adjustLabel: '调整这次回复', adjustPlaceholder: '输入一句对当前试运行回复的调整要求', adjustAction: '重新生成' },
+        activation: { start: '正式运行', confirmTitle: '正式启用 Friday？', confirmBody: '后续回复会按你设定的规则处理；真实发送仍需要后端门禁。', confirm: '确认正式运行', celebrating: 'Friday 正在为你准备工作空间', completeTitle: '你的工作分身已启用', completeBody: 'Friday 已准备好开始协助你工作', completeAction: '开始体验' },
       },
 
       feedback: {
-        title: 'Feedback',
+        title: '反馈',
         subtitle: '来自同事评价和我的审核',
         demo: '本地演示数据',
-        ranges: { '7d': '近 7 天', '30d': '近 30 天', all: 'ALL' },
+        ranges: { '7d': '近 7 天', '30d': '近 30 天', all: '全部' },
         metrics: { feedbackCount: '收到反馈', coverageRate: '反馈覆盖率', positiveRate: '好评率', attentionCount: '需关注反馈' },
         trend: { title: '质量趋势', positive: '正向', negative: '负向', point: (point) => `${point.label}：正向 ${point.positive}，负向 ${point.negative}`, empty: '当前范围内暂无反馈趋势。' },
         sources: { title: '反馈来源', names: { recipient: '同事评价', owner: '我的审核' }, total: (name, count, rate) => `${name} ${count} · ${rate}%`, empty: '当前范围内暂无反馈来源。' },
@@ -477,9 +472,9 @@ export const translations: Record<Locale, Translation> = {
         projectStatus: { 'not-started': '未开始', 'in-progress': '进行中', overdue: '已逾期', completed: '已完成' }, todoStatus: { open: '待处理', completed: '已完成', cancelled: '已取消' }, priority: { high: 'P0', medium: 'P1', low: 'P2' },
         sections: { details: '项目概览', milestones: '当前进展', todos: '待办', conclusions: '结论', sources: '项目来源' },
         detail: { started: '项目启动时间', owner: '负责人', participants: '参与人', priority: '重要程度', status: '当前状态', goal: '项目目标', background: '背景', progress: '当前进展', blocker: '阻塞点', nextStep: '下一步', recentChange: '最近变化' },
-        document: { detail: 'Detail', projectDetail: '项目详情', open: '打开文件', backToProject: (project) => '返回 ' + project, preview: '预览', edit: '编辑', save: '保存修改', saved: '已保存到当前会话', titleLabel: '文档标题', bodyLabel: '文档正文' },
+        document: { detail: '详情', projectDetail: '项目详情', open: '打开文件', backToProject: (project) => '返回 ' + project, preview: '预览', edit: '编辑', save: '保存修改', saved: '已保存到当前会话', titleLabel: '文档标题', bodyLabel: '文档正文' },
         milestone: { current: '当前里程碑', due: '截止时间', progress: '进度', completed: '已完成', active: '进行中', upcoming: '未开始', openLinkedActions: '查看关联行动项' },
-        todo: { owner: '负责人', item: '待办', progress: '状态', due: 'DDL', completedAt: '完成时间', source: '来源', aiProduct: 'AI Product', actions: '操作', noDue: '暂无 DDL', empty: '暂无待办', openAiProduct: '查看草稿', noAiProduct: '暂无生成内容' }, aiProductDocument: { label: 'AI Product 文档', backToProject: (project) => `返回 ${project}`, actionItem: '关联行动项', sourceCount: (count) => `关联 ${count} 个来源`, titleLabel: '文档标题', bodyLabel: '文档正文', draft: '草稿', save: '保存修改', saved: '已保存到当前会话', openCopilot: '打开 Copilot', closeCopilot: '关闭 Copilot', copilotTitle: 'Copilot', copilotHint: '查看当前草稿并记录反馈；不会自动覆盖正文或发送给外部对象。', feedback: '反馈', feedbackPlaceholder: '描述需要调整的内容…', sendFeedback: '保存反馈', feedbackSent: '反馈已保存到当前会话', noFeedback: '暂未记录反馈', newConversation: '新建 AI 对话', messagePlaceholder: '万事问 AI…', ask: '问问' }, source: { count: (count) => `${count} 个来源`, type: { document: '文档', minutes: '听记', presentation: 'PPT', audio: '音频', folder: '文件夹', file: '文件', message: '工作消息', meeting: '会议', todo: '行动项' } },
+        todo: { owner: '负责人', item: '待办', progress: '状态', due: '截止日期', completedAt: '完成时间', source: '来源', aiProduct: 'AI 产品', actions: '操作', noDue: '暂无截止日期', empty: '暂无待办', openAiProduct: '查看草稿', noAiProduct: '暂无生成内容' }, aiProductDocument: { label: 'AI 产品文档', backToProject: (project) => `返回 ${project}`, actionItem: '关联行动项', sourceCount: (count) => `关联 ${count} 个来源`, titleLabel: '文档标题', bodyLabel: '文档正文', draft: '草稿', save: '保存修改', saved: '已保存到当前会话', openCopilot: '打开 AI 助手', closeCopilot: '关闭 AI 助手', copilotTitle: 'AI 助手', copilotHint: '查看当前草稿并记录反馈；不会自动覆盖正文或发送给外部对象。', feedback: '反馈', feedbackPlaceholder: '描述需要调整的内容…', sendFeedback: '保存反馈', feedbackSent: '反馈已保存到当前会话', noFeedback: '暂未记录反馈', newConversation: '新建 AI 对话', messagePlaceholder: '万事问 AI…', ask: '问问' }, source: { count: (count) => `${count} 个来源`, type: { document: '文档', minutes: '听记', presentation: 'PPT', audio: '音频', folder: '文件夹', file: '文件', message: '工作消息', meeting: '会议', todo: '行动项' } },
         conclusion: { summary: '结论', time: '时间', source: '来源' },
         personalTodos: { open: (count) => `${count} 项待处理`, overdue: (count) => `${count} 项逾期`, completed: (count) => `${count} 项已完成`, tooltip: '个人行动项详情' },
         cancelDialog: { title: '取消这项行动项？', body: '这只会更新当前页面会话内的演示数据，且本次演示中无法恢复。', keep: '保留行动项', confirm: '确认取消' }, actions: { back: '返回项目', complete: '完成', cancel: '取消', retry: '重试' },
@@ -501,27 +496,27 @@ export const translations: Record<Locale, Translation> = {
           context: { label: '上下文' },
           user: { label: '用户' },
         },
-        sources: { all: '全部来源', dingtalk: '钉钉', feishu: '飞书', teams: 'Teams', file: '文件', conversation: '对话' },
+        sources: { all: '全部来源', dingtalk: '钉钉', feishu: '飞书', teams: '微软 Teams', file: '文件', conversation: '对话' },
         sourceLabel: '来源',
-        searchLabel: '搜索当前 Memory',
-        searchPlaceholder: '搜索当前 Memory',
+        searchLabel: '搜索当前工作记忆',
+        searchPlaceholder: '搜索当前工作记忆',
         add: '添加资料',
         upload: '上传文件',
         migration: '数据迁移',
-        uploadModal: { title: '上传文件', description: '仅在本地演示：选择工作资料只会模拟一条 Memory 结果，文件不会上传或读取。', choose: '选择文件', cancel: '取消', submit: '开始添加' },
+        uploadModal: { title: '上传文件', description: '仅在本地演示：选择工作资料只会模拟一条工作记忆结果，文件不会上传或读取。', choose: '选择文件', cancel: '取消', submit: '开始添加' },
         migrationModal: {
           title: '数据迁移',
-          description: '先在你的对话工具中使用这段 Prompt，将工作相关内容整理成 Markdown。',
+          description: '先在你的对话工具中使用这段提示词，将工作相关内容整理成 Markdown。',
           prompt: '请将当前工作中的对话整理为一份 Markdown 文档。\n保留项目背景、已确认的决策、待办、工作偏好和关键结论；\n移除个人生活及非工作内容；不要补充未出现的信息。',
-          copy: '复制 Prompt',
+          copy: '复制提示词',
           next: '下一步',
           back: '返回',
           choose: '选择 Markdown 文件',
           submit: '开始迁移',
         },
-        status: { processing: '正在模拟本地 Memory 结果…', completed: '本地模拟结果已加入关系图', failed: '本地演示暂时无法模拟结果', retry: '重试' },
-        empty: { layer: '还没有可呈现的工作记忆', source: '这个来源还没有形成可呈现的 Memory', search: '没有找到相关的 Memory', clearSource: '清除筛选', clearSearch: '清除搜索' },
-        mapSummary: (layer, source, keyword, count) => `正在显示${layer}层，${source}的 Memory 关系地图${keyword ? `，搜索：${keyword}` : ''}，共${count}项可见 Memory。`,
+        status: { processing: '正在模拟本地工作记忆结果…', completed: '本地模拟结果已加入关系图', failed: '本地演示暂时无法模拟结果', retry: '重试' },
+        empty: { layer: '还没有可呈现的工作记忆', source: '这个来源还没有形成可呈现的工作记忆', search: '没有找到相关的工作记忆', clearSource: '清除筛选', clearSearch: '清除搜索' },
+        mapSummary: (layer, source, keyword, count) => `正在显示${layer}层，${source}的工作记忆关系图${keyword ? `，搜索：${keyword}` : ''}，共${count}项可见工作记忆。`,
       },
       settings: {
         title: '设置',
@@ -536,7 +531,7 @@ export const translations: Record<Locale, Translation> = {
           description: { dingtalk: '工作消息与相关动态', feishu: '团队消息与共享文档', teams: '团队聊天、频道与共享文件' },
           status: { disconnected: '未连接', connected: '已连接', 'needs-reconnect': '需要重新连接', connecting: '正在连接…' },
           action: { connect: (name) => `连接${name}`, reconnect: (name) => `重新连接${name}`, disconnect: (name) => `断开${name}` },
-          disconnect: { title: (name) => `断开${name}？`, body: (name) => `Friday 将停止读取和处理新的${name}内容。此前从${name}沉淀的 Memory 会保留；你可以稍后在 Memory 中单独管理它。`, cancel: '取消', confirm: (name) => `断开${name}` },
+          disconnect: { title: (name) => `断开${name}？`, body: (name) => `Friday 将停止读取和处理新的${name}内容。此前从${name}沉淀的工作记忆会保留；你可以稍后在工作记忆中单独管理它。`, cancel: '取消', confirm: (name) => `断开${name}` },
         },
         general: {
           title: '通用',
@@ -549,7 +544,7 @@ export const translations: Record<Locale, Translation> = {
           save: '保存更改',
         },
         profile: {
-          title: 'User Profile',
+          title: '个人资料',
           subtitle: (name) => `Friday 如何理解${name}`,
           description: 'Friday 已学习你的判断、表达与工作方式。',
           tags: ['结论优先', '不轻易承诺', '信息不足先追问'],
@@ -566,16 +561,16 @@ export const translations: Record<Locale, Translation> = {
           expressionValue: '结论优先，简短直接；复杂事项给出下一步。',
           boundaries: '我的工作边界',
           boundariesValue: '涉及关键判断、对外承诺或敏感议题时，必须交由本人确认。',
-          memory: '去 Memory 查看来源',
-          feedback: '去 Feedback 校准不准确的地方',
+          memory: '去工作记忆查看来源',
+          feedback: '去反馈校准不准确的地方',
           save: '保存身份信息',
         },
         safety: {
-          title: 'Safety Boundaries',
+          title: '安全边界',
           description: 'Friday 始终会把关键决定交还给你。',
           summary: '承诺 · 敏感事项 · 信息不足 · 要求本人',
           items: ['代表你作出对外承诺、价格、合同或关键决策', '处理人事、财务、客户等敏感议题', '在关键信息、材料或对象不明确时猜测', '在对方明确要求你本人时继续代答'],
-          handoff: '遇到以上情况，Friday 会生成清晰的转交说明，并在 Home 通知你处理。',
+          handoff: '遇到以上情况，Friday 会生成清晰的转交说明，并在首页通知你处理。',
           always: '这些规则始终生效。',
         },
       },

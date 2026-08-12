@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Locale } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import { feedbackService } from '../feedbackService.ts'
+import { localizedFeedbackCards, localizedFeedbackDetail } from '../feedbackState.ts'
 import type { FeedbackCard, FeedbackDashboardData, FeedbackDetail, FeedbackRange } from '../feedbackState.ts'
 import FeedbackCardWall from './FeedbackCardWall.tsx'
 import FeedbackDashboard from './FeedbackDashboard.tsx'
@@ -37,9 +38,12 @@ export default function FeedbackWorkspace({ locale }: { locale: Locale }) {
 
   if (!dashboard || !cards) return <section aria-live="polite" className="feedback-state"><p>{copy.state.loading}</p></section>
 
+  const localizedCards = localizedFeedbackCards(cards, locale)
+  const localizedDetail = detail && localizedFeedbackDetail(detail, locale)
+
   return <section className="feedback-page">
     <FeedbackDashboard copy={copy} data={dashboard} onRangeChange={changeRange} range={range} />
-    <FeedbackCardWall copy={copy} items={cards} locale={locale} onOpen={setSelectedId} />
-    {selectedId && <FeedbackDetailPanel copy={copy} detail={detail} loading={!detail} locale={locale} onClose={() => { setSelectedId(null); setDetail(null) }} />}
+    <FeedbackCardWall copy={copy} items={localizedCards} locale={locale} onOpen={setSelectedId} />
+    {selectedId && <FeedbackDetailPanel copy={copy} detail={localizedDetail} loading={!localizedDetail} locale={locale} onClose={() => { setSelectedId(null); setDetail(null) }} />}
   </section>
 }

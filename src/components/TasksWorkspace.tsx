@@ -5,7 +5,7 @@ import type { Locale } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import type { TasksCopy } from '../content/translations.ts'
 import { createTasksService } from '../tasksService.ts'
-import { createDemoTasksSnapshot, getTasksSummary, myTodoProgress, projectDisplayStatus, projectPersonalTodoSummary, projectProgress, selectTaskProjects } from '../tasksState.ts'
+import { createDemoTasksSnapshot, getTasksSummary, localizedTasksSnapshot, myTodoProgress, projectDisplayStatus, projectPersonalTodoSummary, projectProgress, selectTaskProjects } from '../tasksState.ts'
 import type { ProjectStatus, TaskAiProduct, TaskDocument, TaskProject, TasksSnapshot, TodoStatus } from '../tasksState.ts'
 import TaskAiProductDocument from './TaskAiProductDocument.tsx'
 import TaskDocumentSurface from './TaskDocumentSurface.tsx'
@@ -57,9 +57,9 @@ export default function TasksWorkspace({ currentUser, locale, onDetailHeaderChan
     if (selectedProjectId) returnToList()
   }, [returnToListRequest, selectedProjectId])
   useEffect(() => {
-    const project = snapshot?.projects.find((item) => item.id === selectedProjectId)
+    const project = snapshot && localizedTasksSnapshot(snapshot, locale).projects.find((item) => item.id === selectedProjectId)
     if (project) onDetailHeaderChange({ title: project.name, status: projectDisplayStatus(project) })
-  }, [onDetailHeaderChange, selectedProjectId, snapshot])
+  }, [locale, onDetailHeaderChange, selectedProjectId, snapshot])
 
   const openProject = (project: TaskProject) => {
     const canvas = pageRef.current?.closest<HTMLElement>('.workspace-canvas')
@@ -86,7 +86,7 @@ export default function TasksWorkspace({ currentUser, locale, onDetailHeaderChan
   if (error) return <section aria-live="polite" className="tasks-state"><p>{copy.error}</p><Button onPress={() => { void load() }}>{copy.actions.retry}</Button></section>
   if (!snapshot) return <section aria-live="polite" className="tasks-state">{copy.loading}</section>
 
-  const projects = selectTaskProjects(snapshot, currentUser)
+  const projects = selectTaskProjects(localizedTasksSnapshot(snapshot, locale), currentUser)
   const selectedProject = projects.find((project) => project.id === selectedProjectId)
   if (selectedProject) {
     if (selectedDocument?.kind === 'project-detail') return <section ref={pageRef}><TaskDocumentSurface backLabel={copy.document.backToProject(selectedProject.name)} copy={copy.document} document={selectedProject.detailDocument} label={copy.document.projectDetail} onBack={() => setSelectedDocument(null)} onSave={saveProjectDocument} /></section>
