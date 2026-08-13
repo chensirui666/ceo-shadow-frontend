@@ -1659,12 +1659,12 @@ button, input, select, textarea { font: inherit; }
   display: flex;
   min-width: 0;
   grid-column: 5;
-  align-items: center;
+  align-items: flex-start;
   align-self: stretch;
-  justify-content: center;
+  justify-content: flex-start;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 0;
+  padding: 14px 0 10px;
 }
 
 .message-list-actions button, .message-feedback-controls summary, .message-detail button {
@@ -1681,7 +1681,7 @@ button, input, select, textarea { font: inherit; }
 
 .message-list-action-confirm, .message-detail-action-confirm { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-color: var(--button-primary-background) !important; background: var(--button-primary-background) !important; color: var(--button-primary-foreground) !important; }
 .message-list-action-skip, .message-detail-action-skip { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-color: transparent !important; background: var(--button-inverse-background) !important; color: var(--button-inverse-foreground) !important; }
-.message-list-action-confirm, .message-list-action-skip { width: 110px; }
+.message-list-action-confirm, .message-list-action-skip { width: 96px; min-height: 32px !important; padding-inline: 8px !important; }
 .message-list-action-confirm svg, .message-list-action-skip svg, .message-detail-action-confirm svg, .message-detail-action-skip svg { width: 13px; height: 13px; }
 .message-feedback-controls { display: flex; align-items: center; gap: 5px; }
 .message-feedback-controls details { position: relative; }
@@ -1723,12 +1723,14 @@ button, input, select, textarea { font: inherit; }
 .message-detail-header { border-bottom: 1px solid var(--color-friday-border); padding-bottom: 18px; }
 .message-detail-back { border: 0 !important; background: transparent !important; color: var(--color-friday-muted) !important; padding: 0 !important; }
 .message-detail-title { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
-.message-detail-status { border: 1px solid var(--color-friday-border); border-radius: 999px; background: var(--color-friday-surface-muted); color: var(--color-friday-muted); padding: 4px 9px; font-size: 11px; font-weight: 700; }
-.message-detail-status-needs-confirmation { border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-text); }
+.message-detail-status { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--color-friday-border); border-radius: 999px; background: var(--color-friday-surface-muted); color: var(--color-friday-muted); padding: 5px 10px; font-size: 11px; font-weight: 700; line-height: 1.2; }
+.message-detail-status-dot { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: currentColor; }
+.message-detail-status-needs-confirmation { border-color: var(--status-pending-border); background: var(--status-pending-background); color: var(--status-pending-foreground); }
 .message-detail-status-processed { border-color: var(--status-success-border); background: var(--status-success-background); color: var(--status-success-text); }
 .message-detail-status-failed { border-color: var(--status-danger-border); background: var(--status-danger-background); color: var(--status-danger-text); }
-.message-detail-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 14px; color: var(--color-friday-muted); font-size: var(--font-meta); }
-.message-detail-meta span { display: inline-flex; gap: 6px; }
+.message-detail-meta { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 16px; color: var(--color-friday-muted); font-size: var(--font-meta); }
+.message-detail-meta-item { display: inline-flex; align-items: center; gap: 6px; }
+.message-detail-meta-item > svg, .message-detail-meta-item > img { width: 16px; height: 16px; flex: 0 0 auto; color: var(--color-friday-muted); object-fit: contain; }
 .message-detail-meta strong { color: var(--color-friday-ink); font-weight: 600; }
 .message-detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) 240px; align-items: start; gap: 14px; margin-top: 14px; }
 .message-detail-reading, .message-detail-aside { display: grid; gap: 9px; }

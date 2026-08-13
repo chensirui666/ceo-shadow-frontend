@@ -87,6 +87,21 @@ test('MessageList keeps icon-based confirmation, skip, and feedback actions', as
   assert.match(html, /aria-label="Dislike"/)
 })
 
+test('MessageList uses compact HeroUI controls for confirmation decisions', async () => {
+  const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
+  const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
+  const list = MessageList({
+    messages: snapshot.messages,
+    copy: translations.zh.workspace.message,
+    status: 'all',
+    onConfirm: () => {}, onFeedback: () => {}, onOpen: () => {}, onSkip: () => {}, onStatusChange: () => {},
+  })
+  const decisions = findAll(list, (element) => ['message-list-action-confirm', 'message-list-action-skip'].includes(element.props.className))
+
+  assert.deepEqual(decisions.map((button) => button.props.variant), ['primary', 'secondary'])
+  assert.ok(decisions.every((button) => button.props.size === 'sm' && typeof button.props.onPress === 'function'))
+})
+
 test('MessageList sidebar uses component filters and changes its summary range', async () => {
   const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
   const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
@@ -157,6 +172,7 @@ test('Message styles center row content, separate status from time, and style th
   assert.match(css, /\.message-list-open\s*\{[^}]*align-items:\s*center;/)
   assert.match(css, /\.message-list-status\s*\{[^}]*gap:\s*12px;/)
   assert.match(css, /\.message-list-status-dot\s*\{[^}]*translateY\(3px\)/)
+  assert.match(css, /\.message-detail-status-needs-confirmation\s*\{[^}]*color:\s*var\(--status-pending-foreground\)/)
   for (const className of ['message-detail-original-source', 'message-detail-deliverables', 'message-detail-task-status', 'message-detail-information-row', 'message-detail-timeline', 'message-detail-feedback']) assert.match(css, new RegExp(`\\.${className}`))
 })
 
@@ -182,10 +198,14 @@ test('MessageDetail title area carries status and known metadata before the read
   const detail = MessageDetail({ copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} })
   const header = find(detail, (element) => element.type === 'header' && element.props.className === 'message-detail-header')
   const metadata = find(header, (element) => element.props.className === 'message-detail-meta')
+  const items = findAll(metadata, (element) => element.props.className === 'message-detail-meta-item')
+  const status = find(header, (element) => String(element.props.className).includes('message-detail-status'))
 
   assert.match(text(header), /客户交付群待确认/)
-  for (const value of ['赵明', '飞书', '聊天', '时间']) assert.match(text(metadata), new RegExp(value))
-  assert.equal(find(metadata, (element) => element.type === 'time').props.dateTime, message.receivedAt)
+  assert.equal(items.length, 4)
+  for (const value of ['对象：赵明', '来源：飞书', '类别：聊天', '收到时间：']) assert.match(text(metadata), new RegExp(value))
+  assert.equal(find(items[3], (element) => element.type === 'time').props.dateTime, message.receivedAt)
+  assert.equal(find(status, (element) => element.props.className === 'message-detail-status-dot').type, 'i')
 })
 
 test('Message interactions filter, open, decide, and submit only a non-blank downvote reason', async () => {
@@ -197,14 +217,12 @@ test('Message interactions filter, open, decide, and submit only a non-blank dow
   const list = MessageList({ copy: translations.zh.workspace.message, messages: snapshot.messages, status: 'all', onConfirm: (id: string) => calls.push(`confirm:${id}`), onFeedback: () => {}, onOpen: (id: string) => calls.push(`open:${id}`), onSkip: (id: string) => calls.push(`skip:${id}`), onStatusChange: (status: string) => calls.push(`filter:${status}`) })
   const pending = snapshot.messages.find((message) => message.status === 'pending')!
   const confirmation = snapshot.messages.find((message) => message.status === 'needs-confirmation')!
-  const stopped = { value: 0 }
 
   find(list, (element) => element.type === 'button' && text(element) === '待处理 1').props.onClick()
   find(list, (element) => element.type === 'button' && element.props.className === 'message-list-open' && element.props.title.includes(pending.question)).props.onClick()
-  find(list, (element) => element.type === 'button' && text(element) === '确认').props.onClick({ stopPropagation: () => { stopped.value++ } })
-  find(list, (element) => element.type === 'button' && text(element) === '跳过').props.onClick({ stopPropagation: () => { stopped.value++ } })
+  find(list, (element) => element.props.className === 'message-list-action-confirm').props.onPress()
+  find(list, (element) => element.props.className === 'message-list-action-skip').props.onPress()
   assert.deepEqual(calls, [`filter:pending`, `open:${pending.id}`, `confirm:${confirmation.id}`, `skip:${confirmation.id}`])
-  assert.equal(stopped.value, 2)
 
   const feedback: Array<{ rating: string; reason: string }> = []
   const controls = MessageFeedbackControls({ copy: translations.zh.workspace.message.feedbackControls, id: confirmation.id, onFeedback: (_id: string, value: { rating: string; reason: string }) => feedback.push(value), stopPropagation: true })
