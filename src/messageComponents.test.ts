@@ -134,6 +134,23 @@ test('MessageDetail renders auditable A-to-E cards, dynamic artifacts, task stat
   assert.match(html, /message-detail-timeline-stage-current/)
 })
 
+test('MessageDetail keeps rendering when a hot-reloaded session still holds a legacy Message record', async () => {
+  const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
+  const currentMessage = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.id === 'delivery-commitment')!
+  const legacyMessage = {
+    ...currentMessage,
+    deliverables: undefined,
+    relatedTasks: undefined,
+    timeline: ['收到客户交付承诺询问'],
+  } as unknown as typeof currentMessage
+
+  const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message: legacyMessage, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
+
+  assert.match(html, /C\. 回答／处理结果/)
+  assert.match(html, /关联 Task：确认交付资源与最终排期/)
+  assert.match(html, /收到客户交付承诺询问/)
+})
+
 test('Message styles center row content, separate status from time, and style the detail audit records', () => {
   const css = readFileSync(new URL('./index.css', import.meta.url), 'utf8')
 
