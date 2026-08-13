@@ -3,12 +3,14 @@ import test from 'node:test'
 
 const messageState = await import('./messageState.ts')
 
-test('fixture is newest first and filtering and counts use the same messages', () => {
+test('fixture has all six Message statuses and filtering and counts use the same messages', () => {
   const snapshot = messageState.createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
   const receivedAt = snapshot.messages.map((message) => message.receivedAt)
   const pending = messageState.selectMessages(snapshot, 'needs-confirmation')
 
   assert.deepEqual(receivedAt, [...receivedAt].sort().reverse())
+  assert.deepEqual([...new Set(snapshot.messages.map((message) => message.status))].sort(), ['failed', 'needs-confirmation', 'pending', 'processed', 'processing', 'skipped'])
+  assert.equal(messageState.messageStatusCount(snapshot, 'pending'), 1)
   assert.equal(messageState.messageStatusCount(snapshot, 'needs-confirmation'), pending.length)
   assert.equal(messageState.selectMessages(snapshot, 'all').length, snapshot.messages.length)
   assert.deepEqual([...new Set(snapshot.messages.map((message) => message.source))].sort(), ['dingtalk', 'feishu', 'teams'])
