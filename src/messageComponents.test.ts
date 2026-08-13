@@ -26,6 +26,13 @@ const find = (node: unknown, predicate: (element: any) => boolean): any => {
   }
 }
 
+const findAll = (node: unknown, predicate: (element: any) => boolean): any[] => {
+  if (Array.isArray(node)) return node.flatMap((child) => findAll(child, predicate))
+  if (!isValidElement(node)) return []
+  const element = node as any
+  return [...(predicate(element) ? [element] : []), ...findAll(element.props.children, predicate)]
+}
+
 test('MessageList renders six status tabs, fixed columns, and confirmation actions without fake search', async () => {
   const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
   const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
@@ -43,6 +50,27 @@ test('MessageList renders six status tabs, fixed columns, and confirmation actio
   assert.doesNotMatch(html, /搜索/)
 })
 
+test('MessageList aside exposes real quick filters, source counts, and activity totals', async () => {
+  const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
+  const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
+  const calls: string[] = []
+  const list = MessageList({
+    messages: snapshot.messages,
+    copy: translations.zh.workspace.message,
+    status: 'all',
+    onConfirm: () => {}, onFeedback: () => {}, onOpen: () => {}, onSkip: () => {}, onStatusChange: (status: string) => calls.push(status),
+  })
+  const aside = find(list, (element) => element.type === 'aside' && element.props.className === 'message-list-quick')
+  const sections = findAll(aside, (element) => element.type === 'section')
+
+  assert.deepEqual(sections.map((section) => section.props.className), ['message-list-quick-filters', 'message-list-sources', 'message-list-summary'])
+  find(sections[0], (element) => element.props.onPress && text(element) === '待确认 1').props.onPress()
+  find(sections[0], (element) => element.props.onPress && text(element) === '处理失败 1').props.onPress()
+  assert.deepEqual(calls, ['needs-confirmation', 'failed'])
+  assert.deepEqual(findAll(sections[1], (element) => element.type === 'li').map(text), ['钉钉3', '飞书2', 'Teams1'])
+  assert.match(text(find(sections[2], (element) => element.type === 'dl')), /全部6待确认1已处理1处理失败1/)
+})
+
 test('MessageDetail reads in decision order and offers result feedback plus a collapsed material section', async () => {
   const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
   const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.status === 'processed')!
@@ -57,6 +85,18 @@ test('MessageDetail reads in decision order and offers result feedback plus a co
   assert.match(html, /<details/)
   for (const label of ['操作', 'Message 信息', 'Task 汇总', '活动时间线']) assert.match(html, new RegExp(label))
   assert.doesNotMatch(html, /思维链|技术日志/)
+})
+
+test('MessageDetail title area carries status and known metadata before the reading layout', async () => {
+  const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
+  const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.status === 'needs-confirmation')!
+  const detail = MessageDetail({ copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} })
+  const header = find(detail, (element) => element.type === 'header' && element.props.className === 'message-detail-header')
+  const metadata = find(header, (element) => element.props.className === 'message-detail-meta')
+
+  assert.match(text(header), /客户交付群待确认/)
+  for (const value of ['赵明', '飞书', '客户交付', '时间']) assert.match(text(metadata), new RegExp(value))
+  assert.equal(find(metadata, (element) => element.type === 'time').props.dateTime, message.receivedAt)
 })
 
 test('Message interactions filter, open, decide, and submit only a non-blank downvote reason', async () => {
