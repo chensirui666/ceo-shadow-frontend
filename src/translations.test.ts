@@ -51,9 +51,11 @@ test('Memory page omits introductory and demo copy', () => {
   }
 })
 
-test('the stable tasks route is presented as Projects and Todos to users', () => {
-  assert.equal(translations.en.workspace.nav.tasks, 'Projects')
-  assert.equal(translations.zh.workspace.nav.tasks, '项目')
+test('the stable home and tasks routes are presented as Message and Task', () => {
+  assert.equal(translations.en.workspace.nav.home, 'Message')
+  assert.equal(translations.zh.workspace.nav.home, 'Message')
+  assert.equal(translations.en.workspace.nav.tasks, 'Task')
+  assert.equal(translations.zh.workspace.nav.tasks, 'Task')
   assert.equal(translations.zh.workspace.tasks.sections.todos, '待办')
   assert.equal(translations.en.workspace.tasks.sections.sources, 'Project sources')
 })
