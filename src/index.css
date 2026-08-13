@@ -307,7 +307,7 @@ button, input, select, textarea { font: inherit; }
   border: 1px solid #e8e4dc;
   margin: 40px 16px 16px 0;
   border-radius: var(--radius-canvas);
-  background: var(--color-friday-surface);
+  background: #fff;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
