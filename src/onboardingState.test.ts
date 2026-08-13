@@ -32,6 +32,18 @@ test('Memory confirmation stays on step 2 until the user continues', () => {
   assert.equal('memorySkipped' in built, false)
 })
 
+test('Memory scope excludes an app without disconnecting it', () => {
+  const connected = onboarding.connectSource(
+    onboarding.connectSource(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk'), 'feishu'),
+    'teams',
+  )
+  const built = onboarding.confirmMemory(connected, ['dingtalk', 'teams'])
+
+  assert.deepEqual(built.connectedSources, ['dingtalk', 'feishu', 'teams'])
+  assert.deepEqual(built.memorySources, ['dingtalk', 'teams'])
+  assert.equal(built.memoryConfirmed, true)
+})
+
 test('work style confirmation retains an edited Prompt for the current session', () => {
   const prepared = onboarding.advanceFromMemory(onboarding.confirmMemory(
     onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),

@@ -8,6 +8,7 @@ export type OnboardingState = {
   step: OnboardingStep
   maxReached: OnboardingStep
   connectedSources: HomeSource[]
+  memorySources: HomeSource[]
   memoryConfirmed: boolean
   workStyleConfirmed: boolean
   workStylePrompt?: string
@@ -35,6 +36,7 @@ export const createOnboardingState = (): OnboardingState => ({
   step: 1,
   maxReached: 1,
   connectedSources: [],
+  memorySources: [],
   memoryConfirmed: false,
   workStyleConfirmed: false,
   completed: false,
@@ -48,9 +50,10 @@ export const continueToMemory = (state: OnboardingState): OnboardingState => (
   state.connectedSources.length ? { ...state, step: 2, maxReached: 2 } : state
 )
 
-export const confirmMemory = (state: OnboardingState): OnboardingState => (
-  state.connectedSources.length ? { ...state, memoryConfirmed: true } : state
-)
+export const confirmMemory = (state: OnboardingState, sources = state.connectedSources): OnboardingState => {
+  const memorySources = sources.filter((source) => state.connectedSources.includes(source))
+  return memorySources.length ? { ...state, memoryConfirmed: true, memorySources } : state
+}
 
 export const advanceFromMemory = (state: OnboardingState): OnboardingState => (
   state.memoryConfirmed ? { ...state, step: 3, maxReached: 3 } : state

@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
-import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, ShieldCheck, X } from 'lucide-react'
+import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, Send, ShieldCheck, Users, X } from 'lucide-react'
 import connectIllustration from '../assets/onboarding-connect-editorial.png'
 import memoryIllustration from '../assets/onboarding-memory-editorial.png'
+import teamGroupApricot from '../assets/onboarding-team-group-apricot.png'
+import teamGroupBlue from '../assets/onboarding-team-group-blue.png'
+import teamGroupLavender from '../assets/onboarding-team-group-lavender.png'
+import teamGroupSage from '../assets/onboarding-team-group-sage.png'
 import trialIllustration from '../assets/onboarding-trial-editorial.png'
 import welcomeMemoryIllustration from '../assets/onboarding-welcome-memory.png'
 import workStyleIllustration from '../assets/onboarding-work-style-editorial.png'
 import type { Locale } from '../appState.ts'
-import { onboardingConnectorLogos } from '../content/connectorLogos.ts'
+import { onboardingConnectorLogos, onboardingSupplementalLogos } from '../content/connectorLogos.ts'
 import { translations } from '../content/translations.ts'
 import { homeSources } from '../homeState.ts'
 import type { HomeSource } from '../homeState.ts'
@@ -25,15 +29,31 @@ type OnboardingHomeProps = {
 }
 
 export type ActivationStage = 'idle' | 'confirm' | 'celebrating' | 'ready'
-type MemoryStage = 'reading' | 'ready' | null
+type MemoryStage = 'selecting' | 'reading' | 'ready' | null
 type StyleStage = 'extracting' | 'ready' | null
 
 const memorySignalIcons = { messages: MessageCircle, documents: FileText, calendar: CalendarCheck }
 const memoryFindingIcons = { messages: MessageCircle, documents: FileText, topics: Repeat2 }
 const memoryFindingKeys = ['messages', 'documents', 'topics'] as const
 const stylePointIcons = [MessageCircle, Scale, ArrowRight, ShieldCheck]
+const supportApps = [
+  ['DingTalk', onboardingConnectorLogos.dingtalk], ['Feishu', onboardingConnectorLogos.feishu], ['WeCom', onboardingSupplementalLogos.wecom],
+  ['Slack', onboardingSupplementalLogos.slack], ['Teams', onboardingConnectorLogos.teams], ['Discord', onboardingSupplementalLogos.discord],
+  ['Gmail', onboardingSupplementalLogos.gmail, true], ['Zoom', onboardingSupplementalLogos.zoom, true], ['Google Meet', onboardingSupplementalLogos.googleMeet, true],
+] as const
+const teamGroups = [teamGroupApricot, teamGroupBlue, teamGroupSage, teamGroupLavender]
 export const ACTIVATION_CELEBRATION_DURATION = 5_000
 export const getActivationStartStage = (prefersReducedMotion: boolean): Extract<ActivationStage, 'celebrating' | 'ready'> => prefersReducedMotion ? 'ready' : 'celebrating'
+const analysisProgressAt = (elapsed: number): number => elapsed < 3_800 ? (elapsed / 3_800) * 95 : Math.min(100, 95 + ((elapsed - 3_800) / 300) * 5)
+
+export function AnalysisProgress({ completeLabel, label, value }: { completeLabel: string; label: string; value: number }) {
+  const displayValue = Math.round(value)
+  return <><p className="onboarding-analysis-status"><span>{value === 100 ? completeLabel : label}</span><strong>{displayValue}%</strong></p><progress className="onboarding-progress" max="100" value={value}>{displayValue}%</progress></>
+}
+
+export function MemoryConnector({ connectedLabel, logo, name, onRemove, removeLabel }: { connectedLabel: string; logo: string; name: string; onRemove?: () => void; removeLabel?: string }) {
+  return <span className="onboarding-memory-connector"><img alt="" src={logo} /><span><strong>{name}</strong><small>{connectedLabel}</small></span>{onRemove ? <button aria-label={removeLabel} onClick={onRemove} type="button"><X aria-hidden="true" /></button> : <i aria-hidden="true" />}</span>
+}
 
 type ActivationCelebrationProps = {
   copy: typeof translations.zh.workspace.onboarding.activation
@@ -103,6 +123,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
   const [connecting, setConnecting] = useState<HomeSource | null>(null)
   const [memoryStage, setMemoryStage] = useState<MemoryStage>(null)
   const [memoryProgress, setMemoryProgress] = useState(0)
+  const [memorySources, setMemorySources] = useState<HomeSource[]>([])
   const [styleStage, setStyleStage] = useState<StyleStage>(null)
   const [styleProgress, setStyleProgress] = useState(0)
   const [promptDraft, setPromptDraft] = useState(() => state.workStylePrompt ?? copy.style.prompt)
@@ -112,31 +133,33 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
 
   useEffect(() => {
     if (memoryStage !== 'reading') return
-    const progressTimer = window.setInterval(() => setMemoryProgress((value) => Math.min(value + 2.5, 95)), 100)
-    const completionTimer = window.setTimeout(() => {
-      window.clearInterval(progressTimer)
-      setMemoryProgress(100)
-    }, 3_800)
-    const summaryTimer = window.setTimeout(() => setMemoryStage('ready'), 4_100)
+    const startedAt = performance.now()
+    let frame = 0
+    const tick = (now: number) => {
+      const value = analysisProgressAt(now - startedAt)
+      setMemoryProgress(value)
+      if (value === 100) setMemoryStage('ready')
+      else frame = window.requestAnimationFrame(tick)
+    }
+    frame = window.requestAnimationFrame(tick)
     return () => {
-      window.clearInterval(progressTimer)
-      window.clearTimeout(completionTimer)
-      window.clearTimeout(summaryTimer)
+      window.cancelAnimationFrame(frame)
     }
   }, [memoryStage])
 
   useEffect(() => {
     if (styleStage !== 'extracting') return
-    const progressTimer = window.setInterval(() => setStyleProgress((value) => Math.min(value + 2.5, 95)), 100)
-    const completionTimer = window.setTimeout(() => {
-      window.clearInterval(progressTimer)
-      setStyleProgress(100)
-    }, 3_800)
-    const editorTimer = window.setTimeout(() => setStyleStage('ready'), 4_100)
+    const startedAt = performance.now()
+    let frame = 0
+    const tick = (now: number) => {
+      const value = analysisProgressAt(now - startedAt)
+      setStyleProgress(value)
+      if (value === 100) setStyleStage('ready')
+      else frame = window.requestAnimationFrame(tick)
+    }
+    frame = window.requestAnimationFrame(tick)
     return () => {
-      window.clearInterval(progressTimer)
-      window.clearTimeout(completionTimer)
-      window.clearTimeout(editorTimer)
+      window.cancelAnimationFrame(frame)
     }
   }, [styleStage])
 
@@ -162,6 +185,12 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
   }
 
   const beginMemoryRead = () => {
+    setMemorySources(state.connectedSources)
+    setMemoryStage('selecting')
+  }
+
+  const readSelectedMemory = () => {
+    if (!memorySources.length) return
     setMemoryProgress(0)
     setMemoryStage('reading')
   }
@@ -197,15 +226,16 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
   }
 
   return <section className={`onboarding-page onboarding-page-step-${state.step}`}>
-    <ol aria-label={copy.progressLabel} className="onboarding-steps">
+    <section className="onboarding-frame">
+      <ol aria-label={copy.progressLabel} className="onboarding-steps">
       {copy.steps.map((stepCopy, index) => {
         const step = (index + 1) as 1 | 2 | 3 | 4
         const className = state.step === step ? 'onboarding-step onboarding-step-active' : state.maxReached > step ? 'onboarding-step onboarding-step-done' : 'onboarding-step'
         return <li className={className} key={stepCopy.label}><button disabled={step > state.maxReached} onClick={() => update(selectOnboardingStep(state, step))} type="button"><span>{step}</span><strong>{stepCopy.label}</strong></button></li>
       })}
-    </ol>
+      </ol>
 
-    <section className="onboarding-panel">
+      <section className="onboarding-panel">
       {state.step === 1 && <section className="onboarding-section onboarding-connect-layout">
         <div className="onboarding-connect-content">
           <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(1)}</p><h2>{copy.connection.title}</h2><p>{copy.connection.subtitle}</p></header>
@@ -229,20 +259,12 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
       {state.step === 2 && <section className="onboarding-section onboarding-editorial-layout onboarding-memory-layout">
         <div className="onboarding-editorial-content">
           <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(2)}</p><h2>{copy.memory.title}</h2><p>{copy.memory.subtitle}</p></header>
-          <div className="onboarding-memory-sources">
-            <p>{copy.memory.connectedTitle}</p>
-            <div className="onboarding-memory-source-list">{state.connectedSources.map((source) => <div className="onboarding-memory-source" key={source}>
-              <img alt="" src={onboardingConnectorLogos[source]} />
-              <span><strong>{homeCopy.sources[source]}</strong><small>{copy.memory.connected}</small></span>
-              <span className="onboarding-read-only"><Check aria-hidden="true" />{copy.memory.readOnly}</span>
-            </div>)}</div>
-            <div className="onboarding-memory-signals"><p>{copy.memory.signalsTitle}</p><ul>{(Object.keys(memorySignalIcons) as Array<keyof typeof memorySignalIcons>).map((signal) => {
+          <div className="onboarding-memory-signals"><p>{copy.memory.signalsTitle}</p><ul>{(Object.keys(memorySignalIcons) as Array<keyof typeof memorySignalIcons>).map((signal) => {
               const SignalIcon = memorySignalIcons[signal]
               const [label, description] = copy.memory.signals[signal]
               return <li key={signal}><SignalIcon aria-hidden="true" /><span><strong>{label}</strong><small>{description}</small></span></li>
             })}</ul></div>
-            <section className="onboarding-memory-migration"><strong>{copy.memory.migration.title}</strong><p>{copy.memory.migration.body}</p></section>
-          </div>
+          <section className="onboarding-memory-migration"><strong>{copy.memory.migration.title}</strong><p>{copy.memory.migration.body}</p></section>
           <footer className="onboarding-section-footer onboarding-section-footer-actions onboarding-memory-actions">
             {state.memoryConfirmed ? <><Button onPress={onOpenMemory} type="button" variant="secondary">{copy.memory.view}</Button><Button onPress={() => update(advanceFromMemory(state))} type="button">{copy.memory.proceed}</Button></> : <Button onPress={beginMemoryRead} type="button">{copy.memory.confirm}</Button>}
           </footer>
@@ -257,7 +279,6 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
             const PointIcon = stylePointIcons[index]
             return <li className="onboarding-style-point" key={point}><span className="onboarding-style-point-icon"><PointIcon aria-hidden="true" /></span>{point}</li>
           })}</ul></div>
-          <aside className="onboarding-style-benefits"><strong>{copy.style.benefitTitle}</strong><p>{copy.style.benefit}</p></aside>
           <footer className="onboarding-section-footer onboarding-style-actions"><Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button></footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={workStyleIllustration} /></aside>
@@ -267,29 +288,56 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
         <div className="onboarding-editorial-content">
           <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(4)}</p><h2>{copy.trial.title}</h2><p>{copy.trial.subtitle}</p></header>
           <div className="onboarding-trial-suggestions"><span>{copy.trial.suggestions}</span>{copy.trial.questions.map((suggestion) => <button key={suggestion} onClick={() => setQuestion(suggestion)} type="button">{suggestion}</button>)}</div>
-          <label className="onboarding-composer"><span className="sr-only">{copy.trial.inputLabel}</span><textarea onChange={(event) => setQuestion(event.target.value)} placeholder={copy.trial.placeholder} value={question} /></label>
-          <Button className="onboarding-trial-submit" isDisabled={!question.trim()} onPress={submitTrial} type="button">{copy.trial.submit}</Button>
+          <div className="onboarding-trial-composer-row">
+            <label className="onboarding-composer"><span className="sr-only">{copy.trial.inputLabel}</span><textarea onChange={(event) => setQuestion(event.target.value)} placeholder={copy.trial.placeholder} rows={1} value={question} wrap="off" /></label>
+            <Button aria-label={copy.trial.submit} className="onboarding-trial-submit" isDisabled={!question.trim()} onPress={submitTrial} type="button"><Send aria-hidden="true" /></Button>
+          </div>
           <footer className="onboarding-section-footer onboarding-formal-action"><Button isDisabled={!state.workStyleConfirmed} onPress={() => setActivation('confirm')} type="button" variant="secondary">{copy.activation.start}</Button></footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={trialIllustration} /></aside>
       </section>}
+      </section>
+
+      <section aria-label={copy.progressLabel} className="onboarding-support-grid">
+        <section className="onboarding-support-card onboarding-supported-apps">
+          <h3>{copy.support.apps.title}</h3>
+          <div className="onboarding-supported-app-list">{supportApps.map(([name, logo, comingSoon]) => <div className={`onboarding-supported-app${comingSoon ? ' onboarding-supported-app-soon' : ''}`} key={name}>
+            <img alt="" src={logo} /><span>{name}</span>{comingSoon && <small>{copy.support.apps.comingSoon}</small>}
+          </div>)}</div>
+        </section>
+        <section className="onboarding-support-card onboarding-security">
+          <header><h3>{copy.support.security.title}</h3><span aria-hidden="true" className="onboarding-security-mark"><ShieldCheck /></span></header>
+          <ul>{copy.support.security.points.map((point) => <li key={point}><Check aria-hidden="true" />{point}</li>)}</ul>
+          <span className="onboarding-security-link">{copy.support.security.learnMore}</span>
+        </section>
+        <section className="onboarding-support-card onboarding-team-uses">
+          <span aria-hidden="true" className="onboarding-team-sparkle">✦</span>
+          <header><h3>{copy.support.teams.title}</h3><p>{copy.support.teams.subtitle}</p></header>
+          <div aria-hidden="true" className="onboarding-team-groups">{teamGroups.map((group, index) => <div className="onboarding-team-group" key={group}>
+            <img alt="" src={group} /><span>{copy.support.teams.segments[index]}</span>
+          </div>)}</div>
+          <footer><span className="onboarding-team-detail"><Users aria-hidden="true" />{copy.support.teams.detail}</span><span className="onboarding-team-stories">{copy.support.teams.stories}<ArrowRight aria-hidden="true" /></span></footer>
+        </section>
+      </section>
     </section>
 
     {connecting && <section aria-label={copy.connection.confirmTitle(homeCopy.sources[connecting])} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog"><h2>{copy.connection.confirmTitle(homeCopy.sources[connecting])}</h2><p>{copy.connection.confirmBody}</p><footer><Button onPress={() => setConnecting(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={completeConnection} type="button">{copy.connection.complete}</Button></footer></div></section>}
 
-    {memoryStage && <section aria-label={copy.memory.readingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-memory-dialog">
-      <h2>{copy.memory.readingTitle}</h2><progress className="onboarding-progress" max="100" value={memoryProgress}>{memoryProgress}%</progress>
-      {memoryStage === 'reading' && <p>{copy.memory.reading[memoryProgress < 70 ? 0 : 1]}</p>}
-      {memoryStage === 'ready' && <div className="onboarding-modal-result"><div aria-label={copy.memory.findingsLabel} className="onboarding-memory-findings">{memoryFindingKeys.map((finding) => {
+    {memoryStage && <section aria-label={memoryStage === 'selecting' ? copy.memory.scopeTitle : copy.memory.readingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-memory-dialog">
+      <h2>{memoryStage === 'selecting' ? copy.memory.scopeTitle : copy.memory.readingTitle}</h2>
+      {memoryStage !== 'selecting' && <p className="onboarding-dialog-subtitle">{copy.memory.readingSubtitle}</p>}
+      {memoryStage === 'selecting' ? <div className="onboarding-memory-scope-list">{memorySources.map((source) => <MemoryConnector connectedLabel={copy.connection.connected} key={source} logo={onboardingConnectorLogos[source]} name={homeCopy.sources[source]} onRemove={() => setMemorySources((sources) => sources.filter((item) => item !== source))} removeLabel={copy.memory.removeSource(homeCopy.sources[source])} />)}</div> : <div className="onboarding-memory-connectors">{memorySources.map((source) => <MemoryConnector connectedLabel={copy.connection.connected} key={source} logo={onboardingConnectorLogos[source]} name={homeCopy.sources[source]} />)}</div>}
+      {memoryStage === 'selecting' && <><p className="onboarding-memory-scope-hint">{copy.memory.scopeHint}</p><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!memorySources.length} onPress={readSelectedMemory} type="button">{copy.memory.readSelected}</Button></footer></>}
+      {memoryStage === 'reading' && <AnalysisProgress completeLabel={copy.memory.analysisComplete} label={copy.memory.analysis} value={memoryProgress} />}
+      {memoryStage === 'ready' && <div className="onboarding-modal-result"><AnalysisProgress completeLabel={copy.memory.analysisComplete} label={copy.memory.analysis} value={100} /><div aria-label={copy.memory.findingsLabel} className="onboarding-memory-findings">{memoryFindingKeys.map((finding) => {
         const FindingIcon = memoryFindingIcons[finding]
         const [count, label] = copy.memory.findings[finding]
         return <div className="onboarding-memory-finding" key={finding}><FindingIcon aria-hidden="true" /><strong>{count}</strong><span>{label}</span></div>
-      })}</div><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={() => { update(confirmMemory(state)); setMemoryStage(null) }} type="button">{copy.memory.proceed}</Button></footer></div>}
+      })}</div><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={() => { update(confirmMemory(state, memorySources)); setMemoryStage(null) }} type="button">{copy.memory.proceed}</Button></footer></div>}
     </div></section>}
 
-    {styleStage && <section aria-label={copy.style.extractingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-style-dialog">
-      <h2>{copy.style.extractingTitle}</h2><progress className="onboarding-progress" max="100" value={styleProgress}>{styleProgress}%</progress>
-      {styleStage === 'extracting' && <p>{copy.style.extracting[Math.min(Math.floor(styleProgress / 25), copy.style.extracting.length - 1)]}</p>}
+    {styleStage && <section aria-label={copy.style.extractingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-memory-dialog onboarding-style-dialog">
+      <h2>{copy.style.extractingTitle}</h2><p className="onboarding-dialog-subtitle">{copy.style.extractingSubtitle}</p><AnalysisProgress completeLabel={copy.style.analysisComplete} label={copy.style.analysis} value={styleStage === 'ready' ? 100 : styleProgress} />
       {styleStage === 'ready' && <div className="onboarding-modal-result"><p>{copy.style.editHint}</p><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea onChange={(event) => setPromptDraft(event.target.value)} value={promptDraft} /></label><footer><Button onPress={() => setStyleStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!promptDraft.trim()} onPress={confirmStyle} type="button">{copy.style.usePrompt}</Button></footer></div>}
     </div></section>}
 

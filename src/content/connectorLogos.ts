@@ -12,3 +12,12 @@ export const onboardingConnectorLogos: Record<HomeSource, string> = {
   feishu: connectorLogos.feishu,
   teams: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Ccircle cx="24.5" cy="9" r="4" fill="%23505ac9"/%3E%3Cpath fill="%237b83eb" d="M17 8h10v16a5 5 0 0 1-5 5h-5V8Z"/%3E%3Cpath fill="%234b53bc" d="M5 10h14v14H5z"/%3E%3Cpath fill="white" d="M8 13h8v2h-3v6h-2v-6H8z"/%3E%3C/svg%3E',
 }
+
+export const onboardingSupplementalLogos = {
+  wecom: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Ccircle cx="12" cy="15" r="8" fill="%231c9af7"/%3E%3Ccircle cx="21" cy="19" r="8" fill="%2337c692"/%3E%3Ccircle cx="11" cy="12" r="2" fill="white"/%3E%3Ccircle cx="21" cy="16" r="2" fill="white"/%3E%3C/svg%3E',
+  slack: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Cpath d="M9 16a3 3 0 1 1-3-3h3v3Z" fill="%23e4485c"/%3E%3Cpath d="M10 16a3 3 0 1 1 6 0v7a3 3 0 1 1-6 0v-7Z" fill="%23e4485c"/%3E%3Cpath d="M16 9a3 3 0 1 1 3-3v3h-3Z" fill="%2336c5f0"/%3E%3Cpath d="M16 10a3 3 0 1 1 0 6H9a3 3 0 1 1 0-6h7Z" fill="%2336c5f0"/%3E%3Cpath d="M23 16a3 3 0 1 1 3 3h-3v-3Z" fill="%232ec47b"/%3E%3Cpath d="M22 16a3 3 0 1 1-6 0V9a3 3 0 1 1 6 0v7Z" fill="%232ec47b"/%3E%3Cpath d="M16 23a3 3 0 1 1-3 3v-3h3Z" fill="%23ecb22e"/%3E%3Cpath d="M16 22a3 3 0 1 1 0-6h7a3 3 0 1 1 0 6h-7Z" fill="%23ecb22e"/%3E%3C/svg%3E',
+  discord: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Cpath d="M5 23c2-10 5-14 11-14s9 4 11 14c-3 2-5 3-7 3l-2-2h-4l-2 2c-2 0-4-1-7-3Z" fill="%235865f2"/%3E%3Ccircle cx="12" cy="18" r="2" fill="white"/%3E%3Ccircle cx="20" cy="18" r="2" fill="white"/%3E%3C/svg%3E',
+  gmail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Cpath fill="%23ea4335" d="M5 8v16h5V14l6 5 6-5v10h5V8l-11 9z"/%3E%3Cpath fill="%234285f4" d="M5 8v16h5V12z"/%3E%3Cpath fill="%2334a853" d="M27 8v16h-5V12z"/%3E%3C/svg%3E',
+  zoom: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Crect x="3" y="7" width="26" height="18" rx="5" fill="%232d8cff"/%3E%3Cpath d="M8 13h8v6H8zM17 14l6-3v10l-6-3z" fill="white"/%3E%3C/svg%3E',
+  googleMeet: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Cpath d="M7 9h12l6 5v10H7z" fill="%2334a853"/%3E%3Cpath d="m19 9 6 5-6 5z" fill="%23fbbc04"/%3E%3Cpath d="M7 9h8v15H7z" fill="%234285f4"/%3E%3Cpath d="M7 9h8l4 4h-8z" fill="%23ea4335"/%3E%3C/svg%3E',
+} as const
