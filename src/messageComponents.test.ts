@@ -151,15 +151,15 @@ test('MessageDetail renders auditable A-to-E cards, dynamic artifacts, task stat
   assert.doesNotMatch(html, /活动时间线/)
 })
 
-test('MessageDetail task summary opens only the current Message relation', async () => {
+test('MessageDetail keeps the Task summary visual while making it noninteractive', async () => {
   const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
   const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.id === 'delivery-commitment')!
-  const opened: unknown[] = []
-  const detail = MessageDetail({ copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onOpenTasks: (tasks: unknown) => opened.push(tasks), onSkip: () => {} })
+  const detail = MessageDetail({ copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} })
+  const summary = find(detail, (element) => element.props.className === 'message-detail-task-summary-link')
 
-  find(detail, (element) => element.props.className === 'message-detail-task-summary-link').props.onPress()
-
-  assert.deepEqual(opened, [message.relatedTasks])
+  assert.equal(summary.type, 'div')
+  assert.equal(summary.props.onPress, undefined)
+  assert.match(renderToStaticMarkup(summary), /1 个 Task（1 个进行中）.*<svg/)
 })
 
 test('MessageDetail keeps rendering when a hot-reloaded session still holds a legacy Message record', async () => {

@@ -2,7 +2,7 @@ import { Button } from '@heroui/react'
 import { BadgeInfo, Check, ChevronRight, Clock, FileCode2, FileSpreadsheet, FileText, ListChecks, MessageSquare, Scale, SkipForward, Sparkles, UserRound } from 'lucide-react'
 import { connectorLogos, onboardingSupplementalLogos } from '../content/connectorLogos.ts'
 import type { MessageCopy } from '../content/translations.ts'
-import type { Message, MessageFeedback, MessageRelatedTask, MessageSource } from '../messageState.ts'
+import type { Message, MessageFeedback, MessageSource } from '../messageState.ts'
 import { MessageFeedbackControls } from './MessageFeedbackControls.tsx'
 
 type MessageDetailProps = {
@@ -11,7 +11,6 @@ type MessageDetailProps = {
   onBack: () => void
   onConfirm: (id: string) => void
   onFeedback: (id: string, feedback: MessageFeedback) => void
-  onOpenTasks?: (tasks: MessageRelatedTask[]) => void
   onSkip: (id: string) => void
 }
 
@@ -30,7 +29,7 @@ const detailTime = (value: string, locale: string) => new Intl.DateTimeFormat(lo
 
 const metaLabel = (label: string, locale: string) => `${label}${locale === 'zh-CN' ? '：' : ':'}`
 
-export default function MessageDetail({ copy, message, onBack, onConfirm, onFeedback, onOpenTasks = () => {}, onSkip }: MessageDetailProps) {
+export default function MessageDetail({ copy, message, onBack, onConfirm, onFeedback, onSkip }: MessageDetailProps) {
   const canDecide = message.status === 'needs-confirmation'
   const sourceIcon = sourceIcons[message.source]
   const receivedTime = detailTime(message.receivedAt, copy.dateLocale)
@@ -52,7 +51,7 @@ export default function MessageDetail({ copy, message, onBack, onConfirm, onFeed
     </main><aside className="message-detail-aside">
       <section><h2>{copy.detail.actions}</h2>{canDecide ? <><Button className="message-detail-action-confirm" onPress={() => onConfirm(message.id)} type="button"><Check aria-hidden="true" />{copy.list.confirm}</Button><Button className="message-detail-action-skip" onPress={() => onSkip(message.id)} type="button" variant="secondary"><SkipForward aria-hidden="true" />{copy.list.skip}</Button></> : <p>{copy.detail.noActions}</p>}</section>
       <section className="message-detail-information"><h2><BadgeInfo aria-hidden="true" />{copy.detail.information}</h2><dl><div className="message-detail-information-row"><dt>{copy.detail.object}</dt><dd>{message.sender}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.source}</dt><dd><img alt="" src={sourceIcon} />{copy.sources[message.source]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.category}</dt><dd>{copy.categories[message.category]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.status}</dt><dd className={`message-detail-info-status message-detail-info-status-${message.status}`}><i aria-hidden="true" />{copy.status[message.status]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.received}</dt><dd><time dateTime={message.receivedAt}>{receivedTime}</time></dd></div></dl></section>
-      <section className="message-detail-task-summary"><h2><ListChecks aria-hidden="true" />{copy.detail.taskSummary}</h2>{relatedTasks.length ? <Button aria-label={copy.detail.taskCount(relatedTasks.length, openTaskCount)} className="message-detail-task-summary-link" onPress={() => onOpenTasks(relatedTasks)} type="button" variant="secondary"><span>{copy.detail.taskCount(relatedTasks.length, openTaskCount)}</span><ChevronRight aria-hidden="true" /></Button> : <p>{copy.detail.taskCount(0, 0)}</p>}</section>
+      <section className="message-detail-task-summary"><h2><ListChecks aria-hidden="true" />{copy.detail.taskSummary}</h2><div aria-label={copy.detail.taskCount(relatedTasks.length, openTaskCount)} className="message-detail-task-summary-link"><span>{copy.detail.taskCount(relatedTasks.length, openTaskCount)}</span><ChevronRight aria-hidden="true" /></div></section>
     </aside></div>
   </section>
 }

@@ -20,7 +20,6 @@ import SettingsWorkspace from './SettingsWorkspace.tsx'
 import Brand from './Brand.tsx'
 import TasksWorkspace from './TasksWorkspace.tsx'
 import type { TasksDetailHeader } from './TasksWorkspace.tsx'
-import type { MessageRelatedTask } from '../messageState.ts'
 
 type WorkspaceProps = {
   locale: Locale
@@ -48,7 +47,6 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const [sessionMessageService] = useState(createMessageService)
   const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
   const [tasksListRequest, setTasksListRequest] = useState(0)
-  const [messageTasks, setMessageTasks] = useState<MessageRelatedTask[] | null>(null)
   const exitDialog = useOverlayState()
   const name = session.email.split('@')[0]
   const copy = translations[locale].workspace
@@ -61,12 +59,6 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   }, [route, session])
 
   const openSettings = () => setSettingsOpen(true)
-  const openMessageTasks = (tasks: MessageRelatedTask[]) => {
-    setTasksDetailHeader(null)
-    setMessageTasks(tasks)
-    setRoute('tasks')
-  }
-
   const dismissWelcome = () => {
     markOnboardingWelcomeSeen(window.localStorage, session.email)
     setWelcomeOpen(false)
@@ -75,10 +67,9 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const goTo = (nextRoute: unknown) => {
     const next = resolveRoute(nextRoute)
     if (next === 'settings') openSettings()
-    else if (next === 'tasks' && route === 'tasks' && tasksDetailHeader) { setMessageTasks(null); setTasksListRequest((request) => request + 1) }
+    else if (next === 'tasks' && route === 'tasks' && tasksDetailHeader) setTasksListRequest((request) => request + 1)
     else {
       setTasksDetailHeader(null)
-      setMessageTasks(null)
       setRoute(next)
     }
   }
@@ -149,9 +140,9 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         ) : route === 'home' ? (
           onboarding
             ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onOpenMemory={() => goTo('memory')} onStateChange={setOnboardingState} onWelcomeDismiss={dismissWelcome} welcomeOpen={welcomeOpen} />
-            : <MessageWorkspace copy={copy.message} onOpenSettings={openSettings} onOpenTasks={openMessageTasks} service={sessionMessageService} />
+            : <MessageWorkspace copy={copy.message} onOpenSettings={openSettings} service={sessionMessageService} />
         ) : route === 'tasks' ? (
-          <TasksWorkspace currentUser={name} locale={locale} messageTasks={messageTasks} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />
+          <TasksWorkspace currentUser={name} locale={locale} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />
         ) : (
           <section className="empty-page">
             <p className="eyebrow">{currentLabel}</p>

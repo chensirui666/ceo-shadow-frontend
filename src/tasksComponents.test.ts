@@ -40,20 +40,6 @@ test('personal TODO details are triggered only from the icon and number cluster'
   assert.doesNotMatch(html, />1 completed</)
 })
 
-test('Task workspace shows only the Tasks related to an opened Message', async () => {
-  const { default: TasksWorkspace } = await vite.ssrLoadModule('/src/components/TasksWorkspace.tsx')
-  const { translations } = await import('./content/translations.ts')
-  const relatedTasks = [{ title: '确认交付资源与最终排期', status: 'open' as const }, { title: '同步交付说明', status: 'completed' as const }]
-  const html = renderToStaticMarkup(createElement(TasksWorkspace, { currentUser: '陈思睿', locale: 'zh', messageTasks: relatedTasks, onDetailHeaderChange: () => {}, returnToListRequest: 0 }))
-
-  assert.match(html, /tasks-message-list/)
-  assert.match(html, /确认交付资源与最终排期/)
-  assert.match(html, /同步交付说明/)
-  assert.match(html, /待处理/)
-  assert.match(html, /已完成/)
-  assert.doesNotMatch(html, /客户交付准备/)
-})
-
 test('attention copy identifies projects that are blocked only', async () => {
   const { translations } = await import('./content/translations.ts')
 

@@ -4,7 +4,6 @@ import { Circle, CircleCheck, Clock3 } from 'lucide-react'
 import type { Locale } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import type { TasksCopy } from '../content/translations.ts'
-import type { MessageRelatedTask } from '../messageState.ts'
 import { createTasksService } from '../tasksService.ts'
 import { createDemoTasksSnapshot, getTasksSummary, localizedTasksSnapshot, myTodoProgress, projectDisplayStatus, projectPersonalTodoSummary, projectProgress, selectTaskProjects } from '../tasksState.ts'
 import type { ProjectStatus, TaskAiProduct, TaskDocument, TaskProject, TasksSnapshot, TodoStatus } from '../tasksState.ts'
@@ -13,7 +12,7 @@ import TaskDocumentSurface from './TaskDocumentSurface.tsx'
 import TaskProjectDetail from './TaskProjectDetail.tsx'
 
 export type TasksDetailHeader = { title: string; status: ProjectStatus }
-type TasksWorkspaceProps = { currentUser: string; locale: Locale; messageTasks?: MessageRelatedTask[] | null; onDetailHeaderChange: (header: TasksDetailHeader | null) => void; returnToListRequest: number }
+type TasksWorkspaceProps = { currentUser: string; locale: Locale; onDetailHeaderChange: (header: TasksDetailHeader | null) => void; returnToListRequest: number }
 type SelectedDocument = { kind: 'project-detail' } | { kind: 'ai-product'; todoId: string } | null
 
 export function PersonalTodos({ copy, currentUser, project }: { copy: TasksCopy; currentUser: string; project: TaskProject }) {
@@ -23,7 +22,7 @@ export function PersonalTodos({ copy, currentUser, project }: { copy: TasksCopy;
   return <><Button aria-describedby={tooltipId} aria-label={`${copy.personalTodos.open(summary.open)} · ${copy.personalTodos.overdue(summary.overdue)} · ${copy.personalTodos.completed(summary.completed)}`} className="task-personal-todo-trigger" type="button" variant="ghost"><span aria-hidden="true" className="task-personal-todo-metric"><Circle /><b>{summary.open}</b></span><span aria-hidden="true" className="task-personal-todo-metric task-personal-todo-overdue"><Clock3 /><b>{summary.overdue}</b></span><span aria-hidden="true" className="task-personal-todo-metric task-personal-todo-completed"><CircleCheck /><b>{summary.completed}</b></span></Button><span className="task-personal-todo-tooltip" id={tooltipId} role="tooltip">{todos.length ? todos.map((todo) => <span key={todo.id}><strong>{todo.title}</strong><small>{copy.todoStatus[todo.status]}{todo.dueAt ? ` · ${todo.dueAt}` : ''}</small></span>) : copy.todo.empty}</span></>
 }
 
-export default function TasksWorkspace({ currentUser, locale, messageTasks, onDetailHeaderChange, returnToListRequest }: TasksWorkspaceProps) {
+export default function TasksWorkspace({ currentUser, locale, onDetailHeaderChange, returnToListRequest }: TasksWorkspaceProps) {
   const copy = translations[locale].workspace.tasks
   const [service] = useState(() => createTasksService(createDemoTasksSnapshot(currentUser)))
   const [snapshot, setSnapshot] = useState<TasksSnapshot | null>(null)
@@ -84,7 +83,6 @@ export default function TasksWorkspace({ currentUser, locale, messageTasks, onDe
     void service.updateProjectDocument(selectedProjectId, update).then(setSnapshot)
   }
 
-  if (messageTasks) return <section aria-label={copy.sections.todos} className="tasks-page tasks-message-list" ref={pageRef}><ul>{messageTasks.map((task) => <li key={task.title}><strong>{task.title}</strong><span className={`tasks-message-list-status tasks-message-list-status-${task.status}`}>{copy.todoStatus[task.status]}</span></li>)}</ul></section>
   if (error) return <section aria-live="polite" className="tasks-state"><p>{copy.error}</p><Button onPress={() => { void load() }}>{copy.actions.retry}</Button></section>
   if (!snapshot) return <section aria-live="polite" className="tasks-state">{copy.loading}</section>
 

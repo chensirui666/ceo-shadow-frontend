@@ -1776,15 +1776,8 @@ button, input, select, textarea { font: inherit; }
 .message-detail-info-status-needs-confirmation { color: var(--status-pending-foreground) !important; }
 .message-detail-info-status-processed { color: var(--status-success-foreground) !important; }
 .message-detail-info-status-failed { color: var(--status-danger-foreground) !important; }
-.message-detail-task-summary-link { display: flex; width: 100%; align-items: center; justify-content: space-between; border: 0 !important; background: var(--status-pending-background) !important; color: var(--status-pending-text) !important; }
+.message-detail-task-summary-link { display: flex; width: 100%; align-items: center; justify-content: space-between; border: 0; border-radius: var(--radius-control); background: var(--status-pending-background); color: var(--status-pending-text); padding: 10px 12px; }
 .message-detail-task-summary-link svg { width: 16px; height: 16px; }
-.tasks-message-list { display: grid; align-content: start; }
-.tasks-message-list ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.tasks-message-list li { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 54px; border: 1px solid var(--color-friday-border); border-radius: var(--radius-card); background: var(--color-friday-surface); padding: 12px 14px; }
-.tasks-message-list li strong { font-size: var(--font-ui); font-weight: 650; }
-.tasks-message-list-status { flex: 0 0 auto; border-radius: 999px; padding: 3px 8px; font-size: 11px; font-weight: 700; }
-.tasks-message-list-status-open { background: var(--status-pending-background); color: var(--status-pending-text); }
-.tasks-message-list-status-completed { background: var(--status-success-background); color: var(--status-success-text); }
 
 @media (max-width: 1100px) {
   .message-list-layout, .message-detail-layout { grid-template-columns: 1fr; }
