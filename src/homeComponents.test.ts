@@ -88,6 +88,7 @@ test('Home status tokens and tooltip layout use the approved palette', async () 
 test('workspace canvas uses a pure white shared page background', async () => {
   const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
 
+  assert.match(css, /--color-friday-surface:\s*#fff;/)
   assert.match(css, /\.workspace-canvas\s*\{[^}]*background:\s*#fff;/)
 })
 
