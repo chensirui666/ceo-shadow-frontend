@@ -42,6 +42,8 @@ export const selectMessages = (snapshot: MessageSnapshot, status: MessageStatus 
 
 export const messageStatusCount = (snapshot: MessageSnapshot, status: MessageStatus): number => selectMessages(snapshot, status).length
 
+export const canProvideMessageFeedback = (message: Message): boolean => ['processed', 'skipped', 'failed'].includes(message.status)
+
 const updatePendingMessage = (snapshot: MessageSnapshot, id: string, status: 'processed' | 'skipped'): MessageSnapshot => ({
   ...snapshot,
   messages: snapshot.messages.map((message) => message.id === id && message.status === 'needs-confirmation' ? { ...message, status } : message),
@@ -50,7 +52,9 @@ const updatePendingMessage = (snapshot: MessageSnapshot, id: string, status: 'pr
 export const confirmMessage = (snapshot: MessageSnapshot, id: string): MessageSnapshot => updatePendingMessage(snapshot, id, 'processed')
 export const skipMessage = (snapshot: MessageSnapshot, id: string): MessageSnapshot => updatePendingMessage(snapshot, id, 'skipped')
 
-export const recordMessageFeedback = (snapshot: MessageSnapshot, id: string, feedback: MessageFeedback): MessageSnapshot => ({
-  ...snapshot,
-  messages: snapshot.messages.map((message) => message.id === id ? { ...message, feedback: [...message.feedback, feedback] } : message),
-})
+export const recordMessageFeedback = (snapshot: MessageSnapshot, id: string, feedback: MessageFeedback): MessageSnapshot => {
+  const message = snapshot.messages.find((item) => item.id === id)
+  const reason = feedback.reason.trim()
+  if (!message || !canProvideMessageFeedback(message) || (feedback.rating === 'down' && !reason)) return snapshot
+  return { ...snapshot, messages: snapshot.messages.map((item) => item.id === id ? { ...item, feedback: [...item.feedback, { ...feedback, reason }] } : item) }
+}

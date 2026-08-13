@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { messageStatuses } from '../messageState.ts'
+import { canProvideMessageFeedback, messageStatuses } from '../messageState.ts'
 import type { Message, MessageFeedback, MessageStatus } from '../messageState.ts'
+import { MessageFeedbackControls } from './MessageFeedbackControls.tsx'
 
 type MessageListProps = {
   messages: Message[]
@@ -18,14 +18,6 @@ const statusLabels: Record<MessageStatus | 'all', string> = {
 
 const sourceLabels = { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' }
 
-function FeedbackControls({ id, onFeedback }: Pick<MessageListProps, 'onFeedback'> & { id: string }) {
-  const [reason, setReason] = useState('')
-  return <span className="message-feedback-controls" onClick={(event) => event.stopPropagation()}>
-    <button aria-label="点赞" onClick={() => onFeedback(id, { rating: 'up', reason: '有帮助。' })} type="button">点赞</button>
-    <details><summary>点踩</summary><form onSubmit={(event) => { event.preventDefault(); onFeedback(id, { rating: 'down', reason }) }}><label>反馈原因<input aria-label="反馈原因" onChange={(event) => setReason(event.target.value)} value={reason} /></label><button type="submit">提交反馈</button></form></details>
-  </span>
-}
-
 export default function MessageList({ messages, status, onConfirm, onFeedback, onOpen, onSkip, onStatusChange }: MessageListProps) {
   const visibleMessages = status === 'all' ? messages : messages.filter((message) => message.status === status)
   const sourceCount = new Set(visibleMessages.map((message) => message.source)).size
@@ -42,7 +34,7 @@ export default function MessageList({ messages, status, onConfirm, onFeedback, o
             <span>{message.subject}<small>{message.sender} · {sourceLabels[message.source]} · {message.category}</small></span>
             <span>{message.question}</span><span>{message.result}</span>
           </button>
-          <span className="message-list-actions">{message.status === 'needs-confirmation' && <><button onClick={(event) => { event.stopPropagation(); onConfirm(message.id) }} type="button">确认</button><button onClick={(event) => { event.stopPropagation(); onSkip(message.id) }} type="button">跳过</button></>}{message.result && <FeedbackControls id={message.id} onFeedback={onFeedback} />}</span>
+          <span className="message-list-actions">{message.status === 'needs-confirmation' && <><button onClick={(event) => { event.stopPropagation(); onConfirm(message.id) }} type="button">确认</button><button onClick={(event) => { event.stopPropagation(); onSkip(message.id) }} type="button">跳过</button></>}{canProvideMessageFeedback(message) && <MessageFeedbackControls id={message.id} onFeedback={onFeedback} stopPropagation />}</span>
         </article>) : <p className="message-empty">这里还没有符合当前状态的消息。</p>}
       </section>
       <aside aria-label="快捷概览" className="message-list-quick"><h2>快捷概览</h2><p>当前筛选：{statusLabels[status]}</p><p>消息 {visibleMessages.length} 条</p><p>来源 {sourceCount} 个</p><ul>{[...new Set(visibleMessages.map((message) => message.source))].map((source) => <li key={source}>{sourceLabels[source]}</li>)}</ul></aside>

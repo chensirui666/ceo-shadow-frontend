@@ -30,14 +30,18 @@ test('confirm and skip only resolve messages awaiting confirmation without chang
   assert.equal(messageState.confirmMessage(snapshot, processing.id).messages.find((message) => message.id === processing.id)?.status, 'processing')
 })
 
-test('feedback records only local feedback and preserves the Message decision and result', () => {
+test('feedback accepts only an eligible completed result and a non-blank downvote reason', () => {
   const snapshot = messageState.createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
-  const message = snapshot.messages[0]
+  const message = snapshot.messages.find((item) => item.status === 'processed')!
   const updated = messageState.recordMessageFeedback(snapshot, message.id, { rating: 'down', reason: '处理结果需要先确认排期。' })
-  const result = updated.messages[0]
+  const result = updated.messages.find((item) => item.id === message.id)!
+  const pending = snapshot.messages.find((item) => item.status === 'pending')!
 
   assert.deepEqual(result.feedback, [{ rating: 'down', reason: '处理结果需要先确认排期。' }])
   assert.equal(result.question, message.question)
   assert.equal(result.rationale, message.rationale)
   assert.equal(result.result, message.result)
+  assert.equal(messageState.recordMessageFeedback(snapshot, message.id, { rating: 'down', reason: '' }), snapshot)
+  assert.equal(messageState.recordMessageFeedback(snapshot, message.id, { rating: 'down', reason: '   ' }), snapshot)
+  assert.equal(messageState.recordMessageFeedback(snapshot, pending.id, { rating: 'up', reason: '有帮助。' }), snapshot)
 })
