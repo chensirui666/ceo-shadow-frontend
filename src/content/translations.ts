@@ -2,7 +2,7 @@ import type { Locale, Route } from '../appState.ts'
 import type { FeedbackRange, FeedbackSentiment, FeedbackSource, FeedbackTrendPoint } from '../feedbackState.ts'
 import type { ActivityHour, HomeOutcome, HomeSource, HomeStatus, OperatingMode } from '../homeState.ts'
 import type { MemorySource } from '../memoryState.ts'
-import type { MessageSource, MessageStatus } from '../messageState.ts'
+import type { MessageCategory, MessageSource, MessageStatus, MessageSummaryRange } from '../messageState.ts'
 import type { ConnectorId, ConnectorStatus, SettingsSection } from '../settingsState.ts'
 
 type PageCopy = [string, string, string]
@@ -101,6 +101,7 @@ export type MessageCopy = {
   dateLocale: string
   status: Record<MessageStatus | 'all', string>
   sources: Record<MessageSource, string>
+  categories: Record<MessageCategory, string>
   list: {
     title: string
     subtitle: string
@@ -113,7 +114,7 @@ export type MessageCopy = {
     aside: {
       filters: { title: string; clear: string; source: string; category: string; subject: string; sender: string }
       sources: { title: string; apps: Record<'dingtalk' | 'feishu' | 'teams' | 'slack' | 'wecom' | 'discord', string> }
-      activity: { title: string; scope: string; all: string; needsConfirmation: string; processed: string; failed: string }
+      activity: { title: string; rangeLabel: string; ranges: Record<MessageSummaryRange, string>; all: string; needsConfirmation: string; processed: string; failed: string }
       smarter: { title: string; body: string; action: string }
     }
   }
@@ -296,6 +297,7 @@ export const translations: Record<Locale, Translation> = {
         loading: 'Loading messages…', error: 'Messages could not be loaded.', empty: 'No messages need attention yet.', dateLocale: 'en-US',
         status: { all: 'All', pending: 'Pending', processing: 'Processing', 'needs-confirmation': 'Needs confirmation', processed: 'Processed', skipped: 'Skipped', failed: 'Failed' },
         sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams', slack: 'Slack', wecom: 'WeCom', discord: 'Discord' },
+        categories: { chat: 'Chat', document: 'Document', approval: 'Approval', meeting: 'Meeting' },
         list: {
           title: 'Message', subtitle: 'See what Friday is handling, what needs your confirmation, and what is complete.', statusNavigation: 'Message status', label: 'Message list',
           columns: { statusTime: 'Status and time', metadata: 'Subject / source / category', question: 'Question', handling: "Friday's handling", actions: 'Actions' },
@@ -303,7 +305,7 @@ export const translations: Record<Locale, Translation> = {
           aside: {
             filters: { title: 'Filters', clear: 'Clear all', source: 'All sources', category: 'All categories', subject: 'All conversations', sender: 'All senders' },
             sources: { title: 'Sources', apps: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams', slack: 'Slack', wecom: 'WeCom', discord: 'Discord' } },
-            activity: { title: 'Activity summary', scope: 'All messages', all: 'Total messages', needsConfirmation: 'Needs confirmation', processed: 'Completed', failed: 'Failed' },
+            activity: { title: 'Activity summary', rangeLabel: 'Activity period', ranges: { '7d': 'Last 7 days', '30d': 'Last 30 days', all: 'All' }, all: 'Total messages', needsConfirmation: 'Needs confirmation', processed: 'Completed', failed: 'Failed' },
             smarter: { title: 'Make Friday smarter', body: 'Link more apps and set preferences to get better, more relevant help.', action: 'Go to settings' },
           },
         },
@@ -518,6 +520,7 @@ export const translations: Record<Locale, Translation> = {
         loading: '正在加载消息…', error: '消息暂时无法加载。', empty: '还没有需要处理的消息。', dateLocale: 'zh-CN',
         status: { all: '全部', pending: '待处理', processing: '处理中', 'needs-confirmation': '待确认', processed: '已处理', skipped: '已跳过', failed: '处理失败' },
         sources: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams', slack: 'Slack', wecom: '企微', discord: 'Discord' },
+        categories: { chat: '聊天', document: '文档', approval: '审批', meeting: '会议' },
         list: {
           title: 'Message', subtitle: '集中查看 Friday 正在处理、等待你确认和已经完成的事项。', statusNavigation: 'Message 状态', label: 'Message 列表',
           columns: { statusTime: '状态与时间', metadata: '对象／来源／类别', question: '用户问题', handling: 'Friday 的处理', actions: '操作' },
@@ -525,7 +528,7 @@ export const translations: Record<Locale, Translation> = {
           aside: {
             filters: { title: '筛选', clear: '清除全部', source: '全部来源', category: '全部类别', subject: '全部会话', sender: '全部发起人' },
             sources: { title: '来源', apps: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams', slack: 'Slack', wecom: '企微', discord: 'Discord' } },
-            activity: { title: '处理概览', scope: '全部消息', all: '消息总数', needsConfirmation: '待确认', processed: '已处理', failed: '处理失败' },
+            activity: { title: '处理概览', rangeLabel: '统计范围', ranges: { '7d': '过去 7 天', '30d': '过去一个月', all: '全部' }, all: '消息总数', needsConfirmation: '待确认', processed: '已处理', failed: '处理失败' },
             smarter: { title: '让 Friday 更聪明', body: '连接更多应用并完善偏好设置，让 Friday 提供更贴合的帮助。', action: '前往设置' },
           },
         },

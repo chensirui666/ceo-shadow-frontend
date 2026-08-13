@@ -60,7 +60,8 @@ test('MessageList gives each Message a sender identity, source mark, category ta
     onConfirm: () => {}, onFeedback: () => {}, onOpen: () => {}, onSkip: () => {}, onStatusChange: () => {},
   }))
 
-  assert.match(html, /message-list-avatar/)
+  assert.match(html, /class="message-list-avatar"/)
+  assert.match(html, /images\.unsplash\.com/)
   assert.match(html, /message-list-source-icon/)
   assert.match(html, /message-list-category/)
   assert.match(html, /message-list-status-needs-confirmation/)
@@ -85,30 +86,34 @@ test('MessageList keeps icon-based confirmation, skip, and feedback actions', as
   assert.match(html, /aria-label="Dislike"/)
 })
 
-test('MessageList sidebar exposes data-backed filters, six supported sources, activity totals, and Settings', async () => {
+test('MessageList sidebar uses component filters and changes its summary range', async () => {
   const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
   const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
   const calls: string[] = []
   const filterChanges: Array<Record<string, string>> = []
+  const rangeChanges: string[] = []
   let openedSettings = 0
   const list = MessageList({
     messages: snapshot.messages,
     copy: translations.zh.workspace.message,
     status: 'all',
     onConfirm: () => {}, onFeedback: () => {}, onOpen: () => {}, onSkip: () => {}, onStatusChange: (status: string) => calls.push(status),
-    onFiltersChange: (filters: { source: string; category: string; subject: string; sender: string }) => filterChanges.push(filters), onOpenSettings: () => { openedSettings++ },
+    onFiltersChange: (filters: { source: string; category: string; subject: string; sender: string }) => filterChanges.push(filters), onOpenSettings: () => { openedSettings++ }, onSummaryRangeChange: (range: string) => rangeChanges.push(range),
   })
   const aside = find(list, (element) => element.type === 'aside' && element.props.className === 'message-list-quick')
   const sections = findAll(aside, (element) => element.type === 'section')
 
   assert.deepEqual(sections.map((section) => section.props.className), ['message-list-filters', 'message-list-sources', 'message-list-summary', 'message-list-smarter'])
-  assert.deepEqual(findAll(sections[0], (element) => element.type === 'select').map((select) => select.props['aria-label']), ['全部来源', '全部类别', '全部会话', '全部发起人'])
-  find(sections[0], (element) => element.type === 'select' && element.props['aria-label'] === '全部来源').props.onChange({ target: { value: 'feishu' } })
-  find(sections[0], (element) => element.type === 'button' && text(element) === '清除全部').props.onClick()
+  assert.deepEqual(findAll(sections[0], (element) => element.props.onSelectionChange).map((select) => select.props.label), ['全部来源', '全部类别', '全部会话', '全部发起人'])
+  find(sections[0], (element) => element.props.onSelectionChange && element.props.label === '全部来源').props.onSelectionChange('feishu')
+  find(sections[0], (element) => element.props.onPress && text(element) === '清除全部').props.onPress()
   assert.deepEqual(filterChanges, [{ source: 'feishu', category: 'all', subject: 'all', sender: 'all' }, { source: 'all', category: 'all', subject: 'all', sender: 'all' }])
   assert.deepEqual(calls, ['all'])
   assert.deepEqual(findAll(sections[1], (element) => element.type === 'li').map(text), ['钉钉3', '飞书2', 'Teams1', 'Slack0', '企微0', 'Discord0'])
-  assert.match(text(sections[2]), /全部消息消息总数6待确认1已处理1处理失败1/)
+  assert.match(text(sections[2]), /过去 7 天/)
+  assert.match(text(sections[2]), /消息总数6待确认1已处理1处理失败1/)
+  find(sections[2], (element) => element.props.onAction && element.props['aria-label'] === '统计范围').props.onAction('30d')
+  assert.deepEqual(rangeChanges, ['30d'])
   find(sections[3], (element) => element.props.onPress && text(element) === '前往设置').props.onPress()
   assert.equal(openedSettings, 1)
 })
@@ -137,7 +142,7 @@ test('MessageDetail title area carries status and known metadata before the read
   const metadata = find(header, (element) => element.props.className === 'message-detail-meta')
 
   assert.match(text(header), /客户交付群待确认/)
-  for (const value of ['赵明', '飞书', '客户交付', '时间']) assert.match(text(metadata), new RegExp(value))
+  for (const value of ['赵明', '飞书', '聊天', '时间']) assert.match(text(metadata), new RegExp(value))
   assert.equal(find(metadata, (element) => element.type === 'time').props.dateTime, message.receivedAt)
 })
 
