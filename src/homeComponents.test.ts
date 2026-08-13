@@ -233,14 +233,16 @@ test('workspace starts onboarding for every non-seeded demo account', async () =
   assert.doesNotMatch(html, /暂无工作事件|最近 24 小时/)
 })
 
-test('workspace keeps the seeded demo account on the normal Home', async () => {
+test('seeded home sessions render Message without the old greeting or Home loading state', async () => {
   const { default: Workspace } = await vite.ssrLoadModule('/src/components/Workspace.tsx')
   const html = renderToStaticMarkup(createElement(Workspace, {
-    locale: 'zh', onLocaleChange: () => {}, onSignOut: () => {}, session: { email: 'sirui.chen@stardust.ai', route: 'home' },
+    locale: 'en', onLocaleChange: () => {}, onSignOut: () => {}, session: { email: 'sirui.chen@stardust.ai', route: 'home' },
   }))
 
-  assert.doesNotMatch(html, /连接你的工作应用/)
-  assert.match(html, /正在加载最近事件…/)
+  assert.match(html, />Message</)
+  assert.match(html, />Task</)
+  assert.match(html, /Loading messages…/)
+  assert.doesNotMatch(html, /Welcome back|Loading recent events|正在加载最近事件/)
 })
 
 test('workspace renders FeedbackWorkspace instead of the feedback placeholder', async () => {

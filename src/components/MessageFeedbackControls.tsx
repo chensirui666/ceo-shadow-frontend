@@ -1,13 +1,15 @@
 import type { FormEvent, MouseEvent } from 'react'
+import type { MessageCopy } from '../content/translations.ts'
 import type { MessageFeedback } from '../messageState.ts'
 
 type MessageFeedbackControlsProps = {
+  copy: MessageCopy['feedbackControls']
   id: string
   onFeedback: (id: string, feedback: MessageFeedback) => void
   stopPropagation?: boolean
 }
 
-export function MessageFeedbackControls({ id, onFeedback, stopPropagation = false }: MessageFeedbackControlsProps) {
+export function MessageFeedbackControls({ copy, id, onFeedback, stopPropagation = false }: MessageFeedbackControlsProps) {
   const stop = (event: MouseEvent<HTMLSpanElement>) => { if (stopPropagation) event.stopPropagation() }
   const submitDownvote = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -18,7 +20,7 @@ export function MessageFeedbackControls({ id, onFeedback, stopPropagation = fals
   }
 
   return <span className="message-feedback-controls" onClick={stop}>
-    <button aria-label="点赞" onClick={() => onFeedback(id, { rating: 'up', reason: '有帮助。' })} type="button">点赞</button>
-    <details><summary>点踩</summary><form onSubmit={submitDownvote}><label>反馈原因<input aria-label="反馈原因" name="reason" required /></label><button type="submit">提交反馈</button></form></details>
+    <button aria-label={copy.upvote} onClick={() => onFeedback(id, { rating: 'up', reason: copy.upvoteReason })} type="button">{copy.upvote}</button>
+    <details><summary>{copy.downvote}</summary><form onSubmit={submitDownvote}><label>{copy.reason}<input aria-label={copy.reason} name="reason" required /></label><button type="submit">{copy.submit}</button></form></details>
   </span>
 }

@@ -2,6 +2,7 @@ import type { Locale, Route } from '../appState.ts'
 import type { FeedbackRange, FeedbackSentiment, FeedbackSource, FeedbackTrendPoint } from '../feedbackState.ts'
 import type { ActivityHour, HomeOutcome, HomeSource, HomeStatus, OperatingMode } from '../homeState.ts'
 import type { MemorySource } from '../memoryState.ts'
+import type { MessageSource, MessageStatus } from '../messageState.ts'
 import type { ConnectorId, ConnectorStatus, SettingsSection } from '../settingsState.ts'
 
 type PageCopy = [string, string, string]
@@ -93,6 +94,48 @@ export type HomeCopy = {
   confirmation: { title: (mode: OperatingMode) => string; body: (mode: OperatingMode) => string; confirm: (mode: OperatingMode) => string }
 }
 
+export type MessageCopy = {
+  loading: string
+  error: string
+  empty: string
+  dateLocale: string
+  status: Record<MessageStatus | 'all', string>
+  sources: Record<MessageSource, string>
+  list: {
+    title: string
+    subtitle: string
+    statusNavigation: string
+    label: string
+    columns: { statusTime: string; metadata: string; question: string; handling: string; actions: string }
+    confirm: string
+    skip: string
+    filteredEmpty: string
+    quick: { label: string; title: string; filter: (status: string) => string; messages: (count: number) => string; sources: (count: number) => string }
+  }
+  detail: {
+    back: string
+    question: string
+    rationale: string
+    result: string
+    tasks: string
+    feedback: string
+    feedbackPending: string
+    liked: string
+    disliked: (reason: string) => string
+    references: string
+    actions: string
+    noActions: string
+    information: string
+    sender: string
+    source: string
+    category: string
+    time: string
+    taskSummary: string
+    timeline: string
+  }
+  feedbackControls: { upvote: string; upvoteReason: string; downvote: string; reason: string; submit: string }
+}
+
 type OnboardingCopy = {
   progressLabel: string
   steps: [{ label: string; description: string }, { label: string; description: string }, { label: string; description: string }, { label: string; description: string }]
@@ -164,6 +207,7 @@ export type Translation = {
     accountMenu: string
     signOut: string
     home: HomeCopy
+    message: MessageCopy
     onboarding: OnboardingCopy
     feedback: FeedbackCopy
     tasks: TasksCopy
@@ -208,7 +252,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday work scene',
     },
     workspace: {
-      nav: { home: 'Home', tasks: 'Projects', memory: 'Memory', feedback: 'Feedback', settings: 'Settings' },
+      nav: { home: 'Message', tasks: 'Task', memory: 'Memory', feedback: 'Feedback', settings: 'Settings' },
       primaryNavigation: 'Primary navigation',
       content: (label: string) => `${label} content`,
       greeting: (name: string) => `Welcome back, ${name}`,
@@ -242,6 +286,22 @@ export const translations: Record<Locale, Translation> = {
         feedback: { title: 'Your feedback', matched: 'Matches me', adjust: 'Needs adjustment', placeholder: 'What should be different next time?', save: 'Save feedback', saved: 'Feedback recorded', recipientTitle: 'Recipient feedback', recipientQuestion: 'Did this reply resolve your question?', helpful: 'Helpful', unresolved: 'Not resolved', recipientPending: 'Recipient feedback will appear here when it is available.' },
         actions: { send: 'Send', cancel: 'Cancel', retry: 'Retry', goToSettings: 'Go to Settings', clearSource: 'View all apps' },
         confirmation: { title: (mode) => ({ active: 'Start Friday?', trial: 'Use Try mode?', paused: 'Pause Friday?' })[mode], body: (mode) => ({ active: 'This local demo only changes the displayed mode. Real sending still requires backend gates.', trial: 'Future replies will stay available for your review and will not be sent.', paused: 'Friday will stop processing new messages until you start or try again.' })[mode], confirm: (mode) => ({ active: 'Start Friday', trial: 'Use Try mode', paused: 'Pause Friday' })[mode] },
+      },
+      message: {
+        loading: 'Loading messages…', error: 'Messages could not be loaded.', empty: 'No messages need attention yet.', dateLocale: 'en-US',
+        status: { all: 'All', pending: 'Pending', processing: 'Processing', 'needs-confirmation': 'Needs confirmation', processed: 'Processed', skipped: 'Skipped', failed: 'Failed' },
+        sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
+        list: {
+          title: 'Message', subtitle: 'See what Friday is handling, what needs your confirmation, and what is complete.', statusNavigation: 'Message status', label: 'Message list',
+          columns: { statusTime: 'Status and time', metadata: 'Subject / source / category', question: 'Question', handling: "Friday's handling", actions: 'Actions' },
+          confirm: 'Confirm', skip: 'Skip', filteredEmpty: 'No messages match this status.',
+          quick: { label: 'Quick overview', title: 'Quick overview', filter: (status) => `Current filter: ${status}`, messages: (count) => `${count} message${count === 1 ? '' : 's'}`, sources: (count) => `${count} source${count === 1 ? '' : 's'}` },
+        },
+        detail: {
+          back: 'Back to Message', question: 'Question', rationale: 'Reasoning', result: 'Handling result', tasks: 'Related Task', feedback: 'Feedback', feedbackPending: 'Feedback is available after handling is complete.', liked: 'Liked', disliked: (reason) => `Disliked: ${reason}`, references: 'Supporting context and materials',
+          actions: 'Actions', noActions: 'No action is needed from you.', information: 'Message information', sender: 'Sender', source: 'Source', category: 'Category', time: 'Time', taskSummary: 'Task summary', timeline: 'Activity timeline',
+        },
+        feedbackControls: { upvote: 'Like', upvoteReason: 'Helpful.', downvote: 'Dislike', reason: 'Feedback reason', submit: 'Submit feedback' },
       },
       onboarding: {
         progressLabel: 'Onboarding progress', steps: [{ label: 'Connect work sources', description: 'Choose the work sources Friday can use.' }, { label: 'Build work Memory', description: 'Confirm the scope for your first work Memory.' }, { label: 'Confirm work style', description: 'Review Friday’s draft of your work style.' }, { label: 'Try it out', description: 'Preview one reply before formal use.' }], welcome: { eyebrow: 'Welcome to Friday', storyTitle: 'Ready to meet your work twin?', title: 'Set up in 4 steps', duration: 'Estimated time: 3 min', start: 'Start setup', dismiss: 'Close welcome dialog', memoryAlt: 'Memory overview' }, stepKicker: (step) => `Step ${step} of 4`, actions: { cancel: 'Cancel', continue: 'Continue' }, support: { apps: { title: 'Supported work apps', comingSoon: 'Coming soon' }, security: { title: 'Security & permissions', points: ['All content is previewed locally on your device.', 'We never access data without your permission.', 'You stay in control. Approval before anything is sent.'], learnMore: 'Learn more about security' }, teams: { title: 'Teams that use Friday', subtitle: 'Trusted by teams to work smarter, together.', segments: ['Product', 'Operations', 'Management', 'Marketing'], detail: 'Join fast-growing teams improving clarity and collaboration with Friday.', stories: 'See customer stories' } },
@@ -409,7 +469,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday 工作场景',
     },
     workspace: {
-      nav: { home: '首页', tasks: '项目', memory: '记忆', feedback: '反馈', settings: '设置' },
+      nav: { home: 'Message', tasks: 'Task', memory: '记忆', feedback: '反馈', settings: '设置' },
       primaryNavigation: '主要导航',
       content: (label: string) => `${label}内容`,
       greeting: (name: string) => `欢迎回来，${name}`,
@@ -443,6 +503,22 @@ export const translations: Record<Locale, Translation> = {
         feedback: { title: '内部反馈', matched: '符合我', adjust: '需要调整', placeholder: '哪里不对、以后应怎样处理或表达？', save: '保存反馈', saved: '反馈已记录', recipientTitle: '收件人反馈', recipientQuestion: '这条回复是否解决了你的问题？', helpful: '有帮助', unresolved: '未解决', recipientPending: '收件人反馈可用后会在这里展示。' },
         actions: { send: '发送', cancel: '取消', retry: '重试', goToSettings: '前往设置', clearSource: '查看全部应用' },
         confirmation: { title: (mode) => ({ active: '启动 Friday？', trial: '切换到尝试模式？', paused: '暂停 Friday？' })[mode], body: (mode) => ({ active: '此本地演示只会改变显示的运行状态；真实发送仍需要后端门禁。', trial: '后续回复只供你查看，不会发送。', paused: 'Friday 将停止处理新消息，直到你再次启动或尝试。' })[mode], confirm: (mode) => ({ active: '启动 Friday', trial: '切换到尝试', paused: '暂停 Friday' })[mode] },
+      },
+      message: {
+        loading: '正在加载消息…', error: '消息暂时无法加载。', empty: '还没有需要处理的消息。', dateLocale: 'zh-CN',
+        status: { all: '全部', pending: '待处理', processing: '处理中', 'needs-confirmation': '待确认', processed: '已处理', skipped: '已跳过', failed: '处理失败' },
+        sources: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' },
+        list: {
+          title: 'Message', subtitle: '集中查看 Friday 正在处理、等待你确认和已经完成的事项。', statusNavigation: 'Message 状态', label: 'Message 列表',
+          columns: { statusTime: '状态与时间', metadata: '对象／来源／类别', question: '用户问题', handling: 'Friday 的处理', actions: '操作' },
+          confirm: '确认', skip: '跳过', filteredEmpty: '这里还没有符合当前状态的消息。',
+          quick: { label: '快捷概览', title: '快捷概览', filter: (status) => `当前筛选：${status}`, messages: (count) => `消息 ${count} 条`, sources: (count) => `来源 ${count} 个` },
+        },
+        detail: {
+          back: '返回 Message', question: '用户问题', rationale: '判断依据', result: '回答／处理结果', tasks: '关联 Task', feedback: '反馈', feedbackPending: '处理完成后可反馈。', liked: '已点赞', disliked: (reason) => `点踩：${reason}`, references: '处理依据与材料',
+          actions: '操作', noActions: '当前没有需要你执行的操作。', information: 'Message 信息', sender: '发送人', source: '来源', category: '类别', time: '时间', taskSummary: 'Task 汇总', timeline: '活动时间线',
+        },
+        feedbackControls: { upvote: '点赞', upvoteReason: '有帮助。', downvote: '点踩', reason: '反馈原因', submit: '提交反馈' },
       },
       onboarding: {
         progressLabel: '引导进度', steps: [{ label: '连接工作来源', description: '选择 Friday 可以使用的工作来源。' }, { label: '建立工作记忆', description: '确认范围，建立第一份工作记忆。' }, { label: '确认工作风格', description: '检查 Friday 提炼出的工作方式。' }, { label: '试运行', description: '先预览一条仅在本会话显示的回复。' }], welcome: { eyebrow: '欢迎使用 Friday', storyTitle: '准备好认识你的工作分身了吗？', title: '4 步完成配置', duration: '预计耗时 3 分钟', start: '开始配置', dismiss: '关闭欢迎弹窗', memoryAlt: '工作记忆概览' }, stepKicker: (step) => `第 ${step} 步，共 4 步`, actions: { cancel: '取消', continue: '继续' }, support: { apps: { title: '支持的工作应用', comingSoon: '即将支持' }, security: { title: '安全与权限', points: ['所有内容均在你的设备上本地预览。', '未经你的许可，我们不会访问数据。', '控制权始终在你手中。任何内容发送前都需批准。'], learnMore: '了解更多安全信息' }, teams: { title: '正在使用 Friday 的团队', subtitle: '深受团队信赖，让工作更聪明、更高效。', segments: ['产品', '运营', '管理', '市场'], detail: '加入快速成长的团队，借助 Friday 提升清晰度与协作效率。', stories: '查看客户故事' } },

@@ -6,14 +6,15 @@ import type { Locale, Route, Session } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import { createHomeService } from '../homeService.ts'
 import { createDemoHomeSnapshot } from '../homeState.ts'
+import { createMessageService } from '../messageService.ts'
 import { createOnboardingState, createTrialEvent, needsOnboarding } from '../onboardingState.ts'
 import type { OnboardingState } from '../onboardingState.ts'
 import { hasSeenOnboardingWelcome, markOnboardingWelcomeSeen, saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
 import FeedbackWorkspace from './FeedbackWorkspace.tsx'
-import HomeWorkspace from './HomeWorkspace.tsx'
 import MemoryWorkspace from './MemoryWorkspace.tsx'
+import MessageWorkspace from './MessageWorkspace.tsx'
 import OnboardingHome from './OnboardingHome.tsx'
 import SettingsWorkspace from './SettingsWorkspace.tsx'
 import Brand from './Brand.tsx'
@@ -43,6 +44,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const [onboardingState, setOnboardingState] = useState(() => createOnboardingState())
   const [welcomeOpen, setWelcomeOpen] = useState(() => typeof window === 'undefined' || !hasSeenOnboardingWelcome(window.localStorage, session.email))
   const sessionHomeService = useRef(createHomeService(createDemoHomeSnapshot(new Date(), locale)))
+  const [sessionMessageService] = useState(createMessageService)
   const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
   const [tasksListRequest, setTasksListRequest] = useState(0)
   const exitDialog = useOverlayState()
@@ -128,8 +130,8 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       </aside>
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
-        {!(route === 'home' && onboarding) && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
-          <div className="workspace-header-title"><h1>{route === 'home' ? copy.greeting(name) : tasksDetailHeader?.title ?? currentLabel}</h1>{route === 'tasks' && tasksDetailHeader && <span className={`task-status task-status-${tasksDetailHeader.status}`}>{copy.tasks.projectStatus[tasksDetailHeader.status]}</span>}</div>
+        {route !== 'home' && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
+          <div className="workspace-header-title"><h1>{tasksDetailHeader?.title ?? currentLabel}</h1>{route === 'tasks' && tasksDetailHeader && <span className={`task-status task-status-${tasksDetailHeader.status}`}>{copy.tasks.projectStatus[tasksDetailHeader.status]}</span>}</div>
         </header>}
 
         {route === 'feedback' ? (
@@ -139,7 +141,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         ) : route === 'home' ? (
           onboarding
             ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onOpenMemory={() => goTo('memory')} onStateChange={setOnboardingState} onWelcomeDismiss={dismissWelcome} welcomeOpen={welcomeOpen} />
-            : <HomeWorkspace locale={locale} onOpenSettings={openSettings} service={sessionHomeService.current} />
+            : <MessageWorkspace copy={copy.message} service={sessionMessageService} />
         ) : route === 'tasks' ? (
           <TasksWorkspace currentUser={name} locale={locale} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />
         ) : (
