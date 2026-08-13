@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { after, test } from 'node:test'
 import { createElement, isValidElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -118,6 +119,30 @@ test('MessageList sidebar uses component filters and changes its summary range',
   assert.equal(openedSettings, 1)
 })
 
+test('MessageDetail renders auditable A-to-E cards, dynamic artifacts, task state, source evidence, and a staged timeline', async () => {
+  const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
+  const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.id === 'delivery-commitment')!
+  const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
+
+  for (const heading of ['A. 原始问题', 'B. Friday 的判断依据', 'C. 回答／处理结果', 'D. 关联 Task', 'E. 反馈']) assert.match(html, new RegExp(heading))
+  assert.match(html, /message-detail-original-source/)
+  assert.match(html, /交付资源与排期核对\.xlsx/)
+  assert.match(html, /进行中/)
+  assert.match(html, /已准备回复草稿/)
+  assert.match(html, /aria-label="点赞"/)
+  assert.match(html, /message-detail-information-row/)
+  assert.match(html, /message-detail-timeline-stage-current/)
+})
+
+test('Message styles center row content, separate status from time, and style the detail audit records', () => {
+  const css = readFileSync(new URL('./index.css', import.meta.url), 'utf8')
+
+  assert.match(css, /\.message-list-open\s*\{[^}]*align-items:\s*center;/)
+  assert.match(css, /\.message-list-status\s*\{[^}]*gap:\s*12px;/)
+  assert.match(css, /\.message-list-status-dot\s*\{[^}]*translateY\(3px\)/)
+  for (const className of ['message-detail-original-source', 'message-detail-deliverables', 'message-detail-task-status', 'message-detail-information-row', 'message-detail-timeline', 'message-detail-feedback']) assert.match(css, new RegExp(`\\.${className}`))
+})
+
 test('MessageDetail reads in decision order and offers result feedback plus a collapsed material section', async () => {
   const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
   const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.status === 'processed')!
@@ -174,7 +199,7 @@ test('Message interactions filter, open, decide, and submit only a non-blank dow
   assert.equal(find(controls, (element) => element.type === 'input').props.required, true)
 
   const pendingHtml = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message: pending, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
-  assert.doesNotMatch(pendingHtml, /点赞|点踩/)
+  assert.match(pendingHtml, /点赞|点踩/)
 })
 
 test('English Message chrome does not leak static Chinese copy', async () => {
@@ -191,7 +216,7 @@ test('English Message chrome does not leak static Chinese copy', async () => {
     onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {},
   }))
 
-  for (const label of ['Message', 'All', 'Needs confirmation', 'Status and time', 'Question', 'Actions', 'Filters', 'Activity summary', 'Make Friday smarter', 'Back to Message', 'Reasoning', 'Handling result', 'Message information', 'Activity timeline']) assert.match(`${list}${detail}`, new RegExp(label))
+  for (const label of ['Message', 'All', 'Needs confirmation', 'Status and time', 'Question', 'Actions', 'Filters', 'Activity summary', 'Make Friday smarter', 'Back to Message', 'Original request', "Friday(?:'|&#x27;)s judgment basis", 'Answer / handling result', 'Message information', 'Activity timeline']) assert.match(`${list}${detail}`, new RegExp(label))
   assert.match(`${list}${detail}`, /Friday(?:'|&#x27;)s handling/)
-  assert.doesNotMatch(`${list}${detail}`, /<h1[^>]*>消息<|aria-label="消息状态"|>全部 6<|>状态与时间<|>对象／来源／类别<|>用户问题<|>Friday 的处理<|>快捷概览<|>返回消息<|>判断依据<|>回答／处理结果<|>反馈原因<|>提交反馈<|>处理依据与材料<|>Message 信息<|>活动时间线</)
+  assert.doesNotMatch(`${list}${detail}`, /<h1[^>]*>消息<|aria-label="消息状态"|>全部 6<|>状态与时间<|>对象／来源／类别<|>用户问题<|>Friday 的处理<|>快捷概览<|>返回消息<|>反馈原因<|>提交反馈<|>处理依据与材料<|>Message 信息<|>活动时间线</)
 })

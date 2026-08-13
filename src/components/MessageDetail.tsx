@@ -1,8 +1,8 @@
 import { Button } from '@heroui/react'
-import { Check, SkipForward } from 'lucide-react'
-import { canProvideMessageFeedback } from '../messageState.ts'
+import { BadgeInfo, Check, Clock, FileCode2, FileSpreadsheet, FileText, ListChecks, MessageSquare, Scale, SkipForward, Sparkles } from 'lucide-react'
+import { connectorLogos, onboardingSupplementalLogos } from '../content/connectorLogos.ts'
 import type { MessageCopy } from '../content/translations.ts'
-import type { Message, MessageFeedback } from '../messageState.ts'
+import type { Message, MessageFeedback, MessageSource } from '../messageState.ts'
 import { MessageFeedbackControls } from './MessageFeedbackControls.tsx'
 
 type MessageDetailProps = {
@@ -14,22 +14,40 @@ type MessageDetailProps = {
   onSkip: (id: string) => void
 }
 
+const sourceIcons: Record<MessageSource, string> = {
+  dingtalk: connectorLogos.dingtalk,
+  feishu: connectorLogos.feishu,
+  teams: connectorLogos.teams,
+  slack: onboardingSupplementalLogos.slack,
+  wecom: onboardingSupplementalLogos.wecom,
+  discord: onboardingSupplementalLogos.discord,
+}
+
+const detailTime = (value: string, locale: string) => new Intl.DateTimeFormat(locale, {
+  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
+}).format(new Date(value))
+
 export default function MessageDetail({ copy, message, onBack, onConfirm, onFeedback, onSkip }: MessageDetailProps) {
   const canDecide = message.status === 'needs-confirmation'
+  const sourceIcon = sourceIcons[message.source]
+  const receivedTime = detailTime(message.receivedAt, copy.dateLocale)
   return <section aria-labelledby="message-detail-title" className="message-detail">
-    <header className="message-detail-header"><Button className="message-detail-back" onPress={onBack} type="button" variant="ghost">{copy.detail.back}</Button><div className="message-detail-title"><h1 id="message-detail-title">{message.subject}</h1><span className={`message-detail-status message-detail-status-${message.status}`}>{copy.status[message.status]}</span></div><div className="message-detail-meta"><span><strong>{copy.detail.sender}</strong>{message.sender}</span><span><strong>{copy.detail.source}</strong>{copy.sources[message.source]}</span><span><strong>{copy.detail.category}</strong>{copy.categories[message.category]}</span><span><strong>{copy.detail.time}</strong><time dateTime={message.receivedAt}>{new Date(message.receivedAt).toLocaleString(copy.dateLocale)}</time></span></div></header>
+    <header className="message-detail-header"><Button className="message-detail-back" onPress={onBack} type="button" variant="ghost">{copy.detail.back}</Button><div className="message-detail-title"><h1 id="message-detail-title">{message.subject}</h1><span className={`message-detail-status message-detail-status-${message.status}`}>{copy.status[message.status]}</span></div><div className="message-detail-meta"><span><strong>{copy.detail.sender}</strong>{message.sender}</span><span><strong>{copy.detail.source}</strong>{copy.sources[message.source]}</span><span><strong>{copy.detail.category}</strong>{copy.categories[message.category]}</span><span><strong>{copy.detail.time}</strong><time dateTime={message.receivedAt}>{receivedTime}</time></span></div></header>
     <div className="message-detail-layout"><main className="message-detail-reading">
-      <section className="message-detail-card"><h2>{copy.detail.question}</h2><p>{message.question}</p></section>
-      <section className="message-detail-card"><h2>{copy.detail.rationale}</h2><p>{message.rationale}</p></section>
-      <section className="message-detail-card message-detail-result"><h2>{copy.detail.result}</h2><p>{message.result}</p></section>
-      <section className="message-detail-card"><h2>{copy.detail.tasks}</h2><p>{message.taskSummary}</p></section>
-      <section className="message-detail-card"><h2>{copy.detail.feedback}</h2>{canProvideMessageFeedback(message) ? <MessageFeedbackControls copy={copy.feedbackControls} id={message.id} onFeedback={onFeedback} /> : <p>{copy.detail.feedbackPending}</p>}{message.feedback.map((feedback, index) => <p key={`${feedback.rating}-${index}`}>{feedback.rating === 'up' ? copy.detail.liked : copy.detail.disliked(feedback.reason)}</p>)}</section>
+      <section className="message-detail-card message-detail-original"><h2><MessageSquare aria-hidden="true" />A. {copy.detail.question}</h2><p>{message.question}</p><small className="message-detail-original-source"><img alt="" src={sourceIcon} />{copy.detail.originalSource(copy.sources[message.source], message.sender, receivedTime)}</small></section>
+      <section className="message-detail-card message-detail-rationale"><h2><Scale aria-hidden="true" />B. {copy.detail.rationale}</h2><p>{message.rationale}</p></section>
+      <section className="message-detail-card message-detail-result"><h2><Sparkles aria-hidden="true" />C. {copy.detail.result}</h2><p>{message.result}</p>{message.deliverables.length > 0 && <ul className="message-detail-deliverables">{message.deliverables.map((deliverable) => {
+        const DeliverableIcon = deliverable.format === 'xlsx' ? FileSpreadsheet : deliverable.format === 'md' ? FileCode2 : FileText
+        return <li key={deliverable.name}><DeliverableIcon aria-hidden="true" /><span><strong>{deliverable.name}</strong><small>{deliverable.format.toUpperCase()} · {deliverable.size}</small></span></li>
+      })}</ul>}</section>
+      <section className="message-detail-card message-detail-tasks"><h2><ListChecks aria-hidden="true" />D. {copy.detail.tasks}</h2>{message.relatedTasks.length > 0 ? <ul>{message.relatedTasks.map((task) => <li key={task.title}><span>{task.title}</span><strong className={`message-detail-task-status message-detail-task-status-${task.status}`}>{copy.detail.taskStatus[task.status]}</strong></li>)}</ul> : <p>{message.taskSummary}</p>}</section>
+      <section className="message-detail-card message-detail-feedback"><h2><MessageSquare aria-hidden="true" />E. {copy.detail.feedback}</h2><MessageFeedbackControls copy={copy.feedbackControls} id={message.id} onFeedback={onFeedback} />{message.feedback.map((feedback, index) => <p key={`${feedback.rating}-${index}`}>{feedback.rating === 'up' ? copy.detail.liked : copy.detail.disliked(feedback.reason)}</p>)}</section>
       <details className="message-detail-references"><summary>{copy.detail.references}</summary><ul>{message.references.map((reference) => <li key={reference}>{reference}</li>)}</ul></details>
     </main><aside className="message-detail-aside">
       <section><h2>{copy.detail.actions}</h2>{canDecide ? <><Button className="message-detail-action-confirm" onPress={() => onConfirm(message.id)} type="button"><Check aria-hidden="true" />{copy.list.confirm}</Button><Button className="message-detail-action-skip" onPress={() => onSkip(message.id)} type="button" variant="secondary"><SkipForward aria-hidden="true" />{copy.list.skip}</Button></> : <p>{copy.detail.noActions}</p>}</section>
-      <section><h2>{copy.detail.information}</h2><p><strong>{copy.detail.sender}</strong> {message.sender}</p><p><strong>{copy.detail.source}</strong> {copy.sources[message.source]}</p><p><strong>{copy.detail.category}</strong> {copy.categories[message.category]}</p><p><strong>{copy.detail.time}</strong> <time dateTime={message.receivedAt}>{new Date(message.receivedAt).toLocaleString(copy.dateLocale)}</time></p></section>
+      <section className="message-detail-information"><h2><BadgeInfo aria-hidden="true" />{copy.detail.information}</h2><dl><div className="message-detail-information-row"><dt>{copy.detail.object}</dt><dd>{message.sender}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.source}</dt><dd><img alt="" src={sourceIcon} />{copy.sources[message.source]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.category}</dt><dd>{copy.categories[message.category]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.status}</dt><dd className={`message-detail-info-status message-detail-info-status-${message.status}`}><i aria-hidden="true" />{copy.status[message.status]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.received}</dt><dd><time dateTime={message.receivedAt}>{receivedTime}</time></dd></div></dl></section>
       <section><h2>{copy.detail.taskSummary}</h2><p>{message.taskSummary}</p></section>
-      <section><h2>{copy.detail.timeline}</h2><ol>{message.timeline.map((item) => <li key={item}>{item}</li>)}</ol></section>
+      <section><h2><Clock aria-hidden="true" />{copy.detail.timeline}</h2><ol className="message-detail-timeline">{message.timeline.map((item) => <li className={`message-detail-timeline-stage-${item.state}`} key={item.label}><strong>{item.label}</strong><time dateTime={item.occurredAt}>{detailTime(item.occurredAt, copy.dateLocale)}</time></li>)}</ol></section>
     </aside></div>
   </section>
 }

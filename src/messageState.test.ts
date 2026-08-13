@@ -54,7 +54,18 @@ test('confirm and skip only resolve messages awaiting confirmation without chang
   assert.equal(messageState.confirmMessage(snapshot, processing.id).messages.find((message) => message.id === processing.id)?.status, 'processing')
 })
 
-test('feedback accepts only an eligible completed result and a non-blank downvote reason', () => {
+test('Message records preserve actual deliverable types, linked Task state, staged timeline, and feedback before resolution', () => {
+  const snapshot = messageState.createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
+  const message = snapshot.messages.find((item) => item.id === 'delivery-commitment')!
+  const updated = messageState.recordMessageFeedback(snapshot, message.id, { rating: 'down', reason: '需要先确认资源。' })
+
+  assert.deepEqual(message.deliverables.map((item) => item.format), ['xlsx'])
+  assert.deepEqual(message.relatedTasks.map((item) => item.status), ['open'])
+  assert.deepEqual(message.timeline.map((item) => item.state), ['completed', 'completed', 'current'])
+  assert.deepEqual(updated.messages.find((item) => item.id === message.id)?.feedback, [{ rating: 'down', reason: '需要先确认资源。' }])
+})
+
+test('feedback accepts any Message rating with a non-blank downvote reason without rewriting handling', () => {
   const snapshot = messageState.createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
   const message = snapshot.messages.find((item) => item.status === 'processed')!
   const updated = messageState.recordMessageFeedback(snapshot, message.id, { rating: 'down', reason: '处理结果需要先确认排期。' })
@@ -67,5 +78,5 @@ test('feedback accepts only an eligible completed result and a non-blank downvot
   assert.equal(result.result, message.result)
   assert.equal(messageState.recordMessageFeedback(snapshot, message.id, { rating: 'down', reason: '' }), snapshot)
   assert.equal(messageState.recordMessageFeedback(snapshot, message.id, { rating: 'down', reason: '   ' }), snapshot)
-  assert.equal(messageState.recordMessageFeedback(snapshot, pending.id, { rating: 'up', reason: '有帮助。' }), snapshot)
+  assert.deepEqual(messageState.recordMessageFeedback(snapshot, pending.id, { rating: 'up', reason: '有帮助。' }).messages.find((item) => item.id === pending.id)?.feedback, [{ rating: 'up', reason: '有帮助。' }])
 })

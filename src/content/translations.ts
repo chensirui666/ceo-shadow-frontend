@@ -128,15 +128,20 @@ export type MessageCopy = {
     feedbackPending: string
     liked: string
     disliked: (reason: string) => string
+    originalSource: (source: string, sender: string, time: string) => string
     references: string
     actions: string
     noActions: string
     information: string
+    object: string
     sender: string
     source: string
     category: string
+    status: string
     time: string
+    received: string
     taskSummary: string
+    taskStatus: { open: string; completed: string }
     timeline: string
   }
   feedbackControls: { upvote: string; upvoteReason: string; downvote: string; reason: string; submit: string }
@@ -310,8 +315,8 @@ export const translations: Record<Locale, Translation> = {
           },
         },
         detail: {
-          back: 'Back to Message', question: 'Question', rationale: 'Reasoning', result: 'Handling result', tasks: 'Related Task', feedback: 'Feedback', feedbackPending: 'Feedback is available after handling is complete.', liked: 'Liked', disliked: (reason) => `Disliked: ${reason}`, references: 'Supporting context and materials',
-          actions: 'Actions', noActions: 'No action is needed from you.', information: 'Message information', sender: 'Sender', source: 'Source', category: 'Category', time: 'Time', taskSummary: 'Task summary', timeline: 'Activity timeline',
+          back: 'Back to Message', question: 'Original request', rationale: "Friday's judgment basis", result: 'Answer / handling result', tasks: 'Related Task', feedback: 'Feedback', feedbackPending: 'Feedback is available after handling is complete.', liked: 'Liked', disliked: (reason) => `Disliked: ${reason}`, originalSource: (source, sender, time) => `${source} message from ${sender} · ${time}`, references: 'Supporting context and materials',
+          actions: 'Actions', noActions: 'No action is needed from you.', information: 'Message information', object: 'Object', sender: 'Sender', source: 'Source', category: 'Category', status: 'Status', time: 'Time', received: 'Received', taskSummary: 'Task summary', taskStatus: { open: 'Open', completed: 'Completed' }, timeline: 'Activity timeline',
         },
         feedbackControls: { upvote: 'Like', upvoteReason: 'Helpful.', downvote: 'Dislike', reason: 'Feedback reason', submit: 'Submit feedback' },
       },
@@ -533,8 +538,8 @@ export const translations: Record<Locale, Translation> = {
           },
         },
         detail: {
-          back: '返回 Message', question: '用户问题', rationale: '判断依据', result: '回答／处理结果', tasks: '关联 Task', feedback: '反馈', feedbackPending: '处理完成后可反馈。', liked: '已点赞', disliked: (reason) => `点踩：${reason}`, references: '处理依据与材料',
-          actions: '操作', noActions: '当前没有需要你执行的操作。', information: 'Message 信息', sender: '发送人', source: '来源', category: '类别', time: '时间', taskSummary: 'Task 汇总', timeline: '活动时间线',
+          back: '返回 Message', question: '原始问题', rationale: 'Friday 的判断依据', result: '回答／处理结果', tasks: '关联 Task', feedback: '反馈', feedbackPending: '处理完成后可反馈。', liked: '已点赞', disliked: (reason) => `点踩：${reason}`, originalSource: (source, sender, time) => `${source}消息来自${sender} · ${time}`, references: '处理依据与材料',
+          actions: '操作', noActions: '当前没有需要你执行的操作。', information: 'Message 信息', object: '对象', sender: '发送人', source: '来源', category: '类别', status: '状态', time: '时间', received: '收到时间', taskSummary: 'Task 汇总', taskStatus: { open: '进行中', completed: '已完成' }, timeline: '活动时间线',
         },
         feedbackControls: { upvote: '点赞', upvoteReason: '有帮助。', downvote: '点踩', reason: '反馈原因', submit: '提交反馈' },
       },
