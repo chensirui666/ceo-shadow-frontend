@@ -11,7 +11,7 @@ export type MessageFeedback = { rating: 'up' | 'down'; reason: string }
 export type MessageDeliverable = { name: string; format: 'xlsx' | 'pdf' | 'md'; size: string }
 export type MessageRelatedTask = { title: string; status: 'open' | 'completed' }
 export type MessageTimelineItem = { label: string; occurredAt: string; state: 'completed' | 'current' }
-export type MessageFilters = { source: MessageSource | 'all'; category: string; subject: string; sender: string }
+export type MessageFilters = { source: MessageSource | 'all'; category: string }
 export type Message = {
   id: string
   source: MessageSource
@@ -46,15 +46,13 @@ export const createDemoMessageSnapshot = (now = new Date()): MessageSnapshot => 
   ],
 })
 
-export const createDefaultMessageFilters = (): MessageFilters => ({ source: 'all', category: 'all', subject: 'all', sender: 'all' })
+export const createDefaultMessageFilters = (): MessageFilters => ({ source: 'all', category: 'all' })
 
 export const selectMessages = (snapshot: MessageSnapshot, status: MessageStatus | 'all', filters = createDefaultMessageFilters()): Message[] => (
   [...snapshot.messages
     .filter((message) => status === 'all' || message.status === status)
     .filter((message) => filters.source === 'all' || message.source === filters.source)
-    .filter((message) => filters.category === 'all' || message.category === filters.category)
-    .filter((message) => filters.subject === 'all' || message.subject === filters.subject)
-    .filter((message) => filters.sender === 'all' || message.sender === filters.sender)]
+    .filter((message) => filters.category === 'all' || message.category === filters.category)]
     .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))
 )
 

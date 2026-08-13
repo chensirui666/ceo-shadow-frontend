@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { messageService } from '../messageService.ts'
 import type { MessageCopy } from '../content/translations.ts'
 import { createDefaultMessageFilters } from '../messageState.ts'
-import type { MessageFeedback, MessageFilters, MessageSnapshot, MessageStatus, MessageSummaryRange } from '../messageState.ts'
+import type { MessageFeedback, MessageFilters, MessageRelatedTask, MessageSnapshot, MessageStatus, MessageSummaryRange } from '../messageState.ts'
 import type { MessageService } from '../messageService.ts'
 import MessageDetail from './MessageDetail.tsx'
 import MessageList from './MessageList.tsx'
@@ -16,6 +16,7 @@ type MessageWorkspaceContentProps = {
   onConfirm: (id: string) => void
   onFeedback: (id: string, feedback: MessageFeedback) => void
   onOpen: (id: string) => void
+  onOpenTasks?: (tasks: MessageRelatedTask[]) => void
   onSkip: (id: string) => void
   onStatusChange: (status: MessageStatus | 'all') => void
   filters?: MessageFilters
@@ -25,14 +26,14 @@ type MessageWorkspaceContentProps = {
   onSummaryRangeChange?: (range: MessageSummaryRange) => void
 }
 
-export function MessageWorkspaceContent({ copy, snapshot, status, selectedId, onBack, onConfirm, onFeedback, onOpen, onSkip, onStatusChange, filters = createDefaultMessageFilters(), onFiltersChange = () => {}, onOpenSettings, summaryRange = '7d', onSummaryRangeChange = () => {} }: MessageWorkspaceContentProps) {
+export function MessageWorkspaceContent({ copy, snapshot, status, selectedId, onBack, onConfirm, onFeedback, onOpen, onOpenTasks, onSkip, onStatusChange, filters = createDefaultMessageFilters(), onFiltersChange = () => {}, onOpenSettings, summaryRange = '7d', onSummaryRangeChange = () => {} }: MessageWorkspaceContentProps) {
   if (!snapshot.messages.length) return <section aria-live="polite" className="message-state"><p>{copy.empty}</p></section>
   const selectedMessage = snapshot.messages.find((message) => message.id === selectedId)
-  if (selectedMessage) return <MessageDetail copy={copy} message={selectedMessage} onBack={onBack} onConfirm={onConfirm} onFeedback={onFeedback} onSkip={onSkip} />
+  if (selectedMessage) return <MessageDetail copy={copy} message={selectedMessage} onBack={onBack} onConfirm={onConfirm} onFeedback={onFeedback} onOpenTasks={onOpenTasks} onSkip={onSkip} />
   return <MessageList copy={copy} filters={filters} messages={snapshot.messages} onConfirm={onConfirm} onFeedback={onFeedback} onFiltersChange={onFiltersChange} onOpen={onOpen} onOpenSettings={onOpenSettings} onSkip={onSkip} onStatusChange={onStatusChange} onSummaryRangeChange={onSummaryRangeChange} status={status} summaryRange={summaryRange} />
 }
 
-export default function MessageWorkspace({ copy, service = messageService, onOpenSettings }: { copy: MessageCopy; service?: MessageService; onOpenSettings?: () => void }) {
+export default function MessageWorkspace({ copy, service = messageService, onOpenSettings, onOpenTasks }: { copy: MessageCopy; service?: MessageService; onOpenSettings?: () => void; onOpenTasks?: (tasks: MessageRelatedTask[]) => void }) {
   const [snapshot, setSnapshot] = useState<MessageSnapshot | null>(null)
   const [status, setStatus] = useState<MessageStatus | 'all'>('all')
   const [filters, setFilters] = useState<MessageFilters>(createDefaultMessageFilters)
@@ -51,5 +52,5 @@ export default function MessageWorkspace({ copy, service = messageService, onOpe
 
   if (error) return <section aria-live="polite" className="message-state"><p>{copy.error}</p></section>
   if (!snapshot) return <section aria-live="polite" className="message-state"><p>{copy.loading}</p></section>
-  return <MessageWorkspaceContent copy={copy} filters={filters} onBack={() => setSelectedId(null)} onConfirm={(id) => update(service.confirm(id))} onFeedback={feedback} onFiltersChange={setFilters} onOpen={setSelectedId} onOpenSettings={onOpenSettings} onSkip={(id) => update(service.skip(id))} onStatusChange={setStatus} onSummaryRangeChange={setSummaryRange} selectedId={selectedId} snapshot={snapshot} status={status} summaryRange={summaryRange} />
+  return <MessageWorkspaceContent copy={copy} filters={filters} onBack={() => setSelectedId(null)} onConfirm={(id) => update(service.confirm(id))} onFeedback={feedback} onFiltersChange={setFilters} onOpen={setSelectedId} onOpenSettings={onOpenSettings} onOpenTasks={onOpenTasks} onSkip={(id) => update(service.skip(id))} onStatusChange={setStatus} onSummaryRangeChange={setSummaryRange} selectedId={selectedId} snapshot={snapshot} status={status} summaryRange={summaryRange} />
 }

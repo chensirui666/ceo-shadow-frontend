@@ -18,12 +18,12 @@ test('fixture has all six Message statuses and filtering and counts use the same
   assert.ok(snapshot.messages.every((message) => message.senderAvatar.startsWith('https://images.unsplash.com/')))
 })
 
-test('Message selection combines status with source, category, conversation, and sender filters', () => {
+test('Message selection combines status with only source and category filters', () => {
   const snapshot = messageState.createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
-  const filters = { source: 'feishu', category: 'chat', subject: '客户交付群', sender: '赵明' } as const
+  const filters = { source: 'feishu', category: 'chat' } as const
 
   assert.deepEqual(messageState.selectMessages(snapshot, 'needs-confirmation', filters).map((message) => message.id), ['delivery-commitment'])
-  assert.deepEqual(messageState.selectMessages(snapshot, 'all', { ...filters, sender: '李四' }).map((message) => message.id), [])
+  assert.deepEqual(messageState.selectMessages(snapshot, 'all', filters).map((message) => message.id), ['delivery-commitment', 'expired-connection'])
 })
 
 test('Activity range selection excludes Messages received before its selected period', () => {

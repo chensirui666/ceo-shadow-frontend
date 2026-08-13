@@ -114,17 +114,17 @@ test('MessageList sidebar uses component filters and changes its summary range',
     copy: translations.zh.workspace.message,
     status: 'all',
     onConfirm: () => {}, onFeedback: () => {}, onOpen: () => {}, onSkip: () => {}, onStatusChange: (status: string) => calls.push(status),
-    onFiltersChange: (filters: { source: string; category: string; subject: string; sender: string }) => filterChanges.push(filters), onOpenSettings: () => { openedSettings++ }, onSummaryRangeChange: (range: string) => rangeChanges.push(range),
+    onFiltersChange: (filters: { source: string; category: string }) => filterChanges.push(filters), onOpenSettings: () => { openedSettings++ }, onSummaryRangeChange: (range: string) => rangeChanges.push(range),
   })
   const aside = find(list, (element) => element.type === 'aside' && element.props.className === 'message-list-quick')
   const sections = findAll(aside, (element) => element.type === 'section')
 
   assert.deepEqual(sections.map((section) => section.props.className), ['message-list-filters', 'message-list-sources', 'message-list-summary', 'message-list-smarter'])
-  assert.deepEqual(findAll(sections[0], (element) => element.props.onSelectionChange).map((select) => select.props.label), ['全部来源', '全部类别', '全部会话', '全部发起人'])
+  assert.deepEqual(findAll(sections[0], (element) => element.props.onSelectionChange).map((select) => select.props.label), ['全部来源', '全部类别'])
   find(sections[0], (element) => element.props.onSelectionChange && element.props.label === '全部来源').props.onSelectionChange('feishu')
   find(sections[0], (element) => element.props.onPress && text(element) === '清除全部').props.onPress()
-  assert.deepEqual(filterChanges, [{ source: 'feishu', category: 'all', subject: 'all', sender: 'all' }, { source: 'all', category: 'all', subject: 'all', sender: 'all' }])
-  assert.deepEqual(calls, ['all'])
+  assert.deepEqual(filterChanges, [{ source: 'feishu', category: 'all' }, { source: 'all', category: 'all' }])
+  assert.deepEqual(calls, [])
   assert.deepEqual(findAll(sections[1], (element) => element.type === 'li').map(text), ['钉钉3', '飞书2', 'Teams1', 'Slack0', '企微0', 'Discord0'])
   assert.match(text(sections[2]), /过去 7 天/)
   assert.match(text(sections[2]), /消息总数6待确认1已处理1处理失败1/)
@@ -134,7 +134,7 @@ test('MessageList sidebar uses component filters and changes its summary range',
   assert.equal(openedSettings, 1)
 })
 
-test('MessageDetail renders auditable A-to-E cards, dynamic artifacts, task state, source evidence, and a staged timeline', async () => {
+test('MessageDetail renders auditable A-to-E cards, dynamic artifacts, task state, and source evidence', async () => {
   const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
   const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.id === 'delivery-commitment')!
   const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
@@ -143,10 +143,23 @@ test('MessageDetail renders auditable A-to-E cards, dynamic artifacts, task stat
   assert.match(html, /message-detail-original-source/)
   assert.match(html, /交付资源与排期核对\.xlsx/)
   assert.match(html, /进行中/)
-  assert.match(html, /已准备回复草稿/)
+  assert.match(html, /已准备回复客户的交付承诺草稿/)
   assert.match(html, /aria-label="点赞"/)
   assert.match(html, /message-detail-information-row/)
-  assert.match(html, /message-detail-timeline-stage-current/)
+  assert.match(html, /message-detail-task-summary-link/)
+  assert.match(html, /1 个 Task（1 个进行中）/)
+  assert.doesNotMatch(html, /活动时间线/)
+})
+
+test('MessageDetail task summary opens only the current Message relation', async () => {
+  const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
+  const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.id === 'delivery-commitment')!
+  const opened: unknown[] = []
+  const detail = MessageDetail({ copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onOpenTasks: (tasks: unknown) => opened.push(tasks), onSkip: () => {} })
+
+  find(detail, (element) => element.props.className === 'message-detail-task-summary-link').props.onPress()
+
+  assert.deepEqual(opened, [message.relatedTasks])
 })
 
 test('MessageDetail keeps rendering when a hot-reloaded session still holds a legacy Message record', async () => {
@@ -163,7 +176,7 @@ test('MessageDetail keeps rendering when a hot-reloaded session still holds a le
 
   assert.match(html, /C\. 回答／处理结果/)
   assert.match(html, /关联 Task：确认交付资源与最终排期/)
-  assert.match(html, /收到客户交付承诺询问/)
+  assert.match(html, /0 个 Task（0 个进行中）/)
 })
 
 test('Message styles center row content, separate status from time, and style the detail audit records', () => {
@@ -173,7 +186,7 @@ test('Message styles center row content, separate status from time, and style th
   assert.match(css, /\.message-list-status\s*\{[^}]*gap:\s*12px;/)
   assert.match(css, /\.message-list-status-dot\s*\{[^}]*translateY\(3px\)/)
   assert.match(css, /\.message-detail-status-needs-confirmation\s*\{[^}]*color:\s*var\(--status-pending-foreground\)/)
-  for (const className of ['message-detail-original-source', 'message-detail-deliverables', 'message-detail-task-status', 'message-detail-information-row', 'message-detail-timeline', 'message-detail-feedback']) assert.match(css, new RegExp(`\\.${className}`))
+  for (const className of ['message-detail-original-source', 'message-detail-deliverables', 'message-detail-task-status', 'message-detail-information-row', 'message-detail-task-summary-link', 'message-detail-feedback']) assert.match(css, new RegExp(`\\.${className}`))
 })
 
 test('MessageDetail reads in decision order and offers result feedback plus a collapsed material section', async () => {
@@ -188,7 +201,8 @@ test('MessageDetail reads in decision order and offers result feedback plus a co
   assert.match(html, /反馈原因/)
   assert.match(html, /提交反馈/)
   assert.match(html, /<details/)
-  for (const label of ['操作', 'Message 信息', 'Task 汇总', '活动时间线']) assert.match(html, new RegExp(label))
+  for (const label of ['操作', 'Message 信息', 'Task 汇总']) assert.match(html, new RegExp(label))
+  assert.doesNotMatch(html, /活动时间线/)
   assert.doesNotMatch(html, /思维链|技术日志/)
 })
 
@@ -251,7 +265,7 @@ test('English Message chrome does not leak static Chinese copy', async () => {
     onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {},
   }))
 
-  for (const label of ['Message', 'All', 'Needs confirmation', 'Status and time', 'Question', 'Actions', 'Filters', 'Activity summary', 'Make Friday smarter', 'Back to Message', 'Original request', "Friday(?:'|&#x27;)s judgment basis", 'Answer / handling result', 'Message information', 'Activity timeline']) assert.match(`${list}${detail}`, new RegExp(label))
+  for (const label of ['Message', 'All', 'Needs confirmation', 'Status and time', 'Question', 'Actions', 'Filters', 'Activity summary', 'Make Friday smarter', 'Back to Message', 'Original request', "Friday(?:'|&#x27;)s judgment basis", 'Answer / handling result', 'Message information', 'Task summary']) assert.match(`${list}${detail}`, new RegExp(label))
   assert.match(`${list}${detail}`, /Friday(?:'|&#x27;)s handling/)
   assert.doesNotMatch(`${list}${detail}`, /<h1[^>]*>消息<|aria-label="消息状态"|>全部 6<|>状态与时间<|>对象／来源／类别<|>用户问题<|>Friday 的处理<|>快捷概览<|>返回消息<|>反馈原因<|>提交反馈<|>处理依据与材料<|>Message 信息<|>活动时间线</)
 })

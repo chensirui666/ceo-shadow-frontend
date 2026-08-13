@@ -112,7 +112,7 @@ export type MessageCopy = {
     skip: string
     filteredEmpty: string
     aside: {
-      filters: { title: string; clear: string; source: string; category: string; subject: string; sender: string }
+      filters: { title: string; clear: string; source: string; category: string }
       sources: { title: string; apps: Record<'dingtalk' | 'feishu' | 'teams' | 'slack' | 'wecom' | 'discord', string> }
       activity: { title: string; rangeLabel: string; ranges: Record<MessageSummaryRange, string>; all: string; needsConfirmation: string; processed: string; failed: string }
       smarter: { title: string; body: string; action: string }
@@ -141,8 +141,8 @@ export type MessageCopy = {
     time: string
     received: string
     taskSummary: string
+    taskCount: (total: number, open: number) => string
     taskStatus: { open: string; completed: string }
-    timeline: string
   }
   feedbackControls: { upvote: string; upvoteReason: string; downvote: string; reason: string; submit: string }
 }
@@ -308,7 +308,7 @@ export const translations: Record<Locale, Translation> = {
           columns: { statusTime: 'Status and time', metadata: 'Subject / source / category', question: 'Question', handling: "Friday's handling", actions: 'Actions' },
           confirm: 'Confirm', skip: 'Skip', filteredEmpty: 'No messages match this status.',
           aside: {
-            filters: { title: 'Filters', clear: 'Clear all', source: 'All sources', category: 'All categories', subject: 'All conversations', sender: 'All senders' },
+            filters: { title: 'Filters', clear: 'Clear all', source: 'All sources', category: 'All categories' },
             sources: { title: 'Sources', apps: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams', slack: 'Slack', wecom: 'WeCom', discord: 'Discord' } },
             activity: { title: 'Activity summary', rangeLabel: 'Activity period', ranges: { '7d': 'Last 7 days', '30d': 'Last 30 days', all: 'All' }, all: 'Total messages', needsConfirmation: 'Needs confirmation', processed: 'Completed', failed: 'Failed' },
             smarter: { title: 'Make Friday smarter', body: 'Link more apps and set preferences to get better, more relevant help.', action: 'Go to settings' },
@@ -316,7 +316,7 @@ export const translations: Record<Locale, Translation> = {
         },
         detail: {
           back: 'Back to Message', question: 'Original request', rationale: "Friday's judgment basis", result: 'Answer / handling result', tasks: 'Related Task', feedback: 'Feedback', feedbackPending: 'Feedback is available after handling is complete.', liked: 'Liked', disliked: (reason) => `Disliked: ${reason}`, originalSource: (source, sender, time) => `${source} message from ${sender} · ${time}`, references: 'Supporting context and materials',
-          actions: 'Actions', noActions: 'No action is needed from you.', information: 'Message information', object: 'Object', sender: 'Sender', source: 'Source', category: 'Category', status: 'Status', time: 'Time', received: 'Received', taskSummary: 'Task summary', taskStatus: { open: 'Open', completed: 'Completed' }, timeline: 'Activity timeline',
+          actions: 'Actions', noActions: 'No action is needed from you.', information: 'Message information', object: 'Object', sender: 'Sender', source: 'Source', category: 'Category', status: 'Status', time: 'Time', received: 'Received', taskSummary: 'Task summary', taskCount: (total, open) => `${total} task${total === 1 ? '' : 's'} (${open} open)`, taskStatus: { open: 'Open', completed: 'Completed' },
         },
         feedbackControls: { upvote: 'Like', upvoteReason: 'Helpful.', downvote: 'Dislike', reason: 'Feedback reason', submit: 'Submit feedback' },
       },
@@ -531,7 +531,7 @@ export const translations: Record<Locale, Translation> = {
           columns: { statusTime: '状态与时间', metadata: '对象／来源／类别', question: '用户问题', handling: 'Friday 的处理', actions: '操作' },
           confirm: '确认', skip: '跳过', filteredEmpty: '这里还没有符合当前状态的消息。',
           aside: {
-            filters: { title: '筛选', clear: '清除全部', source: '全部来源', category: '全部类别', subject: '全部会话', sender: '全部发起人' },
+            filters: { title: '筛选', clear: '清除全部', source: '全部来源', category: '全部类别' },
             sources: { title: '来源', apps: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams', slack: 'Slack', wecom: '企微', discord: 'Discord' } },
             activity: { title: '处理概览', rangeLabel: '统计范围', ranges: { '7d': '过去 7 天', '30d': '过去一个月', all: '全部' }, all: '消息总数', needsConfirmation: '待确认', processed: '已处理', failed: '处理失败' },
             smarter: { title: '让 Friday 更聪明', body: '连接更多应用并完善偏好设置，让 Friday 提供更贴合的帮助。', action: '前往设置' },
@@ -539,7 +539,7 @@ export const translations: Record<Locale, Translation> = {
         },
         detail: {
           back: '返回 Message', question: '原始问题', rationale: 'Friday 的判断依据', result: '回答／处理结果', tasks: '关联 Task', feedback: '反馈', feedbackPending: '处理完成后可反馈。', liked: '已点赞', disliked: (reason) => `点踩：${reason}`, originalSource: (source, sender, time) => `${source}消息来自${sender} · ${time}`, references: '处理依据与材料',
-          actions: '操作', noActions: '当前没有需要你执行的操作。', information: 'Message 信息', object: '对象', sender: '发送人', source: '来源', category: '类别', status: '状态', time: '时间', received: '收到时间', taskSummary: 'Task 汇总', taskStatus: { open: '进行中', completed: '已完成' }, timeline: '活动时间线',
+          actions: '操作', noActions: '当前没有需要你执行的操作。', information: 'Message 信息', object: '对象', sender: '发送人', source: '来源', category: '类别', status: '状态', time: '时间', received: '收到时间', taskSummary: 'Task 汇总', taskCount: (total, open) => `${total} 个 Task（${open} 个进行中）`, taskStatus: { open: '进行中', completed: '已完成' },
         },
         feedbackControls: { upvote: '点赞', upvoteReason: '有帮助。', downvote: '点踩', reason: '反馈原因', submit: '提交反馈' },
       },

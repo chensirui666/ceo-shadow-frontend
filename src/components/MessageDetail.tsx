@@ -1,8 +1,8 @@
 import { Button } from '@heroui/react'
-import { BadgeInfo, Check, Clock, FileCode2, FileSpreadsheet, FileText, ListChecks, MessageSquare, Scale, SkipForward, Sparkles, UserRound } from 'lucide-react'
+import { BadgeInfo, Check, ChevronRight, Clock, FileCode2, FileSpreadsheet, FileText, ListChecks, MessageSquare, Scale, SkipForward, Sparkles, UserRound } from 'lucide-react'
 import { connectorLogos, onboardingSupplementalLogos } from '../content/connectorLogos.ts'
 import type { MessageCopy } from '../content/translations.ts'
-import type { Message, MessageFeedback, MessageSource, MessageTimelineItem } from '../messageState.ts'
+import type { Message, MessageFeedback, MessageRelatedTask, MessageSource } from '../messageState.ts'
 import { MessageFeedbackControls } from './MessageFeedbackControls.tsx'
 
 type MessageDetailProps = {
@@ -11,6 +11,7 @@ type MessageDetailProps = {
   onBack: () => void
   onConfirm: (id: string) => void
   onFeedback: (id: string, feedback: MessageFeedback) => void
+  onOpenTasks?: (tasks: MessageRelatedTask[]) => void
   onSkip: (id: string) => void
 }
 
@@ -29,13 +30,13 @@ const detailTime = (value: string, locale: string) => new Intl.DateTimeFormat(lo
 
 const metaLabel = (label: string, locale: string) => `${label}${locale === 'zh-CN' ? '：' : ':'}`
 
-export default function MessageDetail({ copy, message, onBack, onConfirm, onFeedback, onSkip }: MessageDetailProps) {
+export default function MessageDetail({ copy, message, onBack, onConfirm, onFeedback, onOpenTasks = () => {}, onSkip }: MessageDetailProps) {
   const canDecide = message.status === 'needs-confirmation'
   const sourceIcon = sourceIcons[message.source]
   const receivedTime = detailTime(message.receivedAt, copy.dateLocale)
   const deliverables = message.deliverables ?? []
   const relatedTasks = message.relatedTasks ?? []
-  const timeline = ((message.timeline as Array<MessageTimelineItem | string> | undefined) ?? []).map((item) => typeof item === 'string' ? { label: item, occurredAt: message.receivedAt, state: 'current' as const } : item)
+  const openTaskCount = relatedTasks.filter((task) => task.status === 'open').length
   return <section aria-labelledby="message-detail-title" className="message-detail">
     <header className="message-detail-header"><Button className="message-detail-back" onPress={onBack} type="button" variant="ghost">{copy.detail.back}</Button><div className="message-detail-title"><h1 id="message-detail-title">{message.subject}</h1><span className={`message-detail-status message-detail-status-${message.status}`}><i aria-hidden="true" className="message-detail-status-dot" />{copy.status[message.status]}</span></div><div className="message-detail-meta"><span className="message-detail-meta-item"><UserRound aria-hidden="true" /><strong>{metaLabel(copy.detail.object, copy.dateLocale)}</strong>{message.sender}</span><span className="message-detail-meta-item"><img alt="" src={sourceIcon} /><strong>{metaLabel(copy.detail.source, copy.dateLocale)}</strong>{copy.sources[message.source]}</span><span className="message-detail-meta-item"><MessageSquare aria-hidden="true" /><strong>{metaLabel(copy.detail.category, copy.dateLocale)}</strong>{copy.categories[message.category]}</span><span className="message-detail-meta-item"><Clock aria-hidden="true" /><strong>{metaLabel(copy.detail.received, copy.dateLocale)}</strong><time dateTime={message.receivedAt}>{receivedTime}</time></span></div></header>
     <div className="message-detail-layout"><main className="message-detail-reading">
@@ -51,8 +52,7 @@ export default function MessageDetail({ copy, message, onBack, onConfirm, onFeed
     </main><aside className="message-detail-aside">
       <section><h2>{copy.detail.actions}</h2>{canDecide ? <><Button className="message-detail-action-confirm" onPress={() => onConfirm(message.id)} type="button"><Check aria-hidden="true" />{copy.list.confirm}</Button><Button className="message-detail-action-skip" onPress={() => onSkip(message.id)} type="button" variant="secondary"><SkipForward aria-hidden="true" />{copy.list.skip}</Button></> : <p>{copy.detail.noActions}</p>}</section>
       <section className="message-detail-information"><h2><BadgeInfo aria-hidden="true" />{copy.detail.information}</h2><dl><div className="message-detail-information-row"><dt>{copy.detail.object}</dt><dd>{message.sender}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.source}</dt><dd><img alt="" src={sourceIcon} />{copy.sources[message.source]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.category}</dt><dd>{copy.categories[message.category]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.status}</dt><dd className={`message-detail-info-status message-detail-info-status-${message.status}`}><i aria-hidden="true" />{copy.status[message.status]}</dd></div><div className="message-detail-information-row"><dt>{copy.detail.received}</dt><dd><time dateTime={message.receivedAt}>{receivedTime}</time></dd></div></dl></section>
-      <section><h2>{copy.detail.taskSummary}</h2><p>{message.taskSummary}</p></section>
-      <section><h2><Clock aria-hidden="true" />{copy.detail.timeline}</h2><ol className="message-detail-timeline">{timeline.map((item) => <li className={`message-detail-timeline-stage-${item.state}`} key={item.label}><strong>{item.label}</strong><time dateTime={item.occurredAt}>{detailTime(item.occurredAt, copy.dateLocale)}</time></li>)}</ol></section>
+      <section className="message-detail-task-summary"><h2><ListChecks aria-hidden="true" />{copy.detail.taskSummary}</h2>{relatedTasks.length ? <Button aria-label={copy.detail.taskCount(relatedTasks.length, openTaskCount)} className="message-detail-task-summary-link" onPress={() => onOpenTasks(relatedTasks)} type="button" variant="secondary"><span>{copy.detail.taskCount(relatedTasks.length, openTaskCount)}</span><ChevronRight aria-hidden="true" /></Button> : <p>{copy.detail.taskCount(0, 0)}</p>}</section>
     </aside></div>
   </section>
 }
