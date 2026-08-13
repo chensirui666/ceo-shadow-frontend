@@ -1649,9 +1649,9 @@ button, input, select, textarea { font: inherit; }
 .message-list-avatar { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--color-friday-border); border-radius: 50%; background: var(--color-friday-surface-muted); color: var(--color-friday-ink); font-size: 12px; font-weight: 700; }
 .message-list-identity { display: grid; min-width: 0; align-content: start; gap: 3px; }
 .message-list-object strong { overflow: hidden; font-size: var(--font-meta); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.message-list-source { display: flex; align-items: center; gap: 5px; overflow: hidden; color: var(--color-friday-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.message-list-source-icon { width: 13px; height: 13px; flex: 0 0 auto; object-fit: contain; }
-.message-list-category { width: fit-content; max-width: 100%; overflow: hidden; border: 1px solid var(--color-friday-border); border-radius: 999px; background: var(--color-friday-surface-muted); color: var(--color-friday-muted); padding: 1px 6px; font-size: 10px; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
+.message-list-source { display: flex; align-items: center; gap: 5px; overflow: hidden; color: var(--color-friday-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.message-list-source-icon { width: 15px; height: 15px; flex: 0 0 auto; object-fit: contain; }
+.message-list-category { width: fit-content; max-width: 100%; overflow: hidden; border: 1px solid var(--color-friday-border); border-radius: 999px; background: var(--color-friday-surface-muted); color: var(--color-friday-muted); padding: 2px 7px; font-size: 11px; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
 .message-list-clamp { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .message-list-open:is(:hover, :focus-visible) .message-list-clamp { -webkit-line-clamp: unset; }
 

@@ -92,6 +92,14 @@ test('workspace canvas uses a pure white shared page background', async () => {
   assert.match(css, /\.workspace-canvas\s*\{[^}]*background:\s*#fff;/)
 })
 
+test('Message metadata keeps its source and category legible', async () => {
+  const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
+
+  assert.match(css, /\.message-list-source\s*\{[^}]*font-size:\s*12px;/)
+  assert.match(css, /\.message-list-source-icon\s*\{[^}]*width:\s*15px;[^}]*height:\s*15px;/)
+  assert.match(css, /\.message-list-category\s*\{[^}]*padding:\s*2px 7px;[^}]*font-size:\s*11px;/)
+})
+
 test('event list renders a compact row with a countdown and message lines', async () => {
   const { default: HomeEventList } = await vite.ssrLoadModule('/src/components/HomeEventList.tsx')
   const event = {
