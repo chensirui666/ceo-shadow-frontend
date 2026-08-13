@@ -1,4 +1,6 @@
 import { Button } from '@heroui/react'
+import { Check, Clock, SkipForward } from 'lucide-react'
+import { connectorLogos } from '../content/connectorLogos.ts'
 import { canProvideMessageFeedback, messageStatuses } from '../messageState.ts'
 import type { MessageCopy } from '../content/translations.ts'
 import type { Message, MessageFeedback, MessageStatus } from '../messageState.ts'
@@ -15,6 +17,10 @@ type MessageListProps = {
   onStatusChange: (status: MessageStatus | 'all') => void
 }
 
+const shortTime = (value: string, locale: string) => new Intl.DateTimeFormat(locale, {
+  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
+}).format(new Date(value))
+
 export default function MessageList({ copy, messages, status, onConfirm, onFeedback, onOpen, onSkip, onStatusChange }: MessageListProps) {
   const visibleMessages = status === 'all' ? messages : messages.filter((message) => message.status === status)
   const sourceCounts = [...new Set(messages.map((message) => message.source))]
@@ -27,14 +33,14 @@ export default function MessageList({ copy, messages, status, onConfirm, onFeedb
     <nav aria-label={copy.list.statusNavigation} className="message-status-tabs"><button aria-pressed={status === 'all'} onClick={() => onStatusChange('all')} type="button">{copy.status.all} {messages.length}</button>{messageStatuses.map((item) => <button aria-pressed={status === item} key={item} onClick={() => onStatusChange(item)} type="button">{copy.status[item]} {count(item)}</button>)}</nav>
     <div className="message-list-layout">
       <section aria-label={copy.list.label} className="message-list-stream">
-        <div className="message-list-columns" role="row"><span role="columnheader">{copy.list.columns.statusTime}</span><span role="columnheader">{copy.list.columns.metadata}</span><span role="columnheader">{copy.list.columns.question}</span><span role="columnheader">{copy.list.columns.handling}</span><span role="columnheader">{copy.list.columns.actions}</span></div>
+        <div className="message-list-columns"><span>{copy.list.columns.statusTime}</span><span>{copy.list.columns.metadata}</span><span>{copy.list.columns.question}</span><span>{copy.list.columns.handling}</span><span>{copy.list.columns.actions}</span></div>
         {visibleMessages.length ? visibleMessages.map((message) => <article className="message-list-row" key={message.id}>
           <button className="message-list-open" onClick={() => onOpen(message.id)} title={`${message.question}\n${message.result}`} type="button">
-            <span className="message-list-status"><strong>{copy.status[message.status]}</strong><time dateTime={message.receivedAt}>{new Date(message.receivedAt).toLocaleString(copy.dateLocale)}</time></span>
-            <span className="message-list-object"><strong>{message.subject}</strong><small>{message.sender} · {copy.sources[message.source]} · {message.category}</small></span>
+            <span className={`message-list-status message-list-status-${message.status}`}><strong><i aria-hidden="true" className="message-list-status-dot" />{copy.status[message.status]}</strong><time className="message-list-time" dateTime={message.receivedAt}><Clock aria-hidden="true" />{shortTime(message.receivedAt, copy.dateLocale)}</time></span>
+            <span className="message-list-object" title={message.subject}><span aria-hidden="true" className="message-list-avatar">{message.sender.slice(0, 1)}</span><span className="message-list-identity"><strong>{message.sender}</strong><span className="message-list-source"><img alt="" className="message-list-source-icon" src={connectorLogos[message.source]} />{copy.sources[message.source]}</span><small className="message-list-category">{message.category}</small></span></span>
             <span className="message-list-clamp" title={message.question}>{message.question}</span><span className="message-list-clamp" title={message.result}>{message.result}</span>
           </button>
-          <span className="message-list-actions">{message.status === 'needs-confirmation' && <><button onClick={(event) => { event.stopPropagation(); onConfirm(message.id) }} type="button">{copy.list.confirm}</button><button onClick={(event) => { event.stopPropagation(); onSkip(message.id) }} type="button">{copy.list.skip}</button></>}{canProvideMessageFeedback(message) && <MessageFeedbackControls copy={copy.feedbackControls} id={message.id} onFeedback={onFeedback} stopPropagation />}</span>
+          <span className="message-list-actions">{message.status === 'needs-confirmation' && <><button className="message-list-action-confirm" onClick={(event) => { event.stopPropagation(); onConfirm(message.id) }} type="button"><Check aria-hidden="true" />{copy.list.confirm}</button><button className="message-list-action-skip" onClick={(event) => { event.stopPropagation(); onSkip(message.id) }} type="button"><SkipForward aria-hidden="true" />{copy.list.skip}</button></>}{canProvideMessageFeedback(message) && <MessageFeedbackControls copy={copy.feedbackControls} id={message.id} onFeedback={onFeedback} stopPropagation />}</span>
         </article>) : <p className="message-empty">{copy.list.filteredEmpty}</p>}
       </section>
       <aside aria-label={copy.list.quick.label} className="message-list-quick">

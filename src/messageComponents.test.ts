@@ -50,6 +50,41 @@ test('MessageList renders six status tabs, fixed columns, and confirmation actio
   assert.doesNotMatch(html, /搜索/)
 })
 
+test('MessageList gives each Message a sender identity, source mark, category tag, compact time, and status signal', async () => {
+  const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
+  const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
+  const html = renderToStaticMarkup(createElement(MessageList, {
+    messages: snapshot.messages,
+    copy: translations.en.workspace.message,
+    status: 'all',
+    onConfirm: () => {}, onFeedback: () => {}, onOpen: () => {}, onSkip: () => {}, onStatusChange: () => {},
+  }))
+
+  assert.match(html, /message-list-avatar/)
+  assert.match(html, /message-list-source-icon/)
+  assert.match(html, /message-list-category/)
+  assert.match(html, /message-list-status-needs-confirmation/)
+  assert.match(html, /message-list-time/)
+  assert.match(html, /Aug 13/)
+  assert.doesNotMatch(html, />Aug 13, 2026/)
+})
+
+test('MessageList keeps icon-based confirmation, skip, and feedback actions', async () => {
+  const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
+  const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
+  const html = renderToStaticMarkup(createElement(MessageList, {
+    messages: snapshot.messages,
+    copy: translations.en.workspace.message,
+    status: 'all',
+    onConfirm: () => {}, onFeedback: () => {}, onOpen: () => {}, onSkip: () => {}, onStatusChange: () => {},
+  }))
+
+  assert.match(html, /message-list-action-confirm/)
+  assert.match(html, /message-list-action-skip/)
+  assert.match(html, /aria-label="Like"/)
+  assert.match(html, /aria-label="Dislike"/)
+})
+
 test('MessageList aside exposes real quick filters, source counts, and activity totals', async () => {
   const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
   const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
