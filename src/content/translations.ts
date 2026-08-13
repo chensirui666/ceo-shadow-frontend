@@ -110,7 +110,12 @@ export type MessageCopy = {
     confirm: string
     skip: string
     filteredEmpty: string
-    quick: { label: string; title: string; filter: (status: string) => string; messages: (count: number) => string; sources: (count: number) => string }
+    aside: {
+      filters: { title: string; clear: string; source: string; category: string; subject: string; sender: string }
+      sources: { title: string; apps: Record<'dingtalk' | 'feishu' | 'teams' | 'slack' | 'wecom' | 'discord', string> }
+      activity: { title: string; scope: string; all: string; needsConfirmation: string; processed: string; failed: string }
+      smarter: { title: string; body: string; action: string }
+    }
   }
   detail: {
     back: string
@@ -290,12 +295,17 @@ export const translations: Record<Locale, Translation> = {
       message: {
         loading: 'Loading messages…', error: 'Messages could not be loaded.', empty: 'No messages need attention yet.', dateLocale: 'en-US',
         status: { all: 'All', pending: 'Pending', processing: 'Processing', 'needs-confirmation': 'Needs confirmation', processed: 'Processed', skipped: 'Skipped', failed: 'Failed' },
-        sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
+        sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams', slack: 'Slack', wecom: 'WeCom', discord: 'Discord' },
         list: {
           title: 'Message', subtitle: 'See what Friday is handling, what needs your confirmation, and what is complete.', statusNavigation: 'Message status', label: 'Message list',
           columns: { statusTime: 'Status and time', metadata: 'Subject / source / category', question: 'Question', handling: "Friday's handling", actions: 'Actions' },
           confirm: 'Confirm', skip: 'Skip', filteredEmpty: 'No messages match this status.',
-          quick: { label: 'Quick overview', title: 'Quick overview', filter: (status) => `Current filter: ${status}`, messages: (count) => `${count} message${count === 1 ? '' : 's'}`, sources: (count) => `${count} source${count === 1 ? '' : 's'}` },
+          aside: {
+            filters: { title: 'Filters', clear: 'Clear all', source: 'All sources', category: 'All categories', subject: 'All conversations', sender: 'All senders' },
+            sources: { title: 'Sources', apps: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams', slack: 'Slack', wecom: 'WeCom', discord: 'Discord' } },
+            activity: { title: 'Activity summary', scope: 'All messages', all: 'Total messages', needsConfirmation: 'Needs confirmation', processed: 'Completed', failed: 'Failed' },
+            smarter: { title: 'Make Friday smarter', body: 'Link more apps and set preferences to get better, more relevant help.', action: 'Go to settings' },
+          },
         },
         detail: {
           back: 'Back to Message', question: 'Question', rationale: 'Reasoning', result: 'Handling result', tasks: 'Related Task', feedback: 'Feedback', feedbackPending: 'Feedback is available after handling is complete.', liked: 'Liked', disliked: (reason) => `Disliked: ${reason}`, references: 'Supporting context and materials',
@@ -507,12 +517,17 @@ export const translations: Record<Locale, Translation> = {
       message: {
         loading: '正在加载消息…', error: '消息暂时无法加载。', empty: '还没有需要处理的消息。', dateLocale: 'zh-CN',
         status: { all: '全部', pending: '待处理', processing: '处理中', 'needs-confirmation': '待确认', processed: '已处理', skipped: '已跳过', failed: '处理失败' },
-        sources: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams' },
+        sources: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams', slack: 'Slack', wecom: '企微', discord: 'Discord' },
         list: {
           title: 'Message', subtitle: '集中查看 Friday 正在处理、等待你确认和已经完成的事项。', statusNavigation: 'Message 状态', label: 'Message 列表',
           columns: { statusTime: '状态与时间', metadata: '对象／来源／类别', question: '用户问题', handling: 'Friday 的处理', actions: '操作' },
           confirm: '确认', skip: '跳过', filteredEmpty: '这里还没有符合当前状态的消息。',
-          quick: { label: '快捷概览', title: '快捷概览', filter: (status) => `当前筛选：${status}`, messages: (count) => `消息 ${count} 条`, sources: (count) => `来源 ${count} 个` },
+          aside: {
+            filters: { title: '筛选', clear: '清除全部', source: '全部来源', category: '全部类别', subject: '全部会话', sender: '全部发起人' },
+            sources: { title: '来源', apps: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams', slack: 'Slack', wecom: '企微', discord: 'Discord' } },
+            activity: { title: '处理概览', scope: '全部消息', all: '消息总数', needsConfirmation: '待确认', processed: '已处理', failed: '处理失败' },
+            smarter: { title: '让 Friday 更聪明', body: '连接更多应用并完善偏好设置，让 Friday 提供更贴合的帮助。', action: '前往设置' },
+          },
         },
         detail: {
           back: '返回 Message', question: '用户问题', rationale: '判断依据', result: '回答／处理结果', tasks: '关联 Task', feedback: '反馈', feedbackPending: '处理完成后可反馈。', liked: '已点赞', disliked: (reason) => `点踩：${reason}`, references: '处理依据与材料',

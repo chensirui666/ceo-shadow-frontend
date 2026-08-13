@@ -1,9 +1,10 @@
-export const messageSources = ['dingtalk', 'feishu', 'teams'] as const
+export const messageSources = ['dingtalk', 'feishu', 'teams', 'slack', 'wecom', 'discord'] as const
 export const messageStatuses = ['pending', 'processing', 'needs-confirmation', 'processed', 'skipped', 'failed'] as const
 
 export type MessageSource = typeof messageSources[number]
 export type MessageStatus = typeof messageStatuses[number]
 export type MessageFeedback = { rating: 'up' | 'down'; reason: string }
+export type MessageFilters = { source: MessageSource | 'all'; category: string; subject: string; sender: string }
 export type Message = {
   id: string
   source: MessageSource
@@ -35,8 +36,15 @@ export const createDemoMessageSnapshot = (now = new Date()): MessageSnapshot => 
   ],
 })
 
-export const selectMessages = (snapshot: MessageSnapshot, status: MessageStatus | 'all'): Message[] => (
-  [...(status === 'all' ? snapshot.messages : snapshot.messages.filter((message) => message.status === status))]
+export const createDefaultMessageFilters = (): MessageFilters => ({ source: 'all', category: 'all', subject: 'all', sender: 'all' })
+
+export const selectMessages = (snapshot: MessageSnapshot, status: MessageStatus | 'all', filters = createDefaultMessageFilters()): Message[] => (
+  [...snapshot.messages
+    .filter((message) => status === 'all' || message.status === status)
+    .filter((message) => filters.source === 'all' || message.source === filters.source)
+    .filter((message) => filters.category === 'all' || message.category === filters.category)
+    .filter((message) => filters.subject === 'all' || message.subject === filters.subject)
+    .filter((message) => filters.sender === 'all' || message.sender === filters.sender)]
     .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))
 )
 

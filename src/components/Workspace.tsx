@@ -141,7 +141,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         ) : route === 'home' ? (
           onboarding
             ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onOpenMemory={() => goTo('memory')} onStateChange={setOnboardingState} onWelcomeDismiss={dismissWelcome} welcomeOpen={welcomeOpen} />
-            : <MessageWorkspace copy={copy.message} service={sessionMessageService} />
+            : <MessageWorkspace copy={copy.message} onOpenSettings={openSettings} service={sessionMessageService} />
         ) : route === 'tasks' ? (
           <TasksWorkspace currentUser={name} locale={locale} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />
         ) : (

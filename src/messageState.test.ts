@@ -16,6 +16,14 @@ test('fixture has all six Message statuses and filtering and counts use the same
   assert.deepEqual([...new Set(snapshot.messages.map((message) => message.source))].sort(), ['dingtalk', 'feishu', 'teams'])
 })
 
+test('Message selection combines status with source, category, conversation, and sender filters', () => {
+  const snapshot = messageState.createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
+  const filters = { source: 'feishu', category: '客户交付', subject: '客户交付群', sender: '赵明' } as const
+
+  assert.deepEqual(messageState.selectMessages(snapshot, 'needs-confirmation', filters).map((message) => message.id), ['delivery-commitment'])
+  assert.deepEqual(messageState.selectMessages(snapshot, 'all', { ...filters, sender: '陈晓' }).map((message) => message.id), [])
+})
+
 test('confirm and skip only resolve messages awaiting confirmation without changing their task summaries', () => {
   const snapshot = messageState.createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
   const pending = snapshot.messages.find((message) => message.status === 'needs-confirmation')!

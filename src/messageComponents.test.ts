@@ -85,25 +85,32 @@ test('MessageList keeps icon-based confirmation, skip, and feedback actions', as
   assert.match(html, /aria-label="Dislike"/)
 })
 
-test('MessageList aside exposes real quick filters, source counts, and activity totals', async () => {
+test('MessageList sidebar exposes data-backed filters, six supported sources, activity totals, and Settings', async () => {
   const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
   const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
   const calls: string[] = []
+  const filterChanges: Array<Record<string, string>> = []
+  let openedSettings = 0
   const list = MessageList({
     messages: snapshot.messages,
     copy: translations.zh.workspace.message,
     status: 'all',
     onConfirm: () => {}, onFeedback: () => {}, onOpen: () => {}, onSkip: () => {}, onStatusChange: (status: string) => calls.push(status),
+    onFiltersChange: (filters: { source: string; category: string; subject: string; sender: string }) => filterChanges.push(filters), onOpenSettings: () => { openedSettings++ },
   })
   const aside = find(list, (element) => element.type === 'aside' && element.props.className === 'message-list-quick')
   const sections = findAll(aside, (element) => element.type === 'section')
 
-  assert.deepEqual(sections.map((section) => section.props.className), ['message-list-quick-filters', 'message-list-sources', 'message-list-summary'])
-  find(sections[0], (element) => element.props.onPress && text(element) === '待确认 1').props.onPress()
-  find(sections[0], (element) => element.props.onPress && text(element) === '处理失败 1').props.onPress()
-  assert.deepEqual(calls, ['needs-confirmation', 'failed'])
-  assert.deepEqual(findAll(sections[1], (element) => element.type === 'li').map(text), ['钉钉3', '飞书2', 'Teams1'])
-  assert.match(text(find(sections[2], (element) => element.type === 'dl')), /全部6待确认1已处理1处理失败1/)
+  assert.deepEqual(sections.map((section) => section.props.className), ['message-list-filters', 'message-list-sources', 'message-list-summary', 'message-list-smarter'])
+  assert.deepEqual(findAll(sections[0], (element) => element.type === 'select').map((select) => select.props['aria-label']), ['全部来源', '全部类别', '全部会话', '全部发起人'])
+  find(sections[0], (element) => element.type === 'select' && element.props['aria-label'] === '全部来源').props.onChange({ target: { value: 'feishu' } })
+  find(sections[0], (element) => element.type === 'button' && text(element) === '清除全部').props.onClick()
+  assert.deepEqual(filterChanges, [{ source: 'feishu', category: 'all', subject: 'all', sender: 'all' }, { source: 'all', category: 'all', subject: 'all', sender: 'all' }])
+  assert.deepEqual(calls, ['all'])
+  assert.deepEqual(findAll(sections[1], (element) => element.type === 'li').map(text), ['钉钉3', '飞书2', 'Teams1', 'Slack0', '企微0', 'Discord0'])
+  assert.match(text(sections[2]), /全部消息消息总数6待确认1已处理1处理失败1/)
+  find(sections[3], (element) => element.props.onPress && text(element) === '前往设置').props.onPress()
+  assert.equal(openedSettings, 1)
 })
 
 test('MessageDetail reads in decision order and offers result feedback plus a collapsed material section', async () => {
@@ -179,7 +186,7 @@ test('English Message chrome does not leak static Chinese copy', async () => {
     onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {},
   }))
 
-  for (const label of ['Message', 'All', 'Needs confirmation', 'Status and time', 'Question', 'Actions', 'Quick overview', 'Back to Message', 'Reasoning', 'Handling result', 'Message information', 'Activity timeline']) assert.match(`${list}${detail}`, new RegExp(label))
+  for (const label of ['Message', 'All', 'Needs confirmation', 'Status and time', 'Question', 'Actions', 'Filters', 'Activity summary', 'Make Friday smarter', 'Back to Message', 'Reasoning', 'Handling result', 'Message information', 'Activity timeline']) assert.match(`${list}${detail}`, new RegExp(label))
   assert.match(`${list}${detail}`, /Friday(?:'|&#x27;)s handling/)
   assert.doesNotMatch(`${list}${detail}`, /<h1[^>]*>消息<|aria-label="消息状态"|>全部 6<|>状态与时间<|>对象／来源／类别<|>用户问题<|>Friday 的处理<|>快捷概览<|>返回消息<|>判断依据<|>回答／处理结果<|>反馈原因<|>提交反馈<|>处理依据与材料<|>Message 信息<|>活动时间线</)
 })
