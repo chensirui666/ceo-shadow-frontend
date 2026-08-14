@@ -1,14 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Dropdown, Modal, useOverlayState } from '@heroui/react'
 import { Button as AriaButton } from 'react-aria-components'
 import { resolveRoute } from '../appState.ts'
 import type { Locale, Route, Session } from '../appState.ts'
 import { translations } from '../content/translations.ts'
-import { createHomeService } from '../homeService.ts'
-import { createDemoHomeSnapshot } from '../homeState.ts'
 import { createMessageService } from '../messageService.ts'
-import { createOnboardingState, createTrialEvent, needsOnboarding } from '../onboardingState.ts'
-import type { OnboardingState } from '../onboardingState.ts'
+import { createOnboardingState, needsOnboarding } from '../onboardingState.ts'
 import { hasSeenOnboardingWelcome, markOnboardingWelcomeSeen, saveSession } from '../sessionStore.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
@@ -43,7 +40,6 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const [onboarding, setOnboarding] = useState(() => needsOnboarding(session.email))
   const [onboardingState, setOnboardingState] = useState(() => createOnboardingState())
   const [welcomeOpen, setWelcomeOpen] = useState(() => typeof window === 'undefined' || !hasSeenOnboardingWelcome(window.localStorage, session.email))
-  const sessionHomeService = useRef(createHomeService(createDemoHomeSnapshot(new Date(), locale)))
   const [sessionMessageService] = useState(createMessageService)
   const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
   const [tasksListRequest, setTasksListRequest] = useState(0)
@@ -74,18 +70,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
     }
   }
 
-  const finishOnboarding = (completedState: OnboardingState) => {
-    const fixture = createDemoHomeSnapshot(new Date(), locale)
-    const trialEvent = createTrialEvent(completedState, new Date(), locale)
-    sessionHomeService.current = createHomeService({
-      ...fixture,
-      mode: 'active',
-      connectedSources: completedState.connectedSources,
-      events: [
-        ...(trialEvent ? [trialEvent] : []),
-        ...fixture.events.filter((event) => completedState.connectedSources.includes(event.source)),
-      ],
-    })
+  const finishOnboarding = () => {
     setOnboarding(false)
     setRoute('home')
   }
