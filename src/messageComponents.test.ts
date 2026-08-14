@@ -145,6 +145,7 @@ test('MessageDetail renders auditable A-to-E cards, dynamic artifacts, task stat
   assert.match(html, /进行中/)
   assert.match(html, /已准备回复客户的交付承诺草稿/)
   assert.match(html, /aria-label="点赞"/)
+  assert.match(html, /message-detail-feedback-header/)
   assert.match(html, /message-detail-information-row/)
   assert.match(html, /message-detail-task-summary-link/)
   assert.match(html, /1 个 Task（1 个进行中）/)
@@ -179,17 +180,20 @@ test('MessageDetail keeps rendering when a hot-reloaded session still holds a le
   assert.match(html, /0 个 Task（0 个进行中）/)
 })
 
-test('Message styles center row content, separate status from time, and style the detail audit records', () => {
+test('Message styles align aside headers and detail card content with their reading anchors', () => {
   const css = readFileSync(new URL('./index.css', import.meta.url), 'utf8')
 
   assert.match(css, /\.message-list-open\s*\{[^}]*align-items:\s*center;/)
   assert.match(css, /\.message-list-status\s*\{[^}]*gap:\s*12px;/)
   assert.match(css, /\.message-list-status-dot\s*\{[^}]*translateY\(3px\)/)
+  assert.match(css, /\.message-list-filters header h2, \.message-list-summary header h2\s*\{[^}]*margin-bottom:\s*0;/)
+  assert.match(css, /\.message-detail-card > p, \.message-detail-card > small, \.message-detail-card > ul\s*\{[^}]*margin-left:\s*23px;/)
+  assert.match(css, /\.message-feedback-control\[aria-pressed='true'\]\s*\{/)
   assert.match(css, /\.message-detail-status-needs-confirmation\s*\{[^}]*color:\s*var\(--status-pending-foreground\)/)
   for (const className of ['message-detail-original-source', 'message-detail-deliverables', 'message-detail-task-status', 'message-detail-information-row', 'message-detail-task-summary-link', 'message-detail-feedback']) assert.match(css, new RegExp(`\\.${className}`))
 })
 
-test('MessageDetail reads in decision order and offers result feedback plus a collapsed material section', async () => {
+test('MessageDetail reads in decision order with compact feedback and a collapsed material section', async () => {
   const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
   const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.status === 'processed')!
   const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
@@ -198,8 +202,8 @@ test('MessageDetail reads in decision order and offers result feedback plus a co
   assert.ok(ordered.every((label, index) => index === 0 || html.indexOf(ordered[index - 1]) < html.indexOf(label)))
   assert.match(html, /点赞/)
   assert.match(html, /点踩/)
-  assert.match(html, /反馈原因/)
-  assert.match(html, /提交反馈/)
+  assert.match(html, /message-detail-feedback-header/)
+  assert.doesNotMatch(html, /反馈原因|提交反馈/)
   assert.match(html, /<details/)
   for (const label of ['操作', 'Message 信息', 'Task 汇总']) assert.match(html, new RegExp(label))
   assert.doesNotMatch(html, /活动时间线/)
@@ -222,7 +226,7 @@ test('MessageDetail title area carries status and known metadata before the read
   assert.equal(find(status, (element) => element.props.className === 'message-detail-status-dot').type, 'i')
 })
 
-test('Message interactions filter, open, decide, and submit only a non-blank downvote reason', async () => {
+test('Message interactions filter, open, decide, and keep detail feedback free of follow-up copy', async () => {
   const [{ default: MessageList }, { default: MessageDetail }, { MessageFeedbackControls }] = await Promise.all([
     vite.ssrLoadModule('/src/components/MessageList.tsx'), vite.ssrLoadModule('/src/components/MessageDetail.tsx'), vite.ssrLoadModule('/src/components/MessageFeedbackControls.tsx'),
   ])
@@ -238,17 +242,20 @@ test('Message interactions filter, open, decide, and submit only a non-blank dow
   find(list, (element) => element.props.className === 'message-list-action-skip').props.onPress()
   assert.deepEqual(calls, [`filter:pending`, `open:${pending.id}`, `confirm:${confirmation.id}`, `skip:${confirmation.id}`])
 
-  const feedback: Array<{ rating: string; reason: string }> = []
-  const controls = MessageFeedbackControls({ copy: translations.zh.workspace.message.feedbackControls, id: confirmation.id, onFeedback: (_id: string, value: { rating: string; reason: string }) => feedback.push(value), stopPropagation: true })
-  const form = find(controls, (element) => element.type === 'form')
-  const submit = (reason: string) => form.props.onSubmit({ currentTarget: { elements: { namedItem: () => ({ value: reason }) }, reset: () => {} }, preventDefault: () => {} })
-  submit('   ')
-  submit('需要先确认排期。')
-  assert.deepEqual(feedback, [{ rating: 'down', reason: '需要先确认排期。' }])
-  assert.equal(find(controls, (element) => element.type === 'input').props.required, true)
-
   const pendingHtml = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message: pending, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
   assert.match(pendingHtml, /点赞|点踩/)
+  assert.doesNotMatch(pendingHtml, /提交反馈/)
+  const feedbackHtml = renderToStaticMarkup(createElement(MessageFeedbackControls, { copy: translations.zh.workspace.message.feedbackControls, id: pending.id, onFeedback: () => {}, stopPropagation: true }))
+  assert.doesNotMatch(feedbackHtml, /<details|<form|提交反馈/)
+})
+
+test('MessageDetail does not print a separate feedback result after selection', async () => {
+  const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
+  const message = { ...createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.status === 'processed')!, feedback: [{ rating: 'down' as const, reason: '请补充上线范围。' }] }
+  const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
+
+  assert.match(html, /message-detail-feedback-header/)
+  assert.doesNotMatch(html, /点踩：请补充上线范围。|已点赞/)
 })
 
 test('English Message chrome does not leak static Chinese copy', async () => {

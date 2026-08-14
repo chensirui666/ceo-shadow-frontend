@@ -1667,7 +1667,7 @@ button, input, select, textarea { font: inherit; }
   padding: 14px 0 10px;
 }
 
-.message-list-actions button, .message-feedback-controls summary, .message-detail button {
+.message-list-actions button, .message-detail button {
   min-height: 30px;
   border: 1px solid var(--color-friday-border);
   border-radius: var(--radius-control);
@@ -1683,22 +1683,18 @@ button, input, select, textarea { font: inherit; }
 .message-list-action-skip, .message-detail-action-skip { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-color: transparent !important; background: var(--button-inverse-background) !important; color: var(--button-inverse-foreground) !important; }
 .message-list-action-confirm, .message-list-action-skip { width: 96px; min-height: 32px !important; padding-inline: 8px !important; }
 .message-list-action-confirm svg, .message-list-action-skip svg, .message-detail-action-confirm svg, .message-detail-action-skip svg { width: 13px; height: 13px; }
-.message-feedback-controls { display: flex; align-items: center; gap: 5px; }
-.message-feedback-controls details { position: relative; }
-.message-feedback-controls button, .message-feedback-controls summary { display: grid; width: 30px; min-width: 30px; place-items: center; padding: 0; }
-.message-feedback-controls summary { list-style: none; }
-.message-feedback-controls summary::-webkit-details-marker { display: none; }
+.message-feedback-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.message-feedback-controls .message-feedback-control { display: grid; width: 30px; min-width: 30px; min-height: 30px; place-items: center; padding: 0; }
+.message-feedback-control[aria-pressed='true'] { border-color: var(--button-primary-background); background: var(--button-inverse-background); color: var(--button-inverse-foreground); }
 .message-feedback-controls svg { width: 15px; height: 15px; }
-.message-feedback-controls form { position: absolute; z-index: 2; top: 36px; right: 0; width: 210px; border: 1px solid var(--color-friday-border); border-radius: var(--radius-card); background: var(--color-friday-surface); padding: 10px; }
-.message-feedback-controls label { display: grid; gap: 6px; color: var(--color-friday-muted); font-size: 11px; }
-.message-feedback-controls input { width: 100%; min-height: 34px; border: 1px solid var(--color-friday-border); border-radius: var(--radius-control); background: var(--color-friday-surface); padding: 0 8px; }
-.message-feedback-controls form button { width: 100%; margin-top: 8px; }
+.message-feedback-reason { flex: 1 0 100%; min-width: 0; min-height: 34px; border: 1px solid var(--color-friday-border); border-radius: var(--radius-control); background: var(--color-friday-surface); padding: 0 8px; }
 
 .message-empty { min-width: 700px; margin: 0; border: 1px solid var(--color-friday-border); border-radius: var(--radius-card); color: var(--color-friday-muted); padding: 28px; text-align: center; }
 .message-list-quick { display: grid; gap: 10px; }
 .message-list-quick > section, .message-detail-aside > section { border: 1px solid var(--color-friday-border); border-radius: var(--radius-card); background: var(--color-friday-surface); padding: 14px; }
 .message-list-quick h2, .message-detail-aside h2 { margin: 0 0 11px; font-size: var(--font-ui); font-weight: 650; }
 .message-list-filters header, .message-list-summary header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.message-list-filters header h2, .message-list-summary header h2 { margin-bottom: 0; }
 .message-list-filters header button { border: 0; background: transparent; color: var(--onboarding-security-accent); cursor: pointer; padding: 0; font-size: 11px; font-weight: 650; }
 .message-list-filter-select { display: block; width: 100%; margin-top: 8px; }
 .message-list-filter-select .select__trigger { width: 100%; min-height: 34px; border: 1px solid var(--color-friday-border); border-radius: var(--radius-control); background: var(--color-friday-surface); color: var(--color-friday-ink); padding: 6px 9px; font-size: var(--font-meta); }
@@ -1739,6 +1735,7 @@ button, input, select, textarea { font: inherit; }
 .message-detail-card h2, .message-detail-aside h2 { display: flex; align-items: center; gap: 7px; }
 .message-detail-card h2 svg, .message-detail-aside h2 svg { width: 16px; height: 16px; flex: 0 0 auto; }
 .message-detail-card p { margin: 8px 0 0; color: var(--color-friday-muted); font-size: var(--font-meta); line-height: 1.6; }
+.message-detail-card > p, .message-detail-card > small, .message-detail-card > ul { margin-left: 23px; }
 .message-detail-original-source { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; color: var(--color-friday-muted); font-size: 11px; }
 .message-detail-original-source img { width: 15px; height: 15px; object-fit: contain; }
 .message-detail-result { padding-block: 13px; }
@@ -1752,10 +1749,9 @@ button, input, select, textarea { font: inherit; }
 .message-detail-task-status { flex: 0 0 auto; border-radius: 999px; padding: 2px 7px; font-size: 10px; font-weight: 700; }
 .message-detail-task-status-open { background: var(--status-pending-background); color: var(--status-pending-text); }
 .message-detail-task-status-completed { background: var(--status-success-background); color: var(--status-success-text); }
-.message-detail-feedback { display: grid; gap: 10px; }
-.message-detail-feedback .message-feedback-controls { align-self: start; }
-.message-detail-feedback .message-feedback-controls details { position: static; }
-.message-detail-feedback .message-feedback-controls form { position: static; width: min(260px, calc(100vw - 112px)); margin-top: 8px; }
+.message-detail-feedback-header { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 7px; }
+.message-detail-feedback-header .message-feedback-controls { display: contents; }
+.message-detail-feedback-header .message-feedback-reason { flex: 0 0 calc(100% - 23px); margin-left: 23px; }
 .message-detail-references summary { cursor: pointer; }
 .message-detail-references ul { margin: 12px 0 0; color: var(--color-friday-muted); padding-left: 18px; font-size: var(--font-meta); }
 .message-detail-aside > section:first-child { display: grid; gap: 7px; }

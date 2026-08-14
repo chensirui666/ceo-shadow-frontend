@@ -1,4 +1,6 @@
-import type { FormEvent, MouseEvent } from 'react'
+import { Button, Input } from '@heroui/react'
+import { useState } from 'react'
+import type { MouseEvent } from 'react'
 import { ThumbsDown, ThumbsUp } from 'lucide-react'
 import type { MessageCopy } from '../content/translations.ts'
 import type { MessageFeedback } from '../messageState.ts'
@@ -11,17 +13,24 @@ type MessageFeedbackControlsProps = {
 }
 
 export function MessageFeedbackControls({ copy, id, onFeedback, stopPropagation = false }: MessageFeedbackControlsProps) {
+  const [selection, setSelection] = useState<MessageFeedback['rating'] | null>(null)
+  const [reason, setReason] = useState('')
+  const [savedReason, setSavedReason] = useState('')
   const stop = (event: MouseEvent<HTMLSpanElement>) => { if (stopPropagation) event.stopPropagation() }
-  const submitDownvote = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const reason = (event.currentTarget.elements.namedItem('reason') as HTMLInputElement | null)?.value.trim() ?? ''
-    if (!reason) return
-    onFeedback(id, { rating: 'down', reason })
-    event.currentTarget.reset()
+  const choose = (rating: MessageFeedback['rating']) => {
+    setSelection(rating)
+    if (rating === 'up') onFeedback(id, { rating, reason: copy.upvoteReason })
+  }
+  const saveReason = () => {
+    const nextReason = reason.trim()
+    if (!nextReason || nextReason === savedReason) return
+    onFeedback(id, { rating: 'down', reason: nextReason })
+    setSavedReason(nextReason)
   }
 
   return <span className="message-feedback-controls" onClick={stop}>
-    <button aria-label={copy.upvote} className="message-feedback-upvote" onClick={() => onFeedback(id, { rating: 'up', reason: copy.upvoteReason })} type="button"><ThumbsUp aria-hidden="true" /><span className="sr-only">{copy.upvote}</span></button>
-    <details><summary aria-label={copy.downvote} className="message-feedback-downvote"><ThumbsDown aria-hidden="true" /><span className="sr-only">{copy.downvote}</span></summary><form onSubmit={submitDownvote}><label>{copy.reason}<input aria-label={copy.reason} name="reason" required /></label><button type="submit">{copy.submit}</button></form></details>
+    <Button aria-label={copy.upvote} aria-pressed={selection === 'up'} className="message-feedback-control message-feedback-upvote" isIconOnly onPress={() => choose('up')} size="sm" type="button" variant="secondary"><ThumbsUp aria-hidden="true" /></Button>
+    <Button aria-label={copy.downvote} aria-pressed={selection === 'down'} className="message-feedback-control message-feedback-downvote" isIconOnly onPress={() => choose('down')} size="sm" type="button" variant="secondary"><ThumbsDown aria-hidden="true" /></Button>
+    {selection === 'down' && <Input aria-label={copy.reason} className="message-feedback-reason" onBlur={saveReason} onChange={(event) => setReason(event.target.value)} value={reason} />}
   </span>
 }
