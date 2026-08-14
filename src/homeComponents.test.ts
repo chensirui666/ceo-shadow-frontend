@@ -84,6 +84,12 @@ test('Home status tokens and tooltip layout use the approved palette', async () 
   assert.doesNotMatch(css, /\.task-(?:project-open:focus-visible|personal-todo-trigger:focus-visible|milestone:focus-visible|todo-source-trigger:focus-visible|source-rail-item:focus-visible|document-title:focus) \{[^}]*#839eb3/)
 })
 
+test('style distillation separates analysis progress from its subtitle', async () => {
+  const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
+
+  assert.match(css, /\.onboarding-style-dialog > \.onboarding-analysis-status \{ margin-top: 16px; \}/)
+})
+
 test('workspace canvas uses a pure white shared page background', async () => {
   const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
 

@@ -638,7 +638,7 @@ button, input, select, textarea { font: inherit; }
 .onboarding-analysis-status strong { color: #3d3831; font-size: 11px; font-variant-numeric: tabular-nums; }
 .onboarding-analysis-status + .onboarding-progress { height: 6px; margin: 7px 0 16px; }
 .onboarding-modal-result { margin-top: 2px; }
-.onboarding-modal-result > .onboarding-analysis-status { margin-top: 16px; }
+.onboarding-style-dialog > .onboarding-analysis-status { margin-top: 16px; }
 .onboarding-modal-result > p { margin: 0; color: #6e675d; font-size: 13px; line-height: 1.6; }
 .onboarding-memory-findings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .onboarding-memory-finding { display: flex; min-width: 0; min-height: 86px; align-items: center; flex-direction: column; justify-content: center; border: 1px solid #ded8cf; border-radius: 9px; padding: 9px 5px 8px; text-align: center; }

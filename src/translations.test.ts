@@ -24,6 +24,12 @@ test('Chinese workspace copy uses Chinese controls outside product names', () =>
   assert.equal(copy.settings.safety.title, '安全边界')
 })
 
+test('style-distillation copy omits the redundant edit hint', () => {
+  for (const locale of ['en', 'zh'] as const) {
+    assert.equal('editHint' in translations[locale].workspace.onboarding.style, false)
+  }
+})
+
 test('onboarding copy omits demo-only notices and keeps Memory migration as one destination', () => {
   for (const locale of ['en', 'zh'] as const) {
     const onboarding = translations[locale].workspace.onboarding
