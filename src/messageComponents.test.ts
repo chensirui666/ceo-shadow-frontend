@@ -134,22 +134,28 @@ test('MessageList sidebar uses component filters and changes its summary range',
   assert.equal(openedSettings, 1)
 })
 
-test('MessageDetail renders auditable A-to-E cards, dynamic artifacts, task state, and source evidence', async () => {
+test('MessageDetail keeps A-to-C in the reading area and moves Feedback to the aside', async () => {
   const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
   const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.id === 'delivery-commitment')!
-  const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
+  const detail = MessageDetail({ copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} })
+  const reading = find(detail, (element) => element.type === 'main' && element.props.className === 'message-detail-reading')
+  const aside = find(detail, (element) => element.type === 'aside' && element.props.className === 'message-detail-aside')
+  const readingHtml = renderToStaticMarkup(reading)
+  const asideHtml = renderToStaticMarkup(aside)
 
-  for (const heading of ['A. 原始问题', 'B. Friday 的判断依据', 'C. 回答／处理结果', 'D. 关联 Task', 'E. 反馈']) assert.match(html, new RegExp(heading))
-  assert.match(html, /message-detail-original-source/)
-  assert.match(html, /交付资源与排期核对\.xlsx/)
-  assert.match(html, /进行中/)
-  assert.match(html, /已准备回复客户的交付承诺草稿/)
-  assert.match(html, /aria-label="点赞"/)
-  assert.match(html, /message-detail-feedback-header/)
-  assert.match(html, /message-detail-information-row/)
-  assert.match(html, /message-detail-task-summary-link/)
-  assert.match(html, /1 个 Task（1 个进行中）/)
-  assert.doesNotMatch(html, /活动时间线/)
+  for (const heading of ['A. 原始问题', 'B. Friday 的判断依据', 'C. 回答／处理结果']) assert.match(readingHtml, new RegExp(heading))
+  assert.match(readingHtml, /message-detail-original-source/)
+  assert.match(readingHtml, /交付资源与排期核对\.xlsx/)
+  assert.match(readingHtml, /已准备回复客户的交付承诺草稿/)
+  assert.doesNotMatch(readingHtml, /D\. 关联 Task|E\. 反馈|确认交付资源与最终排期/)
+  assert.match(asideHtml, /message-detail-feedback/)
+  assert.match(asideHtml, /反馈/)
+  assert.match(asideHtml, /aria-label="点赞"/)
+  assert.match(asideHtml, /aria-label="点踩"/)
+  assert.match(asideHtml, /message-detail-information-row/)
+  assert.match(asideHtml, /message-detail-task-summary-link/)
+  assert.match(asideHtml, /1 个 Task（1 个进行中）/)
+  assert.doesNotMatch(asideHtml, /活动时间线/)
 })
 
 test('MessageDetail keeps the Task summary visual while making it noninteractive', async () => {
@@ -176,8 +182,8 @@ test('MessageDetail keeps rendering when a hot-reloaded session still holds a le
   const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message: legacyMessage, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
 
   assert.match(html, /C\. 回答／处理结果/)
-  assert.match(html, /关联 Task：确认交付资源与最终排期/)
   assert.match(html, /0 个 Task（0 个进行中）/)
+  assert.doesNotMatch(html, /D\. 关联 Task|关联 Task：确认交付资源与最终排期/)
 })
 
 test('Message styles align aside headers and detail card content with their reading anchors', () => {
@@ -190,7 +196,7 @@ test('Message styles align aside headers and detail card content with their read
   assert.match(css, /\.message-detail-card > p, \.message-detail-card > small, \.message-detail-card > ul\s*\{[^}]*margin-left:\s*23px;/)
   assert.match(css, /\.message-feedback-control\[aria-pressed='true'\]\s*\{/)
   assert.match(css, /\.message-detail-status-needs-confirmation\s*\{[^}]*color:\s*var\(--status-pending-foreground\)/)
-  for (const className of ['message-detail-original-source', 'message-detail-deliverables', 'message-detail-task-status', 'message-detail-information-row', 'message-detail-task-summary-link', 'message-detail-feedback']) assert.match(css, new RegExp(`\\.${className}`))
+  for (const className of ['message-detail-original-source', 'message-detail-deliverables', 'message-detail-information-row', 'message-detail-task-summary-link', 'message-detail-feedback']) assert.match(css, new RegExp(`\\.${className}`))
 })
 
 test('MessageDetail reads in decision order with compact feedback and a collapsed material section', async () => {
@@ -198,7 +204,7 @@ test('MessageDetail reads in decision order with compact feedback and a collapse
   const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.status === 'processed')!
   const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
 
-  const ordered = ['用户问题', '判断依据', '回答／处理结果', '关联 Task', '反馈', '处理依据与材料']
+  const ordered = ['用户问题', '判断依据', '回答／处理结果', '处理依据与材料']
   assert.ok(ordered.every((label, index) => index === 0 || html.indexOf(ordered[index - 1]) < html.indexOf(label)))
   assert.match(html, /点赞/)
   assert.match(html, /点踩/)

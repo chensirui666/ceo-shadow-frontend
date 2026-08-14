@@ -1745,13 +1745,9 @@ button, input, select, textarea { font: inherit; }
 .message-detail-deliverables li > span { display: grid; min-width: 0; gap: 2px; }
 .message-detail-deliverables strong { overflow: hidden; font-size: var(--font-meta); text-overflow: ellipsis; white-space: nowrap; }
 .message-detail-deliverables small { color: var(--color-friday-muted); font-size: 11px; }
-.message-detail-tasks li { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--color-friday-ink); font-size: var(--font-meta); }
-.message-detail-task-status { flex: 0 0 auto; border-radius: 999px; padding: 2px 7px; font-size: 10px; font-weight: 700; }
-.message-detail-task-status-open { background: var(--status-pending-background); color: var(--status-pending-text); }
-.message-detail-task-status-completed { background: var(--status-success-background); color: var(--status-success-text); }
 .message-detail-feedback-header { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 7px; }
 .message-detail-feedback-header .message-feedback-controls { display: contents; }
-.message-detail-feedback-header .message-feedback-reason { flex: 0 0 calc(100% - 23px); margin-left: 23px; }
+.message-detail-feedback-header .message-feedback-reason { flex: 0 0 100%; }
 .message-detail-references summary { cursor: pointer; }
 .message-detail-references ul { margin: 12px 0 0; color: var(--color-friday-muted); padding-left: 18px; font-size: var(--font-meta); }
 .message-detail-aside > section:first-child { display: grid; gap: 7px; }
