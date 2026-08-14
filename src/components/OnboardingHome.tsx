@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
-import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, Send, ShieldCheck, Users, X } from 'lucide-react'
+import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, ShieldCheck, Users, X } from 'lucide-react'
 import connectIllustration from '../assets/onboarding-connect-editorial.png'
 import memoryIllustration from '../assets/onboarding-memory-editorial.png'
 import teamGroupApricot from '../assets/onboarding-team-group-apricot.png'
 import teamGroupBlue from '../assets/onboarding-team-group-blue.png'
 import teamGroupLavender from '../assets/onboarding-team-group-lavender.png'
 import teamGroupSage from '../assets/onboarding-team-group-sage.png'
-import trialIllustration from '../assets/onboarding-trial-editorial.png'
 import welcomeMemoryIllustration from '../assets/onboarding-welcome-memory.png'
 import workStyleIllustration from '../assets/onboarding-work-style-editorial.png'
 import type { Locale } from '../appState.ts'
@@ -15,7 +14,7 @@ import { onboardingConnectorLogos, onboardingSupplementalLogos } from '../conten
 import { translations } from '../content/translations.ts'
 import { homeSources } from '../homeState.ts'
 import type { HomeSource } from '../homeState.ts'
-import { advanceFromMemory, completeOnboarding, confirmMemory, confirmWorkStyle, connectSource, continueToMemory, createOnboardingState, recordTrial, recordTrialFeedback, regenerateTrial, selectOnboardingStep } from '../onboardingState.ts'
+import { advanceFromMemory, completeOnboarding, confirmMemory, confirmWorkStyle, connectSource, continueToMemory, createOnboardingState, selectOnboardingStep } from '../onboardingState.ts'
 import type { OnboardingState } from '../onboardingState.ts'
 
 type OnboardingHomeProps = {
@@ -28,7 +27,7 @@ type OnboardingHomeProps = {
   welcomeOpen?: boolean
 }
 
-export type ActivationStage = 'idle' | 'confirm' | 'celebrating' | 'ready'
+export type ActivationStage = 'idle' | 'celebrating' | 'ready'
 type MemoryStage = 'selecting' | 'reading' | 'ready' | null
 type StyleStage = 'extracting' | 'ready' | null
 
@@ -127,7 +126,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
   const [styleStage, setStyleStage] = useState<StyleStage>(null)
   const [styleProgress, setStyleProgress] = useState(0)
   const [promptDraft, setPromptDraft] = useState(() => state.workStylePrompt ?? copy.style.prompt)
-  const [question, setQuestion] = useState('')
+  const [styleViewerOpen, setStyleViewerOpen] = useState(false)
   const [activation, setActivation] = useState<ActivationStage>('idle')
   const [welcomeDismissed, setWelcomeDismissed] = useState(false)
 
@@ -214,12 +213,6 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
 
   const finish = () => onComplete(completeOnboarding(state))
 
-  const submitTrial = () => {
-    if (!question.trim()) return
-    update(recordTrial(state, question, locale))
-    setQuestion('')
-  }
-
   const dismissWelcome = () => {
     setWelcomeDismissed(true)
     onWelcomeDismiss?.()
@@ -229,7 +222,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
     <section className="onboarding-frame">
       <ol aria-label={copy.progressLabel} className="onboarding-steps">
       {copy.steps.map((stepCopy, index) => {
-        const step = (index + 1) as 1 | 2 | 3 | 4
+        const step = (index + 1) as 1 | 2 | 3
         const className = state.step === step ? 'onboarding-step onboarding-step-active' : state.maxReached > step ? 'onboarding-step onboarding-step-done' : 'onboarding-step'
         return <li className={className} key={stepCopy.label}><button disabled={step > state.maxReached} onClick={() => update(selectOnboardingStep(state, step))} type="button"><span>{step}</span><strong>{stepCopy.label}</strong></button></li>
       })}
@@ -279,22 +272,11 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
             const PointIcon = stylePointIcons[index]
             return <li className="onboarding-style-point" key={point}><span className="onboarding-style-point-icon"><PointIcon aria-hidden="true" /></span>{point}</li>
           })}</ul></div>
-          <footer className="onboarding-section-footer onboarding-style-actions"><Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button></footer>
+          <footer className="onboarding-section-footer onboarding-style-actions">
+            {state.workStyleConfirmed ? <><Button onPress={() => setStyleViewerOpen(true)} type="button" variant="secondary">{copy.style.view}</Button><Button onPress={beginActivation} type="button">{copy.style.start}</Button></> : <Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button>}
+          </footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={workStyleIllustration} /></aside>
-      </section>}
-
-      {state.step === 4 && <section className="onboarding-section onboarding-editorial-layout onboarding-trial-section onboarding-trial-layout">
-        <div className="onboarding-editorial-content">
-          <header className="onboarding-section-header"><p className="onboarding-kicker">{copy.stepKicker(4)}</p><h2>{copy.trial.title}</h2><p>{copy.trial.subtitle}</p></header>
-          <div className="onboarding-trial-suggestions"><span>{copy.trial.suggestions}</span>{copy.trial.questions.map((suggestion) => <button key={suggestion} onClick={() => setQuestion(suggestion)} type="button">{suggestion}</button>)}</div>
-          <div className="onboarding-trial-composer-row">
-            <label className="onboarding-composer"><span className="sr-only">{copy.trial.inputLabel}</span><textarea onChange={(event) => setQuestion(event.target.value)} placeholder={copy.trial.placeholder} rows={1} value={question} wrap="off" /></label>
-            <Button aria-label={copy.trial.submit} className="onboarding-trial-submit" isDisabled={!question.trim()} onPress={submitTrial} type="button"><Send aria-hidden="true" /></Button>
-          </div>
-          <footer className="onboarding-section-footer onboarding-formal-action"><Button isDisabled={!state.workStyleConfirmed} onPress={() => setActivation('confirm')} type="button" variant="secondary">{copy.activation.start}</Button></footer>
-        </div>
-        <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={trialIllustration} /></aside>
       </section>}
       </section>
 
@@ -341,7 +323,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
       {styleStage === 'ready' && <div className="onboarding-modal-result"><p>{copy.style.editHint}</p><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea onChange={(event) => setPromptDraft(event.target.value)} value={promptDraft} /></label><footer><Button onPress={() => setStyleStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!promptDraft.trim()} onPress={confirmStyle} type="button">{copy.style.usePrompt}</Button></footer></div>}
     </div></section>}
 
-    {activation === 'confirm' && <section aria-label={copy.activation.confirmTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog"><h2>{copy.activation.confirmTitle}</h2><p>{copy.activation.confirmBody}</p><footer><Button onPress={() => setActivation('idle')} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={beginActivation} type="button">{copy.activation.confirm}</Button></footer></div></section>}
+    {styleViewerOpen && <section aria-label={copy.style.view} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog onboarding-style-dialog"><h2>{copy.style.view}</h2><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea readOnly value={promptDraft} /></label><footer><Button onPress={() => setStyleViewerOpen(false)} type="button" variant="secondary">{copy.actions.cancel}</Button></footer></div></section>}
 
     {(activation === 'celebrating' || activation === 'ready') && <ActivationCelebration copy={copy.activation} onFinish={finish} stage={activation} />}
 
