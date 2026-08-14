@@ -4,6 +4,7 @@ dist/
 
 # Local browser/test artifacts
 .playwright-cli/
+.playwright-mcp/
 output/
 .worktrees/
 
