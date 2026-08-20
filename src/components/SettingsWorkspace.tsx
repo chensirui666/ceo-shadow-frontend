@@ -12,6 +12,7 @@ import SettingsGeneralPanel from './SettingsGeneralPanel.tsx'
 import SettingsProfilePanel from './SettingsProfilePanel.tsx'
 
 type SettingsWorkspaceProps = {
+  initialSection?: SettingsSection
   locale: Locale
   onClose: () => void
   onLocaleChange: (locale: Locale) => void
@@ -28,10 +29,10 @@ const settingsNavIcons: Record<SettingsSection, LucideIcon> = {
 
 const connectorNames: Record<ConnectorId, string> = { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' }
 
-export default function SettingsWorkspace({ locale, onClose, onLocaleChange, onNavigate }: SettingsWorkspaceProps) {
+export default function SettingsWorkspace({ initialSection, locale, onClose, onLocaleChange, onNavigate }: SettingsWorkspaceProps) {
   const [saved, setSaved] = useState<FridaySettings>(() => loadSettings(window.localStorage))
   const [draft, setDraft] = useState<FridaySettings>(saved)
-  const [section, setSection] = useState<SettingsSection>(saved.lastSection)
+  const [section, setSection] = useState<SettingsSection>(initialSection ?? saved.lastSection)
   const [confirmation, setConfirmation] = useState<Confirmation>(null)
   const [pendingRoute, setPendingRoute] = useState<Route | null>(null)
   const [busyConnector, setBusyConnector] = useState<ConnectorId | null>(null)
@@ -93,7 +94,7 @@ export default function SettingsWorkspace({ locale, onClose, onLocaleChange, onN
     ? <SettingsAppsPanel busyConnector={busyConnector} confirmation={discardConfirmation ?? connectorConfirmation} copy={copy} notice={notice} onConnect={connect} onRequestDisconnect={setConfirmation} saved={saved} />
     : section === 'general'
       ? <SettingsGeneralPanel confirmation={discardConfirmation ?? everyoneConfirmation} copy={copy} draft={draft} locale={locale} notice={notice} onLocaleChange={onLocaleChange} onRequestEveryone={() => setConfirmation('everyone')} onSave={saveDraft} onUpdateDraft={updateDraft} />
-      : <SettingsProfilePanel confirmation={discardConfirmation} copy={copy} draft={draft} notice={notice} onRequestClose={requestClose} onSave={saveDraft} onUpdateDraft={updateDraft} />
+      : <SettingsProfilePanel confirmation={discardConfirmation} copy={copy} draft={draft} notice={notice} onSave={saveDraft} onUpdateDraft={updateDraft} />
 
   return <Modal.Backdrop className="settings-overlay" isOpen onOpenChange={(isOpen) => { if (!isOpen) requestClose() }}>
     <Modal.Container className="settings-modal-container" placement="center" size="cover">

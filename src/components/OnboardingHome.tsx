@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
-import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Repeat2, Scale, ShieldCheck, Users, X } from 'lucide-react'
+import { ArrowRight, CalendarCheck, Check, FileText, MessageCircle, Scale, ShieldCheck, Users, X } from 'lucide-react'
 import connectIllustration from '../assets/onboarding-connect-editorial.png'
 import memoryIllustration from '../assets/onboarding-memory-editorial.png'
 import teamGroupApricot from '../assets/onboarding-team-group-apricot.png'
@@ -14,26 +14,24 @@ import { onboardingConnectorLogos, onboardingSupplementalLogos } from '../conten
 import { translations } from '../content/translations.ts'
 import { homeSources } from '../homeState.ts'
 import type { HomeSource } from '../homeState.ts'
-import { advanceFromMemory, completeOnboarding, confirmMemory, confirmWorkStyle, connectSource, continueToMemory, createOnboardingState, selectOnboardingStep } from '../onboardingState.ts'
+import { advanceFromMemory, completeOnboarding, confirmWorkStyle, connectSource, continueToMemory, createOnboardingState, queueMemory, queueWorkStyle, selectOnboardingStep } from '../onboardingState.ts'
 import type { OnboardingState } from '../onboardingState.ts'
+import type { BackgroundJobKind } from '../backgroundProgressState.ts'
 
 type OnboardingHomeProps = {
   initialState?: OnboardingState
   locale: Locale
   onComplete: (state: OnboardingState) => void
-  onOpenMemory: () => void
+  onQueueBackgroundJob?: (kind: BackgroundJobKind) => void
   onStateChange?: (state: OnboardingState) => void
   onWelcomeDismiss?: () => void
   welcomeOpen?: boolean
 }
 
+type MemoryStage = 'selecting' | null
 export type ActivationStage = 'idle' | 'celebrating' | 'ready'
-type MemoryStage = 'selecting' | 'reading' | 'ready' | null
-type StyleStage = 'extracting' | 'ready' | null
 
 const memorySignalIcons = { messages: MessageCircle, documents: FileText, calendar: CalendarCheck }
-const memoryFindingIcons = { messages: MessageCircle, documents: FileText, topics: Repeat2 }
-const memoryFindingKeys = ['messages', 'documents', 'topics'] as const
 const stylePointIcons = [MessageCircle, Scale, ArrowRight, ShieldCheck]
 const supportApps = [
   ['DingTalk', onboardingConnectorLogos.dingtalk], ['Feishu', onboardingConnectorLogos.feishu], ['WeCom', onboardingSupplementalLogos.wecom],
@@ -43,128 +41,39 @@ const supportApps = [
 const teamGroups = [teamGroupApricot, teamGroupBlue, teamGroupSage, teamGroupLavender]
 export const ACTIVATION_CELEBRATION_DURATION = 5_000
 export const getActivationStartStage = (prefersReducedMotion: boolean): Extract<ActivationStage, 'celebrating' | 'ready'> => prefersReducedMotion ? 'ready' : 'celebrating'
-const analysisProgressAt = (elapsed: number): number => elapsed < 3_800 ? (elapsed / 3_800) * 95 : Math.min(100, 95 + ((elapsed - 3_800) / 300) * 5)
-
-export function AnalysisProgress({ completeLabel, label, value }: { completeLabel: string; label: string; value: number }) {
-  const displayValue = Math.round(value)
-  return <><p className="onboarding-analysis-status"><span>{value === 100 ? completeLabel : label}</span><strong>{displayValue}%</strong></p><progress className="onboarding-progress" max="100" value={value}>{displayValue}%</progress></>
-}
 
 export function MemoryConnector({ connectedLabel, logo, name, onRemove, removeLabel }: { connectedLabel: string; logo: string; name: string; onRemove?: () => void; removeLabel?: string }) {
   return <span className="onboarding-memory-connector"><img alt="" src={logo} /><span><strong>{name}</strong><small>{connectedLabel}</small></span>{onRemove ? <button aria-label={removeLabel} onClick={onRemove} type="button"><X aria-hidden="true" /></button> : <i aria-hidden="true" />}</span>
 }
 
-type ActivationCelebrationProps = {
-  copy: typeof translations.zh.workspace.onboarding.activation
-  onFinish: () => void
-  stage: Extract<ActivationStage, 'celebrating' | 'ready'>
-}
-
-export function ActivationCelebration({ copy, onFinish, stage }: ActivationCelebrationProps) {
-  if (stage === 'ready') return <section aria-label={copy.completeTitle} aria-modal="true" className="onboarding-activation-backdrop onboarding-activation-complete" role="dialog"><div className="onboarding-activation-complete-dialog">
-    <span aria-hidden="true" className="onboarding-activation-complete-mark"><Check /></span><h2>{copy.completeTitle}</h2><p>{copy.completeBody}</p><Button onPress={onFinish} type="button">{copy.completeAction}</Button>
-  </div></section>
+export function ActivationCelebration({ copy, onFinish, stage }: { copy: typeof translations.zh.workspace.onboarding.activation; onFinish: () => void; stage: Extract<ActivationStage, 'celebrating' | 'ready'> }) {
+  if (stage === 'ready') return <section aria-label={copy.completeTitle} aria-modal="true" className="onboarding-activation-backdrop onboarding-activation-complete" role="dialog"><div className="onboarding-activation-complete-dialog"><span aria-hidden="true" className="onboarding-activation-complete-mark"><Check /></span><h2>{copy.completeTitle}</h2><p>{copy.completeBody}</p><Button onPress={onFinish} type="button">{copy.completeAction}</Button></div></section>
 
   return <section aria-live="polite" className="onboarding-activation-backdrop onboarding-activation-celebration" role="status"><span className="sr-only">{copy.celebrating}</span><svg aria-hidden="true" className="onboarding-celebration-scene" fill="none" viewBox="0 0 800 500">
-    <defs>
-      <radialGradient id="onboarding-celebration-glow"><stop stopColor="#f1c57b" stopOpacity=".42" /><stop offset="1" stopColor="#f1c57b" stopOpacity="0" /></radialGradient>
-      <filter id="onboarding-celebration-soft-glow"><feGaussianBlur stdDeviation="8" /></filter>
-    </defs>
+    <defs><radialGradient id="onboarding-celebration-glow"><stop stopColor="#f1c57b" stopOpacity=".42" /><stop offset="1" stopColor="#f1c57b" stopOpacity="0" /></radialGradient><filter id="onboarding-celebration-soft-glow"><feGaussianBlur stdDeviation="8" /></filter></defs>
     <path className="onboarding-celebration-ground" d="M82 413H720" />
     <g className="onboarding-celebration-crew">
-      <g className="onboarding-celebration-person">
-        <path className="onboarding-celebration-person-hat" d="M270 309C272 297 282 291 293 293C300 294 304 298 306 303L273 307Z" fill="#2d2a25" />
-        <path d="M268 307H309" stroke="#2d2a25" strokeLinecap="round" strokeWidth="5" />
-        <circle cx="287" cy="314" fill="#e9c6a2" r="11" />
-        <path className="onboarding-celebration-person-coat" d="M278 326C283 322 292 322 298 328L305 366L275 366L278 326Z" fill="#176869" />
-        <path d="M286 329V361" stroke="#f8f4ea" strokeLinecap="round" strokeWidth="3" />
-        <path d="M279 334L264 359M297 334L316 361" stroke="#e9c6a2" strokeLinecap="round" strokeWidth="7" />
-        <path d="M280 366L275 395M298 366L306 395" stroke="#4a443c" strokeLinecap="round" strokeWidth="9" />
-        <path d="M270 399H281M301 399H313" stroke="#2d2a25" strokeLinecap="round" strokeWidth="7" />
-      </g>
-      <g className="onboarding-celebration-cart">
-        <path d="M313 365H337" stroke="#2d2a25" strokeLinecap="round" strokeWidth="5" />
-        <path d="M332 356H441L429 392H343L332 356Z" fill="#e9d6bb" stroke="#2d2a25" strokeWidth="4" />
-        <path d="M345 356H429M349 369H425" stroke="#c18c53" strokeWidth="3" />
-        <path d="M350 356V341H423V356" stroke="#2d2a25" strokeWidth="4" />
-        <circle cx="355" cy="403" fill="#2d2a25" r="12" /><circle cx="420" cy="403" fill="#2d2a25" r="12" />
-        <circle cx="355" cy="403" fill="#f8f4ea" r="4" /><circle cx="420" cy="403" fill="#f8f4ea" r="4" />
-      </g>
-      <g className="onboarding-celebration-rocket">
-        <path d="M383 341V311C383 293 396 280 408 274C421 280 434 293 434 311V341H383Z" fill="#176869" />
-        <path d="M383 328L367 343H383M434 328L450 343H434" fill="#d7724f" />
-        <path d="M408 280V337" stroke="#e9d6bb" strokeWidth="3" />
-        <circle cx="408" cy="306" fill="#f8f4ea" r="8" /><circle cx="408" cy="306" fill="#d7a64e" r="4" />
-        <path d="M396 341L408 358L421 341" fill="#d7a64e" />
-      </g>
+      <g className="onboarding-celebration-person"><path className="onboarding-celebration-person-hat" d="M270 309C272 297 282 291 293 293C300 294 304 298 306 303L273 307Z" fill="#2d2a25" /><path d="M268 307H309" stroke="#2d2a25" strokeLinecap="round" strokeWidth="5" /><circle cx="287" cy="314" fill="#e9c6a2" r="11" /><path className="onboarding-celebration-person-coat" d="M278 326C283 322 292 322 298 328L305 366L275 366L278 326Z" fill="#176869" /><path d="M286 329V361" stroke="#f8f4ea" strokeLinecap="round" strokeWidth="3" /><path d="M279 334L264 359M297 334L316 361" stroke="#e9c6a2" strokeLinecap="round" strokeWidth="7" /><path d="M280 366L275 395M298 366L306 395" stroke="#4a443c" strokeLinecap="round" strokeWidth="9" /><path d="M270 399H281M301 399H313" stroke="#2d2a25" strokeLinecap="round" strokeWidth="7" /></g>
+      <g className="onboarding-celebration-cart"><path d="M313 365H337" stroke="#2d2a25" strokeLinecap="round" strokeWidth="5" /><path d="M332 356H441L429 392H343L332 356Z" fill="#e9d6bb" stroke="#2d2a25" strokeWidth="4" /><path d="M345 356H429M349 369H425" stroke="#c18c53" strokeWidth="3" /><path d="M350 356V341H423V356" stroke="#2d2a25" strokeWidth="4" /><circle cx="355" cy="403" fill="#2d2a25" r="12" /><circle cx="420" cy="403" fill="#2d2a25" r="12" /><circle cx="355" cy="403" fill="#f8f4ea" r="4" /><circle cx="420" cy="403" fill="#f8f4ea" r="4" /></g>
+      <g className="onboarding-celebration-rocket"><path d="M383 341V311C383 293 396 280 408 274C421 280 434 293 434 311V341H383Z" fill="#176869" /><path d="M383 328L367 343H383M434 328L450 343H434" fill="#d7724f" /><path d="M408 280V337" stroke="#e9d6bb" strokeWidth="3" /><circle cx="408" cy="306" fill="#f8f4ea" r="8" /><circle cx="408" cy="306" fill="#d7a64e" r="4" /><path d="M396 341L408 358L421 341" fill="#d7a64e" /></g>
       <path className="onboarding-celebration-fuse" d="M376 350C358 349 356 336 365 328" stroke="#d7724f" strokeLinecap="round" strokeWidth="4" />
-      <g className="onboarding-celebration-burst" strokeLinecap="round">
-        <circle className="onboarding-celebration-firework-halo" cx="408" cy="106" fill="url(#onboarding-celebration-glow)" filter="url(#onboarding-celebration-soft-glow)" r="91" />
-        <g className="onboarding-celebration-firework-rays onboarding-celebration-firework-rays-outer" strokeWidth="5">
-          <path d="M408 97V20M414 98L455 29M418 101L485 64M419 106L501 112M416 111L475 158M411 114L433 190M404 114L372 182M399 111L329 155M397 106L309 111M399 101L338 61M404 98L380 29" stroke="#176869" />
-          <path d="M411 97L431 24M417 99L470 46M419 103L493 87M418 109L493 133M414 113L457 178M406 114L398 194M401 113L349 178M397 109L319 133M397 103L324 85M400 99L346 46" stroke="#d7724f" />
-        </g>
-        <g className="onboarding-celebration-firework-rays onboarding-celebration-firework-rays-inner" stroke="#d7a64e" strokeWidth="4">
-          <path d="M408 96V51M413 98L440 55M417 102L460 84M418 107L464 118M414 112L442 153M408 114L408 169M402 112L372 153M398 107L351 118M399 102L356 84M403 98L376 55" />
-        </g>
-        <g className="onboarding-celebration-firework-sparks" fill="#d7a64e"><circle cx="408" cy="22" r="3" /><circle cx="490" cy="65" r="3" /><circle cx="503" cy="138" r="3" /><circle cx="443" cy="188" r="3" /><circle cx="347" cy="180" r="3" /><circle cx="311" cy="120" r="3" /><circle cx="341" cy="55" r="3" /></g>
-        <circle cx="408" cy="106" fill="#f8f4ea" r="13" stroke="#d7724f" strokeWidth="4" /><circle cx="408" cy="106" fill="#d7a64e" r="5" />
-      </g>
+      <g className="onboarding-celebration-burst" strokeLinecap="round"><circle className="onboarding-celebration-firework-halo" cx="408" cy="106" fill="url(#onboarding-celebration-glow)" filter="url(#onboarding-celebration-soft-glow)" r="91" /><g className="onboarding-celebration-firework-rays onboarding-celebration-firework-rays-outer" strokeWidth="5"><path d="M408 97V20M414 98L455 29M418 101L485 64M419 106L501 112M416 111L475 158M411 114L433 190M404 114L372 182M399 111L329 155M397 106L309 111M399 101L338 61M404 98L380 29" stroke="#176869" /><path d="M411 97L431 24M417 99L470 46M419 103L493 87M418 109L493 133M414 113L457 178M406 114L398 194M401 113L349 178M397 109L319 133M397 103L324 85M400 99L346 46" stroke="#d7724f" /></g><g className="onboarding-celebration-firework-rays onboarding-celebration-firework-rays-inner" stroke="#d7a64e" strokeWidth="4"><path d="M408 96V51M413 98L440 55M417 102L460 84M418 107L464 118M414 112L442 153M408 114L408 169M402 112L372 153M398 107L351 118M399 102L356 84M403 98L376 55" /></g><g className="onboarding-celebration-firework-sparks" fill="#d7a64e"><circle cx="408" cy="22" r="3" /><circle cx="490" cy="65" r="3" /><circle cx="503" cy="138" r="3" /><circle cx="443" cy="188" r="3" /><circle cx="347" cy="180" r="3" /><circle cx="311" cy="120" r="3" /><circle cx="341" cy="55" r="3" /></g><circle cx="408" cy="106" fill="#f8f4ea" r="13" stroke="#d7724f" strokeWidth="4" /><circle cx="408" cy="106" fill="#d7a64e" r="5" /></g>
     </g>
   </svg></section>
 }
 
-export default function OnboardingHome({ initialState, locale, onComplete, onOpenMemory, onStateChange, onWelcomeDismiss, welcomeOpen = true }: OnboardingHomeProps) {
+export default function OnboardingHome({ initialState, locale, onComplete, onQueueBackgroundJob = () => {}, onStateChange, onWelcomeDismiss, welcomeOpen = true }: OnboardingHomeProps) {
   const copy = translations[locale].workspace.onboarding
   const homeCopy = translations[locale].workspace.home
   const fallbackInitialState = useRef(createOnboardingState())
   const [state, setState] = useState(() => initialState ?? fallbackInitialState.current)
   const [connecting, setConnecting] = useState<HomeSource | null>(null)
   const [memoryStage, setMemoryStage] = useState<MemoryStage>(null)
-  const [memoryProgress, setMemoryProgress] = useState(0)
   const [memorySources, setMemorySources] = useState<HomeSource[]>([])
-  const [styleStage, setStyleStage] = useState<StyleStage>(null)
-  const [styleProgress, setStyleProgress] = useState(0)
-  const [promptDraft, setPromptDraft] = useState(() => state.workStylePrompt ?? copy.style.prompt)
-  const [styleViewerOpen, setStyleViewerOpen] = useState(false)
+  const [styleConfirmationOpen, setStyleConfirmationOpen] = useState(false)
+  const [completionConfirmationOpen, setCompletionConfirmationOpen] = useState(false)
   const [activation, setActivation] = useState<ActivationStage>('idle')
   const [welcomeDismissed, setWelcomeDismissed] = useState(false)
-
-  useEffect(() => {
-    if (memoryStage !== 'reading') return
-    const startedAt = performance.now()
-    let frame = 0
-    const tick = (now: number) => {
-      const value = analysisProgressAt(now - startedAt)
-      setMemoryProgress(value)
-      if (value === 100) setMemoryStage('ready')
-      else frame = window.requestAnimationFrame(tick)
-    }
-    frame = window.requestAnimationFrame(tick)
-    return () => {
-      window.cancelAnimationFrame(frame)
-    }
-  }, [memoryStage])
-
-  useEffect(() => {
-    if (styleStage !== 'extracting') return
-    const startedAt = performance.now()
-    let frame = 0
-    const tick = (now: number) => {
-      const value = analysisProgressAt(now - startedAt)
-      setStyleProgress(value)
-      if (value === 100) setStyleStage('ready')
-      else frame = window.requestAnimationFrame(tick)
-    }
-    frame = window.requestAnimationFrame(tick)
-    return () => {
-      window.cancelAnimationFrame(frame)
-    }
-  }, [styleStage])
-
-  useEffect(() => {
-    if (!state.workStylePrompt) setPromptDraft(copy.style.prompt)
-  }, [copy.style.prompt, state.workStylePrompt])
 
   useEffect(() => {
     if (activation !== 'celebrating') return
@@ -190,24 +99,30 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
 
   const readSelectedMemory = () => {
     if (!memorySources.length) return
-    setMemoryProgress(0)
-    setMemoryStage('reading')
+    update(queueMemory(state, memorySources))
+    onQueueBackgroundJob('memory')
+    setMemoryStage(null)
   }
 
   const beginStyleExtraction = () => {
-    setPromptDraft(state.workStylePrompt ?? copy.style.prompt)
-    setStyleProgress(0)
-    setStyleStage('extracting')
+    setStyleConfirmationOpen(true)
   }
 
-  const confirmStyle = () => {
-    update(confirmWorkStyle(state, promptDraft))
-    setStyleStage(null)
+  const confirmStyleSubmission = () => {
+    update(queueWorkStyle(state))
+    onQueueBackgroundJob('work-style')
+    setStyleConfirmationOpen(false)
   }
 
   const beginActivation = () => {
-    if (!state.workStyleConfirmed) return
-    update(completeOnboarding(state))
+    if (!state.workStyleSubmitted) return
+    setCompletionConfirmationOpen(true)
+  }
+
+  const confirmOnboardingCompletion = () => {
+    const completed = completeOnboarding(confirmWorkStyle(state))
+    update(completed)
+    setCompletionConfirmationOpen(false)
     setActivation(getActivationStartStage(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false))
   }
 
@@ -259,7 +174,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
             })}</ul></div>
           <section className="onboarding-memory-migration"><strong>{copy.memory.migration.title}</strong><p>{copy.memory.migration.body}</p></section>
           <footer className="onboarding-section-footer onboarding-section-footer-actions onboarding-memory-actions">
-            {state.memoryConfirmed ? <><Button onPress={onOpenMemory} type="button" variant="secondary">{copy.memory.view}</Button><Button onPress={() => update(advanceFromMemory(state))} type="button">{copy.memory.proceed}</Button></> : <Button onPress={beginMemoryRead} type="button">{copy.memory.confirm}</Button>}
+            {state.memorySubmitted ? <Button onPress={() => update(advanceFromMemory(state))} type="button">{copy.actions.continue}</Button> : <Button onPress={beginMemoryRead} type="button">{copy.memory.confirm}</Button>}
           </footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={memoryIllustration} /></aside>
@@ -273,7 +188,7 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
             return <li className="onboarding-style-point" key={point}><span className="onboarding-style-point-icon"><PointIcon aria-hidden="true" /></span>{point}</li>
           })}</ul></div>
           <footer className="onboarding-section-footer onboarding-style-actions">
-            {state.workStyleConfirmed ? <><Button onPress={() => setStyleViewerOpen(true)} type="button" variant="secondary">{copy.style.view}</Button><Button onPress={beginActivation} type="button">{copy.style.start}</Button></> : <Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button>}
+            {state.workStyleSubmitted ? <Button onPress={beginActivation} type="button">{copy.style.completeSetup}</Button> : <Button onPress={beginStyleExtraction} type="button">{copy.style.extract}</Button>}
           </footer>
         </div>
         <aside aria-hidden="true" className="onboarding-editorial-artwork"><img alt="" src={workStyleIllustration} /></aside>
@@ -305,25 +220,15 @@ export default function OnboardingHome({ initialState, locale, onComplete, onOpe
 
     {connecting && <section aria-label={copy.connection.confirmTitle(homeCopy.sources[connecting])} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog"><h2>{copy.connection.confirmTitle(homeCopy.sources[connecting])}</h2><p>{copy.connection.confirmBody}</p><footer><Button onPress={() => setConnecting(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={completeConnection} type="button">{copy.connection.complete}</Button></footer></div></section>}
 
-    {memoryStage && <section aria-label={memoryStage === 'selecting' ? copy.memory.scopeTitle : copy.memory.readingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-memory-dialog">
-      <h2>{memoryStage === 'selecting' ? copy.memory.scopeTitle : copy.memory.readingTitle}</h2>
-      {memoryStage !== 'selecting' && <p className="onboarding-dialog-subtitle">{copy.memory.readingSubtitle}</p>}
-      {memoryStage === 'selecting' ? <div className="onboarding-memory-scope-list">{memorySources.map((source) => <MemoryConnector connectedLabel={copy.connection.connected} key={source} logo={onboardingConnectorLogos[source]} name={homeCopy.sources[source]} onRemove={() => setMemorySources((sources) => sources.filter((item) => item !== source))} removeLabel={copy.memory.removeSource(homeCopy.sources[source])} />)}</div> : <div className="onboarding-memory-connectors">{memorySources.map((source) => <MemoryConnector connectedLabel={copy.connection.connected} key={source} logo={onboardingConnectorLogos[source]} name={homeCopy.sources[source]} />)}</div>}
-      {memoryStage === 'selecting' && <><p className="onboarding-memory-scope-hint">{copy.memory.scopeHint}</p><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!memorySources.length} onPress={readSelectedMemory} type="button">{copy.memory.readSelected}</Button></footer></>}
-      {memoryStage === 'reading' && <AnalysisProgress completeLabel={copy.memory.analysisComplete} label={copy.memory.analysis} value={memoryProgress} />}
-      {memoryStage === 'ready' && <div className="onboarding-modal-result"><AnalysisProgress completeLabel={copy.memory.analysisComplete} label={copy.memory.analysis} value={100} /><div aria-label={copy.memory.findingsLabel} className="onboarding-memory-findings">{memoryFindingKeys.map((finding) => {
-        const FindingIcon = memoryFindingIcons[finding]
-        const [count, label] = copy.memory.findings[finding]
-        return <div className="onboarding-memory-finding" key={finding}><FindingIcon aria-hidden="true" /><strong>{count}</strong><span>{label}</span></div>
-      })}</div><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={() => { update(confirmMemory(state, memorySources)); setMemoryStage(null) }} type="button">{copy.memory.proceed}</Button></footer></div>}
+    {memoryStage === 'selecting' && <section aria-label={copy.memory.scopeTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog onboarding-memory-dialog">
+      <h2>{copy.memory.scopeTitle}</h2>
+      <div className="onboarding-memory-scope-list">{memorySources.map((source) => <MemoryConnector connectedLabel={copy.connection.connected} key={source} logo={onboardingConnectorLogos[source]} name={homeCopy.sources[source]} onRemove={() => setMemorySources((sources) => sources.filter((item) => item !== source))} removeLabel={copy.memory.removeSource(homeCopy.sources[source])} />)}</div>
+      <p className="onboarding-memory-scope-hint">{copy.memory.scopeHint}</p><footer><Button onPress={() => setMemoryStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!memorySources.length} onPress={readSelectedMemory} type="button">{copy.memory.readSelected}</Button></footer>
     </div></section>}
 
-    {styleStage && <section aria-label={copy.style.extractingTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div aria-live="polite" className="onboarding-modal-dialog onboarding-memory-dialog onboarding-style-dialog">
-      <h2>{copy.style.extractingTitle}</h2><p className="onboarding-dialog-subtitle">{copy.style.extractingSubtitle}</p><AnalysisProgress completeLabel={copy.style.analysisComplete} label={copy.style.analysis} value={styleStage === 'ready' ? 100 : styleProgress} />
-      {styleStage === 'ready' && <div className="onboarding-modal-result"><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea onChange={(event) => setPromptDraft(event.target.value)} value={promptDraft} /></label><footer><Button onPress={() => setStyleStage(null)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button isDisabled={!promptDraft.trim()} onPress={confirmStyle} type="button">{copy.style.usePrompt}</Button></footer></div>}
-    </div></section>}
+    {styleConfirmationOpen && <section aria-label={copy.style.confirmTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog onboarding-style-dialog"><h2>{copy.style.confirmTitle}</h2><p>{copy.style.confirmBody}</p><footer><Button onPress={() => setStyleConfirmationOpen(false)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={confirmStyleSubmission} type="button">{copy.style.confirm}</Button></footer></div></section>}
 
-    {styleViewerOpen && <section aria-label={copy.style.view} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog onboarding-style-dialog"><h2>{copy.style.view}</h2><label className="onboarding-prompt-editor"><span>{copy.style.promptLabel}</span><textarea readOnly value={promptDraft} /></label><footer><Button onPress={() => setStyleViewerOpen(false)} type="button" variant="secondary">{copy.actions.cancel}</Button></footer></div></section>}
+    {completionConfirmationOpen && <section aria-label={copy.style.completionTitle} aria-modal="true" className="onboarding-modal-backdrop" role="dialog"><div className="onboarding-modal-dialog onboarding-style-dialog"><h2>{copy.style.completionTitle}</h2><p>{copy.style.completionBody}</p><footer><Button onPress={() => setCompletionConfirmationOpen(false)} type="button" variant="secondary">{copy.actions.cancel}</Button><Button onPress={confirmOnboardingCompletion} type="button">{copy.style.completionConfirm}</Button></footer></div></section>}
 
     {(activation === 'celebrating' || activation === 'ready') && <ActivationCelebration copy={copy.activation} onFinish={finish} stage={activation} />}
 

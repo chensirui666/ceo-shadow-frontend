@@ -11,14 +11,14 @@ const createStorage = (entries: Record<string, string> = {}) => {
   }
 }
 
-test('settings default to safe group handling, a five-minute wait, and three alerts', () => {
+test('settings default to safe group handling, a five-minute wait, and one editable prompt', () => {
   const settings = settingsState.createDefaultSettings()
 
   assert.equal(settings.general.respondToEveryone, false)
   assert.equal(settings.general.waitMinutes, 5)
   assert.equal(settings.general.quietHours, null)
-  assert.equal(settingsState.countEnabledNotifications(settings.general.notifications), 3)
   assert.deepEqual(settings.connectors, { dingtalk: 'disconnected', feishu: 'disconnected', teams: 'disconnected' })
+  assert.equal(settings.profile.prompt, '先看目标与事实；信息不足先追问；不轻易替人承诺。\n\n结论优先，简短直接；复杂事项给出下一步。\n\n涉及关键判断、对外承诺或敏感议题时，必须交由本人确认。')
 })
 
 test('normalizeSettings recovers safe values from malformed persisted preferences', () => {
@@ -37,9 +37,20 @@ test('normalizeSettings recovers safe values from malformed persisted preference
   assert.deepEqual(settings.connectors, { dingtalk: 'connected', feishu: 'disconnected', teams: 'disconnected' })
   assert.equal(settings.general.waitMinutes, 5)
   assert.equal(settings.general.quietHours, null)
-  assert.deepEqual(settings.general.notifications, { handoff: false, reconnect: true, sendFailed: true })
-  assert.deepEqual(settings.profile, { name: '陈思睿', aliases: ['@思睿', '@CS'] })
+  assert.deepEqual(settings.profile, {
+    name: '陈思睿',
+    aliases: ['@思睿', '@CS'],
+    prompt: '先看目标与事实；信息不足先追问；不轻易替人承诺。\n\n结论优先，简短直接；复杂事项给出下一步。\n\n涉及关键判断、对外承诺或敏感议题时，必须交由本人确认。',
+  })
   assert.equal(settings.lastSection, 'apps')
+})
+
+test('normalizeSettings discards removed notification preferences', () => {
+  const settings = settingsState.normalizeSettings({
+    general: { notifications: { handoff: false, reconnect: false, sendFailed: false } },
+  })
+
+  assert.equal('notifications' in settings.general, false)
 })
 
 test('saveSettings persists normalized preferences for a later load', () => {
@@ -51,12 +62,11 @@ test('saveSettings persists normalized preferences for a later load', () => {
       respondToEveryone: false,
       waitMinutes: 10,
       quietHours: { start: '19:00', end: '09:00' },
-      notifications: { handoff: true, reconnect: false, sendFailed: true },
     },
     lastSection: 'general',
   })
 
-  assert.equal(settingsState.countEnabledNotifications(saved.general.notifications), 2)
+  assert.equal('notifications' in saved.general, false)
   assert.deepEqual(settingsState.loadSettings(storage), saved)
 })
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Dropdown, Modal, useOverlayState } from '@heroui/react'
 import { Button as AriaButton } from 'react-aria-components'
 import { resolveRoute } from '../appState.ts'
@@ -6,7 +6,10 @@ import type { Locale, Route, Session } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import { createMessageService } from '../messageService.ts'
 import { createOnboardingState, needsOnboarding } from '../onboardingState.ts'
+import { createBackgroundProgressState, markBackgroundNotificationsRead, queueBackgroundJob } from '../backgroundProgressState.ts'
+import type { BackgroundJobKind } from '../backgroundProgressState.ts'
 import { hasSeenOnboardingWelcome, markOnboardingWelcomeSeen, saveSession } from '../sessionStore.ts'
+import type { SettingsSection } from '../settingsState.ts'
 import Icon from './Icon.tsx'
 import type { IconName } from './Icon.tsx'
 import FeedbackWorkspace from './FeedbackWorkspace.tsx'
@@ -17,6 +20,8 @@ import SettingsWorkspace from './SettingsWorkspace.tsx'
 import Brand from './Brand.tsx'
 import TasksWorkspace from './TasksWorkspace.tsx'
 import type { TasksDetailHeader } from './TasksWorkspace.tsx'
+import { BackgroundProgressPanel } from './BackgroundProgressPanel.tsx'
+import { BackgroundNotificationsPanel } from './BackgroundNotificationsPanel.tsx'
 
 type WorkspaceProps = {
   locale: Locale
@@ -39,6 +44,11 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const [settingsOpen, setSettingsOpen] = useState(() => storedRoute === 'settings')
   const [onboarding, setOnboarding] = useState(() => needsOnboarding(session.email))
   const [onboardingState, setOnboardingState] = useState(() => createOnboardingState())
+  const [backgroundProgress, setBackgroundProgress] = useState(createBackgroundProgressState)
+  const [backgroundProgressOpen, setBackgroundProgressOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const backgroundProgressTimer = useRef<number | null>(null)
+  const [settingsSection, setSettingsSection] = useState<SettingsSection | undefined>()
   const [welcomeOpen, setWelcomeOpen] = useState(() => typeof window === 'undefined' || !hasSeenOnboardingWelcome(window.localStorage, session.email))
   const [sessionMessageService] = useState(createMessageService)
   const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
@@ -54,7 +64,14 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
     saveSession(window.localStorage, { ...session, route })
   }, [route, session])
 
-  const openSettings = () => setSettingsOpen(true)
+  useEffect(() => () => {
+    if (backgroundProgressTimer.current !== null) window.clearTimeout(backgroundProgressTimer.current)
+  }, [])
+
+  const openSettings = (section?: SettingsSection) => {
+    setSettingsSection(section)
+    setSettingsOpen(true)
+  }
   const dismissWelcome = () => {
     markOnboardingWelcomeSeen(window.localStorage, session.email)
     setWelcomeOpen(false)
@@ -74,12 +91,32 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
     setOnboarding(false)
     setRoute('home')
   }
+  const queueBackground = (kind: BackgroundJobKind) => {
+    setBackgroundProgress((current) => queueBackgroundJob(current, kind))
+    setNotificationsOpen(false)
+    setBackgroundProgressOpen(true)
+    if (backgroundProgressTimer.current !== null) window.clearTimeout(backgroundProgressTimer.current)
+    backgroundProgressTimer.current = window.setTimeout(() => setBackgroundProgressOpen(false), 3_000)
+  }
+  const toggleNotifications = () => {
+    const opening = !notificationsOpen
+    setNotificationsOpen(opening)
+    if (opening) {
+      setBackgroundProgressOpen(false)
+      setBackgroundProgress((current) => markBackgroundNotificationsRead(current))
+    }
+  }
+  const openWorkStyleNotification = () => {
+    setNotificationsOpen(false)
+    openSettings('profile')
+  }
 
   return (
     <main className="workspace-shell">
       <header aria-hidden={settingsOpen} className="workspace-global-bar" inert={settingsOpen || undefined}>
         <div className="workspace-tools">
-          <Button aria-label={copy.unavailableNotifications} className="icon-button" isDisabled isIconOnly type="button"><Icon name="bell" /><span className="sr-only">{copy.unavailableNotifications}</span></Button>
+          <Button aria-expanded={backgroundProgressOpen} aria-label={copy.backgroundProgress.open} className="background-progress-trigger" isIconOnly onPress={() => { setNotificationsOpen(false); setBackgroundProgressOpen((open) => !open) }} type="button"><Icon name="progress" /></Button>
+          <Button aria-expanded={notificationsOpen} aria-label={copy.notifications.open} className="notification-trigger" isIconOnly onPress={toggleNotifications} type="button"><Icon name="bell" />{backgroundProgress.unreadCompletedJobs.length > 0 && <i aria-hidden="true" />}</Button>
           <Dropdown>
             <AriaButton aria-label={copy.openAccountMenu} className="account-menu-trigger" type="button"><Icon name="user" /></AriaButton>
             <Dropdown.Popover className="account-menu-popover" placement="bottom right">
@@ -92,6 +129,8 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
               </Dropdown.Menu>
             </Dropdown.Popover>
           </Dropdown>
+          {backgroundProgressOpen && <div className="background-progress-popover"><BackgroundProgressPanel copy={copy.backgroundProgress} jobs={backgroundProgress.jobs.filter((job) => job.status === 'running')} /></div>}
+          {notificationsOpen && <div className="background-notifications-popover"><BackgroundNotificationsPanel copy={copy.notifications} jobs={backgroundProgress.jobs} onOpenWorkStyle={openWorkStyleNotification} /></div>}
         </div>
       </header>
 
@@ -106,7 +145,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
           ))}
         </nav>
         <div className="workspace-rail-bottom">
-          <Button className={settingsOpen ? 'nav-item nav-item-active' : 'nav-item'} onPress={openSettings} type="button">
+          <Button className={settingsOpen ? 'nav-item nav-item-active' : 'nav-item'} onPress={() => openSettings()} type="button">
             <Icon name="settings" />
             <span>{copy.nav.settings}</span>
           </Button>
@@ -124,7 +163,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
           onboarding
-            ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onOpenMemory={() => goTo('memory')} onStateChange={setOnboardingState} onWelcomeDismiss={dismissWelcome} welcomeOpen={welcomeOpen} />
+            ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onQueueBackgroundJob={queueBackground} onStateChange={setOnboardingState} onWelcomeDismiss={dismissWelcome} welcomeOpen={welcomeOpen} />
             : <MessageWorkspace copy={copy.message} onOpenSettings={openSettings} service={sessionMessageService} />
         ) : route === 'tasks' ? (
           <TasksWorkspace currentUser={name} locale={locale} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />
@@ -151,7 +190,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         </Modal.Container>
       </Modal.Backdrop>
 
-      {settingsOpen && <SettingsWorkspace locale={locale} onClose={() => setSettingsOpen(false)} onLocaleChange={onLocaleChange} onNavigate={goTo} />}
+      {settingsOpen && <SettingsWorkspace initialSection={settingsSection} locale={locale} onClose={() => { setSettingsOpen(false); setSettingsSection(undefined) }} onLocaleChange={onLocaleChange} onNavigate={goTo} />}
     </main>
   )
 }

@@ -8,9 +8,9 @@ export type OnboardingState = {
   maxReached: OnboardingStep
   connectedSources: HomeSource[]
   memorySources: HomeSource[]
-  memoryConfirmed: boolean
+  memorySubmitted: boolean
+  workStyleSubmitted: boolean
   workStyleConfirmed: boolean
-  workStylePrompt?: string
   completed: boolean
 }
 
@@ -21,7 +21,8 @@ export const createOnboardingState = (): OnboardingState => ({
   maxReached: 1,
   connectedSources: [],
   memorySources: [],
-  memoryConfirmed: false,
+  memorySubmitted: false,
+  workStyleSubmitted: false,
   workStyleConfirmed: false,
   completed: false,
 })
@@ -34,18 +35,22 @@ export const continueToMemory = (state: OnboardingState): OnboardingState => (
   state.connectedSources.length ? { ...state, step: 2, maxReached: 2 } : state
 )
 
-export const confirmMemory = (state: OnboardingState, sources = state.connectedSources): OnboardingState => {
+export const queueMemory = (state: OnboardingState, sources = state.connectedSources): OnboardingState => {
   const memorySources = sources.filter((source) => state.connectedSources.includes(source))
-  return memorySources.length ? { ...state, memoryConfirmed: true, memorySources } : state
+  return memorySources.length ? { ...state, memorySubmitted: true, memorySources } : state
 }
 
 export const advanceFromMemory = (state: OnboardingState): OnboardingState => (
-  state.memoryConfirmed ? { ...state, step: 3, maxReached: 3 } : state
+  state.memorySubmitted ? { ...state, step: 3, maxReached: 3 } : state
 )
 
-export const confirmWorkStyle = (state: OnboardingState, prompt?: string): OnboardingState => (
-  state.step === 3 && state.memoryConfirmed
-    ? { ...state, ...(prompt?.trim() ? { workStylePrompt: prompt.trim() } : {}), workStyleConfirmed: true }
+export const queueWorkStyle = (state: OnboardingState): OnboardingState => (
+  state.step === 3 && state.memorySubmitted ? { ...state, workStyleSubmitted: true } : state
+)
+
+export const confirmWorkStyle = (state: OnboardingState): OnboardingState => (
+  state.step === 3 && state.workStyleSubmitted
+    ? { ...state, workStyleConfirmed: true }
     : state
 )
 

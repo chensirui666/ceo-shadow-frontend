@@ -6,6 +6,21 @@ import type { MessageCategory, MessageSource, MessageStatus, MessageSummaryRange
 import type { ConnectorId, ConnectorStatus, SettingsSection } from '../settingsState.ts'
 
 type PageCopy = [string, string, string]
+export type BackgroundProgressCopy = {
+  open: string
+  title: string
+  empty: string
+  estimate: (minutes: number) => string
+  jobs: Record<'memory' | 'work-style', string>
+  status: Record<'running' | 'completed' | 'failed', string>
+}
+
+export type BackgroundNotificationCopy = {
+  open: string
+  title: string
+  empty: string
+  completed: Record<'memory' | 'work-style', { title: string; body: string; action?: string }>
+}
 
 type SettingsCopy = {
   title: string
@@ -27,7 +42,6 @@ type SettingsCopy = {
     subtitle: string
     group: { title: string; description: string; summary: (enabled: boolean) => string; direct: string; everyone: string; confirmation: { title: string; body: string; cancel: string; confirm: string } }
     rhythm: { title: string; description: string; summary: (minutes: number, quiet: string | null) => string; wait: string; waitOptions: (minutes: number) => string; quiet: string; quietStart: string; quietEnd: string; helper: string }
-    notifications: { title: string; description: string; summary: (count: number) => string; handoff: string; handoffDescription: string; reconnect: string; reconnectDescription: string; sendFailed: string; sendFailedDescription: string }
     preferences: { title: string }
     language: { title: string; description: string; english: string; chinese: string }
     save: string
@@ -44,17 +58,9 @@ type SettingsCopy = {
     aliasPlaceholder: string
     addAlias: string
     removeAlias: (alias: string) => string
-    judgment: string
-    judgmentValue: string
-    expression: string
-    expressionValue: string
-    boundaries: string
-    boundariesValue: string
-    memory: string
-    feedback: string
+    prompt: string
     save: string
   }
-  safety: { title: string; description: string; summary: string; items: string[]; handoff: string; always: string }
 }
 
 type MemoryCopy = {
@@ -150,8 +156,8 @@ type OnboardingCopy = {
   actions: { cancel: string; continue: string }
   support: { apps: { title: string; comingSoon: string }; security: { title: string; points: [string, string, string]; learnMore: string }; teams: { title: string; subtitle: string; segments: [string, string, string, string]; detail: string; stories: string } }
   connection: { title: string; subtitle: string; scope: Record<HomeSource, string>; connect: string; connected: string; confirmTitle: (name: string) => string; confirmBody: string; complete: string; continueHint: string }
-  memory: { title: string; subtitle: string; signalsTitle: string; signals: Record<'messages' | 'documents' | 'calendar', [string, string]>; findingsLabel: string; findings: Record<'messages' | 'documents' | 'topics', [number, string]>; migration: { title: string; body: string }; confirm: string; view: string; proceed: string; scopeTitle: string; scopeHint: string; readSelected: string; removeSource: (name: string) => string; readingTitle: string; readingSubtitle: string; analysis: string; analysisComplete: string }
-  style: { title: string; subtitle: string; summary: string; points: string[]; extract: string; view: string; start: string; extractingTitle: string; extractingSubtitle: string; analysis: string; analysisComplete: string; promptLabel: string; usePrompt: string; prompt: string }
+  memory: { title: string; subtitle: string; signalsTitle: string; signals: Record<'messages' | 'documents' | 'calendar', [string, string]>; migration: { title: string; body: string }; confirm: string; scopeTitle: string; scopeHint: string; readSelected: string; removeSource: (name: string) => string }
+  style: { title: string; subtitle: string; summary: string; points: string[]; extract: string; confirmTitle: string; confirmBody: string; confirm: string; completeSetup: string; completionTitle: string; completionBody: string; completionConfirm: string }
   activation: { celebrating: string; completeTitle: string; completeBody: string; completeAction: string }
 }
 
@@ -207,10 +213,11 @@ export type Translation = {
     primaryNavigation: string
     content: (label: string) => string
     greeting: (name: string) => string
-    unavailableNotifications: string
     openAccountMenu: string
     accountMenu: string
     signOut: string
+    backgroundProgress: BackgroundProgressCopy
+    notifications: BackgroundNotificationCopy
     home: HomeCopy
     message: MessageCopy
     onboarding: OnboardingCopy
@@ -261,10 +268,11 @@ export const translations: Record<Locale, Translation> = {
       primaryNavigation: 'Primary navigation',
       content: (label: string) => `${label} content`,
       greeting: (name: string) => `Welcome back, ${name}`,
-      unavailableNotifications: 'Notifications are unavailable',
       openAccountMenu: 'Open account menu',
       accountMenu: 'Account menu',
       signOut: 'Sign out',
+      backgroundProgress: { open: 'Background progress', title: 'Background progress', empty: 'No background tasks right now.', estimate: (minutes) => `About ${minutes} min`, jobs: { memory: 'Build work Memory', 'work-style': 'Generate work style' }, status: { running: 'Running in the background', completed: 'Completed', failed: 'Failed' } },
+      notifications: { open: 'Open notifications', title: 'Notifications', empty: 'No notifications right now.', completed: { memory: { title: 'Your work Memory is ready', body: 'Friday has finished building your work Memory.' }, 'work-style': { title: 'Your work style is ready', body: 'Friday has finished generating your work style.', action: 'View work style' } } },
       home: {
         recent: 'Recent 24 hours',
         sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
@@ -315,11 +323,11 @@ export const translations: Record<Locale, Translation> = {
         feedbackControls: { upvote: 'Like', upvoteReason: 'Helpful.', downvote: 'Dislike', reason: 'Feedback reason', submit: 'Submit feedback' },
       },
       onboarding: {
-        progressLabel: 'Onboarding progress', steps: [{ label: 'Connect work sources', description: 'Choose the work sources Friday can use.' }, { label: 'Build work Memory', description: 'Confirm the scope for your first work Memory.' }, { label: 'Confirm work style', description: 'Review Friday’s draft of your work style.' }], welcome: { eyebrow: 'Welcome to Friday', storyTitle: 'Ready to meet your work twin?', title: 'Set up in 3 steps', duration: 'Estimated time: 3 min', start: 'Start setup', dismiss: 'Close welcome dialog', memoryAlt: 'Memory overview' }, stepKicker: (step) => `Step ${step} of 3`, actions: { cancel: 'Cancel', continue: 'Continue' }, support: { apps: { title: 'Supported work apps', comingSoon: 'Coming soon' }, security: { title: 'Security & permissions', points: ['All content is previewed locally on your device.', 'We never access data without your permission.', 'You stay in control. Approval before anything is sent.'], learnMore: 'Learn more about security' }, teams: { title: 'Teams that use Friday', subtitle: 'Trusted by teams to work smarter, together.', segments: ['Product', 'Operations', 'Management', 'Marketing'], detail: 'Join fast-growing teams improving clarity and collaboration with Friday.', stories: 'See customer stories' } },
+        progressLabel: 'Onboarding progress', steps: [{ label: 'Connect work sources', description: 'Choose the work sources Friday can use.' }, { label: 'Build work Memory', description: 'Confirm the scope for your first work Memory.' }, { label: 'Set up work style', description: 'Start generating Friday’s work style in the background.' }], welcome: { eyebrow: 'Welcome to Friday', storyTitle: 'Ready to meet your work twin?', title: 'Set up in 3 steps', duration: 'Estimated time: 3 min', start: 'Start setup', dismiss: 'Close welcome dialog', memoryAlt: 'Memory overview' }, stepKicker: (step) => `Step ${step} of 3`, actions: { cancel: 'Cancel', continue: 'Continue' }, support: { apps: { title: 'Supported work apps', comingSoon: 'Coming soon' }, security: { title: 'Security & permissions', points: ['All content is previewed locally on your device.', 'We never access data without your permission.', 'You stay in control. Approval before anything is sent.'], learnMore: 'Learn more about security' }, teams: { title: 'Teams that use Friday', subtitle: 'Trusted by teams to work smarter, together.', segments: ['Product', 'Operations', 'Management', 'Marketing'], detail: 'Join fast-growing teams improving clarity and collaboration with Friday.', stories: 'See customer stories' } },
         connection: { title: 'Connect your work apps', subtitle: 'Connect one app to begin. You can refine detailed rules later in Settings.', scope: { dingtalk: 'Work messages and calendar', feishu: 'Team messages and shared documents', teams: 'Messages and channel updates' }, connect: 'Connect', connected: 'Connected', confirmTitle: (name) => `Connect ${name}`, confirmBody: 'Confirm this connection to continue.', complete: 'Complete connection', continueHint: 'Connect at least one app to continue.' },
-        memory: { title: 'Build your Memory', subtitle: 'Review what Friday would read before you create the first work Memory.', signalsTitle: 'What Friday can read', signals: { messages: ['Work messages', 'Chats, decisions, and follow-ups'], documents: ['Work documents', 'Project context and key conclusions'], calendar: ['Calendar context', 'Meetings, events, and timing'] }, findingsLabel: 'Work context found', findings: { messages: [126, 'work messages'], documents: [18, 'documents'], topics: [7, 'recurring topics'] }, migration: { title: 'Bring existing Memory with you', body: 'Complete data migration in Memory when you are ready.' }, confirm: 'Build Memory', view: 'View Memory', proceed: 'Confirm', scopeTitle: 'Choose apps to read', scopeHint: 'Remove any app you do not want included in this Memory.', readSelected: 'Read selected apps', removeSource: (name) => `Remove ${name} from this Memory`, readingTitle: 'Reading connected work context', readingSubtitle: 'Friday is analyzing your connected messages and documents to build your work memory.', analysis: 'Analyzing connected data…', analysisComplete: 'Analysis complete' },
-        style: { title: 'Confirm your work style', subtitle: 'Review the work habits Friday distilled from your work context.', summary: 'Friday distilled these four work habits from your work context.', points: ['Expression: concise and explicit about uncertainty.', 'Judgment: check facts, risks, and owner first.', 'Next step: make the next action clear.', 'Boundaries: hand off commitments and sensitive or missing context.'], extract: 'Distill work style', view: 'View style', start: 'Start formal use', extractingTitle: 'Distilling your work style', extractingSubtitle: 'Friday is analyzing your work context to draft your work style.', analysis: 'Analyzing your work style…', analysisComplete: 'Analysis complete', promptLabel: 'Work-style Prompt', usePrompt: 'Use this Prompt', prompt: 'Expression\nUse concise language. State uncertainty directly.\n\nDecision order\nConfirm current facts, risks, owners, and due dates before committing.\n\nScenario rules\nFor project and meeting updates, give the next step and owner.\n\nBoundaries\nHand off commitments, sensitive content, and missing context.' },
-        activation: { celebrating: 'Friday is getting ready for you', completeTitle: 'Your work avatar is now active', completeBody: 'Friday is ready to start helping you work', completeAction: 'Start exploring' },
+        memory: { title: 'Build your Memory', subtitle: 'Choose what Friday can read, then let it build your first work Memory in the background.', signalsTitle: 'What Friday can read', signals: { messages: ['Work messages', 'Chats, decisions, and follow-ups'], documents: ['Work documents', 'Project context and key conclusions'], calendar: ['Calendar context', 'Meetings, events, and timing'] }, migration: { title: 'Bring existing Memory with you', body: 'Complete data migration in Memory when you are ready.' }, confirm: 'Build Memory', scopeTitle: 'Choose apps to read', scopeHint: 'Remove any app you do not want included in this Memory.', readSelected: 'Read selected apps', removeSource: (name) => `Remove ${name} from this Memory` },
+        style: { title: 'Set up your work style', subtitle: 'Friday will generate your work style in the background from the work material already available.', summary: 'Friday will organize these parts of how you work.', points: ['Expression: concise and explicit about uncertainty.', 'Judgment: check facts, risks, and owner first.', 'Next step: make the next action clear.', 'Boundaries: hand off commitments and sensitive or missing context.'], extract: 'Confirm processing', confirmTitle: 'Generate work style?', confirmBody: 'Friday will organize your expression, judgment, next steps, and boundaries from the work material you connected.', confirm: 'Start in background', completeSetup: 'Complete setup', completionTitle: 'Finish onboarding?', completionBody: 'Your work style will keep processing in the background. Friday will notify you when it is ready.', completionConfirm: 'Finish setup' },
+        activation: { celebrating: 'Friday is getting ready for you', completeTitle: 'Your work avatar is now active', completeBody: 'Friday is ready to start helping you work.', completeAction: 'Start exploring' },
       },
 
       feedback: {
@@ -405,10 +413,9 @@ export const translations: Record<Locale, Translation> = {
         },
         general: {
           title: 'General',
-          subtitle: 'Set the conditions, rhythm, and alerts that stay in effect.',
+          subtitle: 'Set the handling conditions and rhythm that stay in effect.',
           group: { title: 'Group chat handling', description: 'Decide which group messages Friday can consider.', summary: (enabled) => enabled ? '@ me and @everyone' : 'Only @ me', direct: 'Messages that @mention you are always considered.', everyone: 'Handle @everyone in group chats', confirmation: { title: 'Let Friday respond to @everyone?', body: 'Friday cannot know whether @everyone is intended for you. Only clear work requests will be considered.', cancel: 'Cancel', confirm: 'Enable anyway' } },
           rhythm: { title: 'Work rhythm', description: 'Give yourself time to reply before Friday steps in.', summary: (minutes, quiet) => `Wait ${minutes} min${quiet ? ` · Quiet ${quiet}` : ''}`, wait: 'Wait for me first', waitOptions: (minutes) => `${minutes} minute${minutes === 1 ? '' : 's'}`, quiet: 'Quiet hours', quietStart: 'Start', quietEnd: 'End', helper: 'If you reply first, Friday stays quiet. During quiet hours it may draft, but does not automatically send.' },
-          notifications: { title: 'Notifications', description: 'Only alert me when an action is needed.', summary: (count) => `${count} enabled`, handoff: 'I need to take over', handoffDescription: 'Friday needs your judgment, reply, or action.', reconnect: 'A connection needs attention', reconnectDescription: 'A connected app needs to be reconnected or authorised again.', sendFailed: 'A reply did not send', sendFailedDescription: 'Friday produced a result but could not complete its active send.' },
           preferences: { title: 'Personal preferences' },
           language: { title: 'Language', description: 'Choose the language Friday uses throughout the workspace.', english: 'English', chinese: '中文' },
           save: 'Save changes',
@@ -416,7 +423,7 @@ export const translations: Record<Locale, Translation> = {
         profile: {
           title: 'User Profile',
           subtitle: (name) => `How Friday understands ${name}`,
-          description: 'Friday has learned your judgment, expression, and working style.',
+          description: 'Use one Prompt to tell Friday how you want it to work.',
           tags: ['Conclusion first', 'Do not promise lightly', 'Ask when information is missing'],
           updated: 'Updated today',
           identity: 'My work identity',
@@ -425,23 +432,8 @@ export const translations: Record<Locale, Translation> = {
           aliasPlaceholder: 'Add an @alias',
           addAlias: 'Add',
           removeAlias: (alias) => `Remove ${alias}`,
-          judgment: 'My judgment',
-          judgmentValue: 'Start with the goal and facts; ask when information is missing; do not make promises lightly.',
-          expression: 'My expression',
-          expressionValue: 'Lead with the conclusion and keep it direct; give next steps for complex work.',
-          boundaries: 'My work boundaries',
-          boundariesValue: 'Key decisions, external commitments, and sensitive matters always need my confirmation.',
-          memory: 'View sources in Memory',
-          feedback: 'Calibrate in Feedback',
+          prompt: 'Prompt',
           save: 'Save identity',
-        },
-        safety: {
-          title: 'Safety Boundaries',
-          description: 'Friday always hands important decisions back to you.',
-          summary: 'Commitments · Sensitive matters · Missing information · Requested person',
-          items: ['Make external commitments, pricing, contracts, or key decisions for you', 'Handle sensitive people, financial, or customer matters', 'Guess when material facts, context, or recipients are unclear', 'Continue answering when the other person explicitly asks for you'],
-          handoff: 'In these cases, Friday explains the handoff clearly and notifies you on Home.',
-          always: 'These rules are always in effect.',
         },
       },
     },
@@ -483,10 +475,11 @@ export const translations: Record<Locale, Translation> = {
       primaryNavigation: '主要导航',
       content: (label: string) => `${label}内容`,
       greeting: (name: string) => `欢迎回来，${name}`,
-      unavailableNotifications: '通知暂不可用',
       openAccountMenu: '打开账户菜单',
       accountMenu: '账户菜单',
       signOut: '退出登录',
+      backgroundProgress: { open: '后台进度', title: '后台进度', empty: '目前没有后台任务。', estimate: (minutes) => `预计约 ${minutes} 分钟`, jobs: { memory: '建立工作记忆', 'work-style': '生成工作风格' }, status: { running: '正在后台处理', completed: '已完成', failed: '处理失败' } },
+      notifications: { open: '打开通知', title: '通知', empty: '暂无通知。', completed: { memory: { title: '工作记忆已构建完成', body: 'Friday 已完成工作记忆构建。' }, 'work-style': { title: '你的工作风格已生成', body: '可前往个人资料查看。', action: '查看个人风格' } } },
       home: {
         recent: '最近 24 小时',
         sources: { dingtalk: '钉钉', feishu: '飞书', teams: '微软 Teams' },
@@ -537,11 +530,11 @@ export const translations: Record<Locale, Translation> = {
         feedbackControls: { upvote: '点赞', upvoteReason: '有帮助。', downvote: '点踩', reason: '反馈原因', submit: '提交反馈' },
       },
       onboarding: {
-        progressLabel: '引导进度', steps: [{ label: '连接工作来源', description: '选择 Friday 可以使用的工作来源。' }, { label: '建立工作记忆', description: '确认范围，建立第一份工作记忆。' }, { label: '确认工作风格', description: '检查 Friday 提炼出的工作方式。' }], welcome: { eyebrow: '欢迎使用 Friday', storyTitle: '准备好认识你的工作分身了吗？', title: '3 步完成配置', duration: '预计耗时 3 分钟', start: '开始配置', dismiss: '关闭欢迎弹窗', memoryAlt: '工作记忆概览' }, stepKicker: (step) => `第 ${step} 步，共 3 步`, actions: { cancel: '取消', continue: '继续' }, support: { apps: { title: '支持的工作应用', comingSoon: '即将支持' }, security: { title: '安全与权限', points: ['所有内容均在你的设备上本地预览。', '未经你的许可，我们不会访问数据。', '控制权始终在你手中。任何内容发送前都需批准。'], learnMore: '了解更多安全信息' }, teams: { title: '正在使用 Friday 的团队', subtitle: '深受团队信赖，让工作更聪明、更高效。', segments: ['产品', '运营', '管理', '市场'], detail: '加入快速成长的团队，借助 Friday 提升清晰度与协作效率。', stories: '查看客户故事' } },
+        progressLabel: '引导进度', steps: [{ label: '连接工作来源', description: '选择 Friday 可以使用的工作来源。' }, { label: '建立工作记忆', description: '确认范围后，在后台建立第一份工作记忆。' }, { label: '生成工作风格', description: '后台生成 Friday 的工作方式。' }], welcome: { eyebrow: '欢迎使用 Friday', storyTitle: '准备好认识你的工作分身了吗？', title: '3 步完成配置', duration: '预计耗时 3 分钟', start: '开始配置', dismiss: '关闭欢迎弹窗', memoryAlt: '工作记忆概览' }, stepKicker: (step) => `第 ${step} 步，共 3 步`, actions: { cancel: '取消', continue: '继续' }, support: { apps: { title: '支持的工作应用', comingSoon: '即将支持' }, security: { title: '安全与权限', points: ['所有内容均在你的设备上本地预览。', '未经你的许可，我们不会访问数据。', '控制权始终在你手中。任何内容发送前都需批准。'], learnMore: '了解更多安全信息' }, teams: { title: '正在使用 Friday 的团队', subtitle: '深受团队信赖，让工作更聪明、更高效。', segments: ['产品', '运营', '管理', '市场'], detail: '加入快速成长的团队，借助 Friday 提升清晰度与协作效率。', stories: '查看客户故事' } },
         connection: { title: '连接你的工作应用', subtitle: '先连接一个应用即可开始，详细规则稍后在设置中调整。', scope: { dingtalk: '工作消息与日程', feishu: '团队消息与共享文档', teams: '消息与频道动态' }, connect: '连接', connected: '已连接', confirmTitle: (name) => `连接${name}`, confirmBody: '确认连接后继续。', complete: '完成连接', continueHint: '至少连接一个应用后继续。' },
-        memory: { title: '建立你的工作记忆', subtitle: '先确认 Friday 将读取的范围，再建立第一份工作记忆。', signalsTitle: 'Friday 会读取什么', signals: { messages: ['工作消息', '对话、决策与待办'], documents: ['工作文档', '项目背景与关键结论'], calendar: ['日历信息', '会议、事件与时间安排'] }, findingsLabel: '已发现的工作信息', findings: { messages: [126, '工作消息'], documents: [18, '文档'], topics: [7, '重复工作主题'] }, migration: { title: '迁移已有工作记忆', body: '你可以在 Memory 中完成数据迁移。' }, confirm: '建立工作记忆', view: '查看工作记忆', proceed: '确认', scopeTitle: '选择要读取的应用', scopeHint: '可移除本次不想纳入工作记忆的应用。', readSelected: '读取所选应用', removeSource: (name) => `从本次工作记忆中移除${name}`, readingTitle: '正在读取已连接的工作信息', readingSubtitle: 'Friday 正在分析你已连接的消息与文档，建立你的工作记忆。', analysis: '正在分析已连接的信息…', analysisComplete: '分析完成' },
-        style: { title: '确认你的工作风格', subtitle: '查看 Friday 从你的工作材料中提炼出的工作习惯。', summary: 'Friday 从你的工作材料里提炼出四类习惯。', points: ['表达：简洁直接；不确定会说清楚。', '判断：先确认事实、风险与负责人。', '下一步：更新后说清下一步。', '边界：承诺、敏感事项或信息不足，交给你。'], extract: '蒸馏工作风格', view: '查看风格', start: '正式开始', extractingTitle: '正在蒸馏你的工作风格', extractingSubtitle: 'Friday 正在分析你的工作上下文，起草你的工作风格。', analysis: '正在分析你的工作风格…', analysisComplete: '分析完成', promptLabel: '工作风格提示词', usePrompt: '使用这份提示词', prompt: '表达方式\n使用简洁语言，直接说明不确定性。\n\n决策顺序\n先确认当前事实、风险、负责人和截止时间，再做出承诺。\n\n场景规则\n项目和会议更新后，给出下一步与负责人。\n\n必须交由本人\n承诺、敏感内容和信息不足时必须交由本人。' },
-        activation: { celebrating: 'Friday 正在为你准备工作空间', completeTitle: '你的工作分身已启用', completeBody: 'Friday 已准备好开始协助你工作', completeAction: '开始体验' },
+        memory: { title: '建立你的工作记忆', subtitle: '确认读取范围后，Friday 会在后台建立第一份工作记忆。', signalsTitle: 'Friday 会读取什么', signals: { messages: ['工作消息', '对话、决策与待办'], documents: ['工作文档', '项目背景与关键结论'], calendar: ['日历信息', '会议、事件与时间安排'] }, migration: { title: '迁移已有工作记忆', body: '你可以在 Memory 中完成数据迁移。' }, confirm: '建立工作记忆', scopeTitle: '选择要读取的应用', scopeHint: '可移除本次不想纳入工作记忆的应用。', readSelected: '读取所选应用', removeSource: (name) => `从本次工作记忆中移除${name}` },
+        style: { title: '生成你的工作风格', subtitle: 'Friday 会基于当前已可用的工作材料，在后台生成你的工作方式。', summary: 'Friday 会整理你工作方式中的这些部分。', points: ['表达：简洁直接；不确定会说清楚。', '判断：先确认事实、风险与负责人。', '下一步：更新后说清下一步。', '边界：承诺、敏感事项或信息不足，交给你。'], extract: '确认处理说明', confirmTitle: '确认生成工作风格', confirmBody: 'Friday 会基于已连接的工作材料，整理你的表达、判断、下一步和边界。', confirm: '开始后台处理', completeSetup: '完成配置', completionTitle: '确认完成配置', completionBody: '工作风格会继续在后台处理；完成后，Friday 会通过通知提醒你。', completionConfirm: '确认完成' },
+        activation: { celebrating: 'Friday 正在为你准备工作空间', completeTitle: '你的工作分身已启用', completeBody: 'Friday 已准备好开始协助你工作。', completeAction: '开始体验' },
       },
 
       feedback: {
@@ -627,10 +620,9 @@ export const translations: Record<Locale, Translation> = {
         },
         general: {
           title: '通用',
-          subtitle: '设置长期生效的处理条件、工作节奏和提醒。',
+          subtitle: '设置长期生效的处理条件和工作节奏。',
           group: { title: '群聊处理条件', description: '决定 Friday 可以考虑哪些群聊消息。', summary: (enabled) => enabled ? '@ 我和 @所有人' : '仅 @ 我', direct: '群聊中明确 @ 你的消息始终会被考虑。', everyone: '处理群聊中的 @所有人', confirmation: { title: '让 Friday 响应 @所有人？', body: 'Friday 无法确认 @所有人 是否只针对你。只有明确的工作请求才会被处理。', cancel: '取消', confirm: '仍然开启' } },
           rhythm: { title: '工作节奏', description: '在 Friday 介入前，先给你留出亲自回复的时间。', summary: (minutes, quiet) => `等待 ${minutes} 分钟${quiet ? ` · 免打扰 ${quiet}` : ''}`, wait: '先等我处理', waitOptions: (minutes) => `${minutes} 分钟`, quiet: '免打扰时段', quietStart: '开始', quietEnd: '结束', helper: '如果你已亲自回复，Friday 会保持安静。免打扰时段内它仍可生成草稿，但不会自动发送。' },
-          notifications: { title: '通知', description: '只在需要你采取行动时提醒。', summary: (count) => `${count} 项已开启`, handoff: '需要我接管', handoffDescription: 'Friday 需要你亲自判断、回复或处理。', reconnect: '连接需要处理', reconnectDescription: '已连接应用需要重新连接或再次授权。', sendFailed: '回复未成功发送', sendFailedDescription: 'Friday 已产生结果，但未能完成正式发送。' },
           preferences: { title: '个人偏好' },
           language: { title: '语言', description: '选择 Friday 在整个工作台中使用的语言。', english: 'English', chinese: '中文' },
           save: '保存更改',
@@ -638,7 +630,7 @@ export const translations: Record<Locale, Translation> = {
         profile: {
           title: '个人资料',
           subtitle: (name) => `Friday 如何理解${name}`,
-          description: 'Friday 已学习你的判断、表达与工作方式。',
+          description: '用一段 Prompt 告诉 Friday 如何为你工作。',
           tags: ['结论优先', '不轻易承诺', '信息不足先追问'],
           updated: '已更新 · 今天',
           identity: '我的工作身份',
@@ -647,23 +639,8 @@ export const translations: Record<Locale, Translation> = {
           aliasPlaceholder: '添加 @ 别名',
           addAlias: '添加',
           removeAlias: (alias) => `移除 ${alias}`,
-          judgment: '我的判断方式',
-          judgmentValue: '先看目标与事实；信息不足先追问；不轻易替人承诺。',
-          expression: '我的表达方式',
-          expressionValue: '结论优先，简短直接；复杂事项给出下一步。',
-          boundaries: '我的工作边界',
-          boundariesValue: '涉及关键判断、对外承诺或敏感议题时，必须交由本人确认。',
-          memory: '去工作记忆查看来源',
-          feedback: '去反馈校准不准确的地方',
+          prompt: 'Prompt',
           save: '保存身份信息',
-        },
-        safety: {
-          title: '安全边界',
-          description: 'Friday 始终会把关键决定交还给你。',
-          summary: '承诺 · 敏感事项 · 信息不足 · 要求本人',
-          items: ['代表你作出对外承诺、价格、合同或关键决策', '处理人事、财务、客户等敏感议题', '在关键信息、材料或对象不明确时猜测', '在对方明确要求你本人时继续代答'],
-          handoff: '遇到以上情况，Friday 会生成清晰的转交说明，并在首页通知你处理。',
-          always: '这些规则始终生效。',
         },
       },
     },

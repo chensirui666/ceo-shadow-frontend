@@ -78,16 +78,15 @@ test('Home status tokens and tooltip layout use the approved palette', async () 
   assert.match(css, /\.task-document-title:focus \{ box-shadow: inset 0 -2px var\(--focus-ring\); \}/)
   assert.match(css, /\.form-error \{[^}]*color: var\(--status-danger-text\);/)
   assert.match(css, /\.settings-notice \{[^}]*background: var\(--status-success-background\);[^}]*color: var\(--status-success-text\);/)
-  assert.match(css, /\.safety-inline strong \{[^}]*color: var\(--status-success-text\);/)
   assert.doesNotMatch(css, /\.feedback-page \{[^}]*#82957d/)
   assert.doesNotMatch(css, /\.feedback-source-owner progress(?:::-webkit-progress-value)? \{[^}]*#9990a8/)
   assert.doesNotMatch(css, /\.task-(?:project-open:focus-visible|personal-todo-trigger:focus-visible|milestone:focus-visible|todo-source-trigger:focus-visible|source-rail-item:focus-visible|document-title:focus) \{[^}]*#839eb3/)
 })
 
-test('style distillation separates analysis progress from its subtitle', async () => {
+test('background work leaves onboarding free of a handoff dialog', async () => {
   const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
 
-  assert.match(css, /\.onboarding-style-dialog > \.onboarding-analysis-status \{ margin-top: 16px; \}/)
+  assert.doesNotMatch(css, /onboarding-background-handoff/)
 })
 
 test('workspace canvas uses a pure white shared page background', async () => {

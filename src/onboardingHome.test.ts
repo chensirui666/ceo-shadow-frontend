@@ -10,14 +10,14 @@ after(() => vite.close())
 
 test('a new onboarding session opens the approved welcome dialog with the actual three steps', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {}, onOpenMemory: () => {} }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {} }))
 
   assert.match(html, /3 步完成配置/)
   assert.match(html, /预计耗时 3 分钟/)
   assert.match(html, /欢迎使用 Friday/)
   assert.match(html, /准备好认识你的工作分身了吗？/)
   assert.ok(html.indexOf('准备好认识你的工作分身了吗？') < html.indexOf('onboarding-welcome-illustration'))
-  assert.match(html, /连接工作来源[\s\S]*建立工作记忆[\s\S]*确认工作风格/)
+  assert.match(html, /连接工作来源[\s\S]*建立工作记忆[\s\S]*生成工作风格/)
   assert.doesNotMatch(html, /试运行/)
   assert.match(html, /开始配置/)
   assert.match(html, /onboarding-welcome-dialog/)
@@ -27,14 +27,14 @@ test('a new onboarding session opens the approved welcome dialog with the actual
 
 test('a returning onboarding user does not see the welcome dialog again', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {}, onOpenMemory: () => {}, welcomeOpen: false }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {}, welcomeOpen: false }))
 
   assert.doesNotMatch(html, /onboarding-welcome-dialog/)
 })
 
 test('English welcome copy does not mix in Chinese labels', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'en', onComplete: () => {}, onOpenMemory: () => {} }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'en', onComplete: () => {} }))
 
   assert.match(html, /Set up in 3 steps/)
   assert.match(html, /Estimated time: 3 min/)
@@ -43,38 +43,13 @@ test('English welcome copy does not mix in Chinese labels', async () => {
   assert.doesNotMatch(html, /欢迎使用 Friday|项目记录|四步完成配置/)
 })
 
-test('formal activation runs a five-second celebration before the requested completion dialog', async () => {
-  const { ACTIVATION_CELEBRATION_DURATION, ActivationCelebration, getActivationStartStage } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const { translations } = await vite.ssrLoadModule('/src/content/translations.ts')
-  const copy = translations.zh.workspace.onboarding.activation
-
-  assert.equal(ACTIVATION_CELEBRATION_DURATION, 5_000)
-  assert.equal(getActivationStartStage(false), 'celebrating')
-  assert.equal(getActivationStartStage(true), 'ready')
-
-  const celebration = renderToStaticMarkup(createElement(ActivationCelebration, { copy, onFinish: () => {}, stage: 'celebrating' }))
-  assert.match(celebration, /onboarding-activation-celebration/)
-  assert.match(celebration, /onboarding-celebration-crew/)
-  assert.match(celebration, /onboarding-celebration-rocket/)
-  assert.match(celebration, /onboarding-celebration-burst/)
-  assert.match(celebration, /onboarding-celebration-firework-halo/)
-  assert.match(celebration, /onboarding-celebration-firework-rays/)
-  assert.match(celebration, /onboarding-celebration-person-hat/)
-  assert.match(celebration, /onboarding-celebration-person-coat/)
-
-  const ready = renderToStaticMarkup(createElement(ActivationCelebration, { copy, onFinish: () => {}, stage: 'ready' }))
-  assert.match(ready, /你的工作分身已启用/)
-  assert.match(ready, /Friday 已准备好开始协助你工作/)
-  assert.match(ready, /开始体验/)
-})
-
 test('onboarding starts with three steps and does not render the Home timeline', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {}, onOpenMemory: () => {} }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {} }))
 
   assert.match(html, /1.*连接工作来源/)
   assert.match(html, /2.*建立工作记忆/)
-  assert.match(html, /3.*确认工作风格/)
+  assert.match(html, /3.*生成工作风格/)
   assert.doesNotMatch(html, /4.*试运行/)
   assert.match(html, /钉钉/)
   assert.match(html, /飞书/)
@@ -84,39 +59,42 @@ test('onboarding starts with three steps and does not render the Home timeline',
   assert.doesNotMatch(html, /onboarding-home-events/)
 })
 
-test('the confirmed third step offers style review and direct formal start', async () => {
+test('a queued third step keeps the explicit onboarding completion confirmation without style results', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
   const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')
-  const state = onboarding.confirmWorkStyle(onboarding.advanceFromMemory(onboarding.confirmMemory(
+  const state = onboarding.queueWorkStyle(onboarding.advanceFromMemory(onboarding.queueMemory(
     onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')),
   )))
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { initialState: state, locale: 'zh', onComplete: () => {}, onOpenMemory: () => {}, welcomeOpen: false }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { initialState: state, locale: 'zh', onComplete: () => {}, welcomeOpen: false }))
 
-  assert.match(html, /1.*连接工作来源[\s\S]*2.*建立工作记忆[\s\S]*3.*确认工作风格/)
-  assert.match(html, /查看风格[\s\S]*正式开始/)
-  assert.doesNotMatch(html, /试运行|蒸馏工作风格|onboarding-trial/)
+  assert.match(html, /1.*连接工作来源[\s\S]*2.*建立工作记忆[\s\S]*3.*生成工作风格/)
+  assert.match(html, /完成配置/)
+  assert.doesNotMatch(html, /20 分钟|工作风格提示词|查看风格|正式开始|进入 Message/)
 })
 
 test('Connect apps renders its decorative illustration alongside the connection flow', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {}, onOpenMemory: () => {} }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'zh', onComplete: () => {} }))
 
   assert.match(html, /onboarding-connect-layout/)
   assert.match(html, /onboarding-connect-artwork/)
   assert.match(html, /onboarding-connect-editorial/)
 })
 
-test('analysis progress displays whole percentages until the completed state', async () => {
-  const { AnalysisProgress } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const analyzing = renderToStaticMarkup(createElement(AnalysisProgress, { completeLabel: 'Analysis complete', label: 'Analyzing connected data…', value: 42.5 }))
-  const completed = renderToStaticMarkup(createElement(AnalysisProgress, { completeLabel: 'Analysis complete', label: 'Analyzing connected data…', value: 100 }))
+test('background work no longer blocks onboarding in a 20-minute handoff dialog', async () => {
+  const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
 
-  assert.match(analyzing, /Analyzing connected data…/)
-  assert.match(analyzing, /43%/)
-  assert.doesNotMatch(analyzing, /42\.5%/)
-  assert.match(completed, /Analysis complete/)
-  assert.match(completed, /100%/)
-  assert.match(completed, /<progress[^>]*value="100"/)
+  assert.doesNotMatch(css, /onboarding-background-handoff/)
+})
+
+test('formal start restores the firework activation sequence', async () => {
+  const { ActivationCelebration, getActivationStartStage } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
+  const { translations } = await vite.ssrLoadModule('/src/content/translations.ts')
+  const html = renderToStaticMarkup(createElement(ActivationCelebration, { copy: translations.zh.workspace.onboarding.activation, onFinish: () => {}, stage: 'celebrating' }))
+
+  assert.equal(getActivationStartStage(false), 'celebrating')
+  assert.equal(getActivationStartStage(true), 'ready')
+  assert.match(html, /onboarding-celebration-scene[\s\S]*onboarding-celebration-firework-rays/)
 })
 
 test('memory connector exposes removal only while choosing the read scope', async () => {
@@ -132,7 +110,7 @@ test('memory connector exposes removal only while choosing the read scope', asyn
 
 test('desktop onboarding separates progress, hero, and three support zones', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'en', onComplete: () => {}, onOpenMemory: () => {}, welcomeOpen: false }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'en', onComplete: () => {}, welcomeOpen: false }))
 
   assert.match(html, /onboarding-frame[\s\S]*onboarding-steps[\s\S]*onboarding-panel[\s\S]*onboarding-support-grid/)
   assert.match(html, /onboarding-supported-apps[\s\S]*Supported work apps/)
@@ -142,7 +120,7 @@ test('desktop onboarding separates progress, hero, and three support zones', asy
 
 test('onboarding support cards show upcoming apps, warm security, and team groups', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'en', onComplete: () => {}, onOpenMemory: () => {}, welcomeOpen: false }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { locale: 'en', onComplete: () => {}, welcomeOpen: false }))
   const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
 
   assert.match(html, /Gmail[\s\S]*Coming soon[\s\S]*Zoom[\s\S]*Coming soon[\s\S]*Google Meet[\s\S]*Coming soon/)
@@ -169,9 +147,9 @@ test('later onboarding steps render their matching decorative artwork', async ()
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
   const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')
   const stepTwo = onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk'))
-  const stepThree = onboarding.advanceFromMemory(onboarding.confirmMemory(stepTwo))
-  const confirmedStepThree = onboarding.confirmWorkStyle(stepThree)
-  const props = { locale: 'zh' as const, onComplete: () => {}, onOpenMemory: () => {} }
+  const stepThree = onboarding.advanceFromMemory(onboarding.queueMemory(stepTwo))
+  const submittedStepThree = onboarding.queueWorkStyle(stepThree)
+  const props = { locale: 'zh' as const, onComplete: () => {} }
 
   const stepTwoHtml = renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepTwo }))
   assert.match(stepTwoHtml, /onboarding-memory-editorial/)
@@ -183,33 +161,34 @@ test('later onboarding steps render their matching decorative artwork', async ()
   assert.doesNotMatch(stepTwoHtml, /Skip|跳过/)
   const stepThreeHtml = renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepThree }))
   assert.match(stepThreeHtml, /onboarding-work-style-editorial/)
-  assert.match(stepThreeHtml, /蒸馏工作风格/)
+  assert.match(stepThreeHtml, /生成工作风格/)
   assert.doesNotMatch(stepThreeHtml, /Skip|跳过/)
   assert.match(stepThreeHtml, /onboarding-style-point/)
-  assert.doesNotMatch(stepThreeHtml, /查看 Prompt 原文/)
-  assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: confirmedStepThree })), /查看风格[\s\S]*正式开始/)
+  assert.doesNotMatch(stepThreeHtml, /工作风格提示词/)
+  assert.match(renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: submittedStepThree })), /onboarding-style-actions[\s\S]*完成配置/)
 })
 
-test('confirmed Memory remains on step 2 with viewing and continuation actions', async () => {
+test('a submitted Memory step can continue without opening Memory', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
   const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')
-  const built = onboarding.confirmMemory(onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')))
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { initialState: built, locale: 'zh', onComplete: () => {}, onOpenMemory: () => {} }))
+  const built = onboarding.queueMemory(onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { initialState: built, locale: 'zh', onComplete: () => {} }))
 
-  assert.match(html, /onboarding-memory-actions[\s\S]*查看工作记忆[\s\S]*确认/)
+  assert.match(html, /onboarding-memory-actions[\s\S]*继续/)
+  assert.doesNotMatch(html, /查看工作记忆/)
   assert.doesNotMatch(html, /onboarding-work-style-editorial/)
 })
 
-test('work-style confirmation keeps the habits and places its action without a filler benefit block', async () => {
+test('work-style submission keeps the habits and places its action without a filler benefit block', async () => {
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
   const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')
   const css = await readFile(new URL('./index.css', import.meta.url), 'utf8')
-  const props = { locale: 'zh' as const, onComplete: () => {}, onOpenMemory: () => {} }
-  const stepThree = onboarding.advanceFromMemory(onboarding.confirmMemory(onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk'))))
+  const props = { locale: 'zh' as const, onComplete: () => {} }
+  const stepThree = onboarding.advanceFromMemory(onboarding.queueMemory(onboarding.continueToMemory(onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk'))))
   const stepThreeHtml = renderToStaticMarkup(createElement(OnboardingHome, { ...props, initialState: stepThree }))
 
   assert.doesNotMatch(stepThreeHtml, /onboarding-style-benefits/)
-  assert.match(stepThreeHtml, /onboarding-style-summary[\s\S]*onboarding-style-actions[\s\S]*蒸馏工作风格/)
+  assert.match(stepThreeHtml, /onboarding-style-summary[\s\S]*onboarding-style-actions[\s\S]*生成工作风格/)
   assert.match(css, /\.onboarding-work-style-layout \.onboarding-section-footer\s*\{[^}]*margin-top:\s*8px[^}]*padding-top:\s*0/)
   assert.doesNotMatch(css, /\.onboarding-work-style-layout \.onboarding-editorial-artwork > img/)
 })
@@ -218,7 +197,7 @@ test('a connected app is represented by a success icon instead of a status word'
   const { default: OnboardingHome } = await vite.ssrLoadModule('/src/components/OnboardingHome.tsx')
   const onboarding = await vite.ssrLoadModule('/src/onboardingState.ts')
   const state = onboarding.connectSource(onboarding.createOnboardingState(), 'dingtalk')
-  const html = renderToStaticMarkup(createElement(OnboardingHome, { initialState: state, locale: 'zh', onComplete: () => {}, onOpenMemory: () => {}, welcomeOpen: false }))
+  const html = renderToStaticMarkup(createElement(OnboardingHome, { initialState: state, locale: 'zh', onComplete: () => {}, welcomeOpen: false }))
 
   assert.match(html, /onboarding-connected[^>]*><svg/)
   assert.doesNotMatch(html, /onboarding-connected[^>]*>已连接</)

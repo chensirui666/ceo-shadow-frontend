@@ -163,6 +163,7 @@ export default function MemoryGraph({ allEdges, edges, nodes, onPositionsChange,
         nodeOrigin={[0.5, 0.5]}
         nodes={flowNodes}
         nodesConnectable={false}
+        proOptions={{ hideAttribution: true }}
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
         onNodeDrag={(_, node) => {
