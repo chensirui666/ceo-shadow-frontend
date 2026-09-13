@@ -7,7 +7,7 @@
 | 所属阶段 | 信息驱动工作流的后续工作页：让用户理解自己该去外部工具完成什么 |
 | 替代关系 | 后续替代现有 Projects 的项目优先定位；以 `Task` 作为一级导航名称 |
 | 关联页面 | Message、Memory、Feedback、Settings |
-| 当前实现边界 | 本文定义产品目标；当前前端 Projects／Tasks 为本地演示，不代表真实 `work_todos`、外部同步或自动完成判断已接入 |
+| 当前实现边界 | 本文定义 Task 产品目标；当前导航虽显示 `Task`，实际渲染的是旧 Projects 前端演示（项目、行动项、Detail 与 AI Product）。它不代表本文 Task 卡片流、真实 `work_todos`、外部同步或自动完成判断已接入。 |
 
 ## 1. 一句话定义
 
