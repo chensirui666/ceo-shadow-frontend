@@ -29,6 +29,10 @@ test('resolveRoute falls back to home for an unknown destination', () => {
   assert.equal(appState.resolveRoute('not-a-page'), 'home')
 })
 
+test('Library is a supported workspace route', () => {
+  assert.equal(appState.resolveRoute('library'), 'library')
+})
+
 test('resolveLocale defaults to English and accepts the supported Chinese locale', () => {
   assert.equal(appState.resolveLocale(), 'en')
   assert.equal(appState.resolveLocale('zh'), 'zh')

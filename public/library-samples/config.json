@@ -1,0 +1,5 @@
+{
+  "name": "Library preview example",
+  "demo": true,
+  "checks": ["preview", "download", "rename"]
+}

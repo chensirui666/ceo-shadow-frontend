@@ -102,7 +102,8 @@ test('MessageList uses compact HeroUI controls for confirmation decisions', asyn
   assert.ok(decisions.every((button) => button.props.size === 'sm' && typeof button.props.onPress === 'function'))
 })
 
-test('MessageList sidebar uses component filters and changes its summary range', async () => {
+test('MessageList sidebar uses component filters and changes its summary range', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-08-13T12:00:00.000Z') })
   const { default: MessageList } = await vite.ssrLoadModule('/src/components/MessageList.tsx')
   const snapshot = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z'))
   const calls: string[] = []

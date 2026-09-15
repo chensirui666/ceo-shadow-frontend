@@ -5,6 +5,8 @@ import { resolveRoute } from '../appState.ts'
 import type { Locale, Route, Session } from '../appState.ts'
 import { translations } from '../content/translations.ts'
 import { createMessageService } from '../messageService.ts'
+import { createLibraryService } from '../libraryService.ts'
+import LibraryWorkspace from './LibraryWorkspace.tsx'
 import { createOnboardingState, needsOnboarding } from '../onboardingState.ts'
 import { createBackgroundProgressState, markBackgroundNotificationsRead, queueBackgroundJob } from '../backgroundProgressState.ts'
 import type { BackgroundJobKind } from '../backgroundProgressState.ts'
@@ -33,6 +35,7 @@ type WorkspaceProps = {
 const pages: Array<{ id: Route; icon: IconName }> = [
   { id: 'home', icon: 'home' },
   { id: 'tasks', icon: 'tasks' },
+  { id: 'library', icon: 'library' },
   { id: 'memory', icon: 'memory' },
   { id: 'feedback', icon: 'feedback' },
   { id: 'settings', icon: 'settings' },
@@ -51,6 +54,8 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const [settingsSection, setSettingsSection] = useState<SettingsSection | undefined>()
   const [welcomeOpen, setWelcomeOpen] = useState(() => typeof window === 'undefined' || !hasSeenOnboardingWelcome(window.localStorage, session.email))
   const [sessionMessageService] = useState(createMessageService)
+  const [sessionLibraryService] = useState(createLibraryService)
+  const [messageSourceId, setMessageSourceId] = useState<string | undefined>()
   const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
   const [tasksListRequest, setTasksListRequest] = useState(0)
   const exitDialog = useOverlayState()
@@ -78,6 +83,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   }
 
   const goTo = (nextRoute: unknown) => {
+    setMessageSourceId(undefined)
     const next = resolveRoute(nextRoute)
     if (next === 'settings') openSettings()
     else if (next === 'tasks' && route === 'tasks' && tasksDetailHeader) setTasksListRequest((request) => request + 1)
@@ -137,7 +143,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       <aside aria-hidden={settingsOpen} className="workspace-rail" inert={settingsOpen || undefined}>
         <Brand className="workspace-brand" />
         <nav aria-label={copy.primaryNavigation} className="workspace-nav">
-          {pages.slice(0, 4).map((page) => (
+          {pages.filter((page) => page.id !== 'settings').map((page) => (
             <Button className={route === page.id ? 'nav-item nav-item-active' : 'nav-item'} key={page.id} onPress={() => goTo(page.id)} type="button">
               <Icon name={page.icon} />
               <span>{copy.nav[page.id]}</span>
@@ -153,18 +159,20 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       </aside>
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
-        {route !== 'home' && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
+        {route !== 'home' && route !== 'library' && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
           <div className="workspace-header-title"><h1>{tasksDetailHeader?.title ?? currentLabel}</h1>{route === 'tasks' && tasksDetailHeader && <span className={`task-status task-status-${tasksDetailHeader.status}`}>{copy.tasks.projectStatus[tasksDetailHeader.status]}</span>}</div>
         </header>}
 
-        {route === 'feedback' ? (
+        {route === 'library' ? (
+          <LibraryWorkspace locale={locale} service={sessionLibraryService} onOpenSource={(source) => { if (source.kind === 'message') { setMessageSourceId(source.recordId); setRoute('home') } }} />
+        ) : route === 'feedback' ? (
           <FeedbackWorkspace locale={locale} />
         ) : route === 'memory' ? (
           <MemoryWorkspace locale={locale} />
         ) : route === 'home' ? (
-          onboarding
+          onboarding && !messageSourceId
             ? <OnboardingHome initialState={onboardingState} locale={locale} onComplete={finishOnboarding} onQueueBackgroundJob={queueBackground} onStateChange={setOnboardingState} onWelcomeDismiss={dismissWelcome} welcomeOpen={welcomeOpen} />
-            : <MessageWorkspace copy={copy.message} onOpenSettings={openSettings} service={sessionMessageService} />
+            : <MessageWorkspace copy={copy.message} initialMessageId={messageSourceId} key={messageSourceId ?? 'messages'} onOpenSettings={openSettings} service={sessionMessageService} />
         ) : route === 'tasks' ? (
           <TasksWorkspace currentUser={name} locale={locale} onDetailHeaderChange={setTasksDetailHeader} returnToListRequest={tasksListRequest} />
         ) : (

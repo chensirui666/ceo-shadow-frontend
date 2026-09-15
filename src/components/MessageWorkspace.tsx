@@ -32,12 +32,12 @@ export function MessageWorkspaceContent({ copy, snapshot, status, selectedId, on
   return <MessageList copy={copy} filters={filters} messages={snapshot.messages} onConfirm={onConfirm} onFeedback={onFeedback} onFiltersChange={onFiltersChange} onOpen={onOpen} onOpenSettings={onOpenSettings} onSkip={onSkip} onStatusChange={onStatusChange} onSummaryRangeChange={onSummaryRangeChange} status={status} summaryRange={summaryRange} />
 }
 
-export default function MessageWorkspace({ copy, service = messageService, onOpenSettings }: { copy: MessageCopy; service?: MessageService; onOpenSettings?: () => void }) {
+export default function MessageWorkspace({ copy, service = messageService, onOpenSettings, initialMessageId }: { copy: MessageCopy; service?: MessageService; onOpenSettings?: () => void; initialMessageId?: string }) {
   const [snapshot, setSnapshot] = useState<MessageSnapshot | null>(null)
   const [status, setStatus] = useState<MessageStatus | 'all'>('all')
   const [filters, setFilters] = useState<MessageFilters>(createDefaultMessageFilters)
   const [summaryRange, setSummaryRange] = useState<MessageSummaryRange>('7d')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(initialMessageId ?? null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
