@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Dropdown, Modal, useOverlayState } from '@heroui/react'
 import { Button as AriaButton } from 'react-aria-components'
 import { resolveRoute } from '../appState.ts'
 import type { Locale, Route, Session } from '../appState.ts'
 import { translations } from '../content/translations.ts'
+import RoutineWorkspace from './RoutineWorkspace.tsx'
+import type { RoutineLeaveGuard } from './RoutineWorkspace.tsx'
+import { createRoutineService } from '../routineService.ts'
 import { createMessageService } from '../messageService.ts'
 import { createLibraryService } from '../libraryService.ts'
 import LibraryWorkspace from './LibraryWorkspace.tsx'
@@ -34,6 +37,7 @@ type WorkspaceProps = {
 
 const pages: Array<{ id: Route; icon: IconName }> = [
   { id: 'home', icon: 'home' },
+  { id: 'routine', icon: 'routine' },
   { id: 'tasks', icon: 'tasks' },
   { id: 'library', icon: 'library' },
   { id: 'memory', icon: 'memory' },
@@ -53,6 +57,10 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const backgroundProgressTimer = useRef<number | null>(null)
   const [settingsSection, setSettingsSection] = useState<SettingsSection | undefined>()
   const [welcomeOpen, setWelcomeOpen] = useState(() => typeof window === 'undefined' || !hasSeenOnboardingWelcome(window.localStorage, session.email))
+  const [routineService] = useState(() => createRoutineService(typeof window === 'undefined' ? undefined : window.localStorage, session.email, { locale, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }))
+  const routineLeaveGuard = useRef<RoutineLeaveGuard | null>(null)
+  const registerRoutineGuard = useCallback((guard: RoutineLeaveGuard | null) => { routineLeaveGuard.current = guard }, [])
+  const [routineVisit, setRoutineVisit] = useState(0)
   const [sessionMessageService] = useState(createMessageService)
   const [sessionLibraryService] = useState(createLibraryService)
   const [messageSourceId, setMessageSourceId] = useState<string | undefined>()
@@ -85,12 +93,17 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const goTo = (nextRoute: unknown) => {
     setMessageSourceId(undefined)
     const next = resolveRoute(nextRoute)
-    if (next === 'settings') openSettings()
-    else if (next === 'tasks' && route === 'tasks' && tasksDetailHeader) setTasksListRequest((request) => request + 1)
-    else {
-      setTasksDetailHeader(null)
-      setRoute(next)
+    if (next === 'settings') { openSettings(); return }
+    const navigate = () => {
+      if (next === 'tasks' && route === 'tasks' && tasksDetailHeader) setTasksListRequest((request) => request + 1)
+      else {
+        setTasksDetailHeader(null)
+        if (next === 'routine') setRoutineVisit((visit) => visit + 1)
+        setRoute(next)
+      }
     }
+    if (route === 'routine' && routineLeaveGuard.current) routineLeaveGuard.current(navigate)
+    else navigate()
   }
 
   const finishOnboarding = () => {
@@ -159,12 +172,14 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       </aside>
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
-        {route !== 'home' && route !== 'library' && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
+        {route !== 'home' && route !== 'routine' && route !== 'library' && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
           <div className="workspace-header-title"><h1>{tasksDetailHeader?.title ?? currentLabel}</h1>{route === 'tasks' && tasksDetailHeader && <span className={`task-status task-status-${tasksDetailHeader.status}`}>{copy.tasks.projectStatus[tasksDetailHeader.status]}</span>}</div>
         </header>}
 
         {route === 'library' ? (
           <LibraryWorkspace locale={locale} service={sessionLibraryService} onOpenSource={(source) => { if (source.kind === 'message') { setMessageSourceId(source.recordId); setRoute('home') } }} />
+        ) : route === 'routine' ? (
+          <RoutineWorkspace key={routineVisit} locale={locale} service={routineService} registerLeaveGuard={registerRoutineGuard} />
         ) : route === 'feedback' ? (
           <FeedbackWorkspace locale={locale} />
         ) : route === 'memory' ? (
@@ -192,7 +207,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
             <Modal.Body className="exit-body">{copy.exit.body}</Modal.Body>
             <Modal.Footer className="exit-footer">
               <Button className="modal-cancel" onPress={exitDialog.close}>{copy.exit.cancel}</Button>
-              <Button className="modal-confirm" onPress={onSignOut}>{copy.signOut}</Button>
+              <Button className="modal-confirm" onPress={() => { const leave = () => { exitDialog.close(); onSignOut() }; if (route === 'routine' && routineLeaveGuard.current) routineLeaveGuard.current(leave); else leave() }}>{copy.signOut}</Button>
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>

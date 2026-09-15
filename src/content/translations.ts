@@ -264,7 +264,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday work scene',
     },
     workspace: {
-      nav: { home: 'Message', tasks: 'Task', library: 'Library', memory: 'Memory', feedback: 'Feedback', settings: 'Settings' },
+      nav: { home: 'Message', routine: 'Routine', tasks: 'Task', library: 'Library', memory: 'Memory', feedback: 'Feedback', settings: 'Settings' },
       primaryNavigation: 'Primary navigation',
       content: (label: string) => `${label} content`,
       greeting: (name: string) => `Welcome back, ${name}`,
@@ -471,7 +471,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday 工作场景',
     },
     workspace: {
-      nav: { home: 'Message', tasks: 'Task', library: 'Library', memory: '记忆', feedback: '反馈', settings: '设置' },
+      nav: { home: 'Message', routine: 'Routine', tasks: 'Task', library: 'Library', memory: '记忆', feedback: '反馈', settings: '设置' },
       primaryNavigation: '主要导航',
       content: (label: string) => `${label}内容`,
       greeting: (name: string) => `欢迎回来，${name}`,
