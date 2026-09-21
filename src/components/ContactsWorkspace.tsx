@@ -8,7 +8,7 @@ import type { ContactsService } from '../contactsService.ts'
 import { contactTimes, selectContacts } from '../contactsState.ts'
 import type { Contact, ContactFilters, ContactTime } from '../contactsState.ts'
 import { connectorIds, loadSettings } from '../settingsState.ts'
-import type { ConnectorId } from '../settingsState.ts'
+import type { ConnectorId, FridaySettings } from '../settingsState.ts'
 import '../contacts.css'
 
 export type ContactsCopy = {
@@ -20,6 +20,7 @@ export type ContactsCopy = {
   time: string
   source: string
   allSources: string
+  noSources: string
   get: string
   goConnect: string
   times: Record<ContactTime, string>
@@ -58,6 +59,8 @@ type ContactsWorkspaceContentProps = {
 
 const sourceNames = (contact: Contact, copy: ContactsCopy) => contact.sources.map((source) => `${copy.sources[source.connector]} · ${source.name}`).join(' · ')
 
+export const connectedContactSources = (settings: FridaySettings): ConnectorId[] => connectorIds.filter((source) => settings.connectors[source] === 'connected')
+
 export function ContactsWorkspaceContent({ contacts, selectedId, query, time, sourceIds, connectedSources, copy, onOpen, onAction, onQueryChange, onSourceIdsChange, onTimeChange }: ContactsWorkspaceContentProps) {
   const visible = selectContacts(contacts, { query, sourceIds, time }, new Date())
   const selected = contacts.find((contact) => contact.id === selectedId) ?? null
@@ -83,7 +86,7 @@ export function ContactsWorkspaceContent({ contacts, selectedId, query, time, so
       </div>
       {!visible.length && <div className="contacts-empty"><p>{contacts.length ? copy.empty : copy.empty}</p></div>}
     </div>
-    {selected && <aside aria-label={copy.profile} className="contacts-profile"><header><span className="contacts-avatar contacts-avatar-large" aria-hidden="true">{selected.name.slice(0, 1).toUpperCase()}</span><div><h2>{selected.name}</h2><p>{selected.relationship}</p></div><Button aria-label={copy.close} isIconOnly onPress={() => onOpen(null)} size="sm" variant="ghost"><X aria-hidden="true" /></Button></header><section className="contacts-profile-sources"><h3>{copy.fields.sources}</h3>{selected.sources.length ? selected.sources.map((source) => <p key={source.connector}><img alt="" src={connectorLogos[source.connector]} /><span>{copy.sources[source.connector]} · <strong>{source.name}</strong></span></p>) : <p>{copy.allSources}</p>}</section><article className="contacts-profile-text"><p>{`${selected.profile.summary} ${selected.profile.recentContacts} ${selected.profile.relationship} ${selected.profile.context || copy.noContext}`}</p></article><footer><Button onPress={() => onAction(selected.id, 'refresh')} variant="secondary"><RefreshCw aria-hidden="true" />{copy.refresh}</Button><Button onPress={() => onAction(selected.id, 'edit')} variant="ghost"><Pencil aria-hidden="true" />{copy.edit}</Button></footer></aside>}
+    {selected && <aside aria-label={copy.profile} className="contacts-profile"><header><span className="contacts-avatar contacts-avatar-large" aria-hidden="true">{selected.name.slice(0, 1).toUpperCase()}</span><div><h2>{selected.name}</h2><p>{selected.relationship}</p></div><Button aria-label={copy.close} isIconOnly onPress={() => onOpen(null)} size="sm" variant="ghost"><X aria-hidden="true" /></Button></header><section className="contacts-profile-sources"><h3>{copy.fields.sources}</h3>{selected.sources.length ? selected.sources.map((source) => <p key={source.connector}><img alt="" src={connectorLogos[source.connector]} /><span>{copy.sources[source.connector]} · <strong>{source.name}</strong></span></p>) : <p>{copy.noSources}</p>}</section><article className="contacts-profile-text"><p>{`${selected.profile.summary} ${selected.profile.recentContacts} ${selected.profile.relationship} ${selected.profile.context || copy.noContext}`}</p></article><footer><Button isDisabled={!selected.sources.length} onPress={() => onAction(selected.id, 'refresh')} variant="secondary"><RefreshCw aria-hidden="true" />{copy.refresh}</Button><Button onPress={() => onAction(selected.id, 'edit')} variant="ghost"><Pencil aria-hidden="true" />{copy.edit}</Button></footer></aside>}
   </section>
 }
 
@@ -93,7 +96,7 @@ export default function ContactsWorkspace({ copy, locale, service = createContac
   const [query, setQuery] = useState('')
   const [time, setTime] = useState<ContactTime>('all')
   const [sourceIds, setSourceIds] = useState<ConnectorId[]>([])
-  const [connectedSources] = useState<ConnectorId[]>(() => typeof window === 'undefined' ? [...connectorIds] : connectorIds.filter((source) => loadSettings(window.localStorage).connectors[source] === 'connected'))
+  const connectedSources = typeof window === 'undefined' ? [...connectorIds] : connectedContactSources(loadSettings(window.localStorage))
   const [getStep, setGetStep] = useState<'explain' | 'chat' | 'result' | null>(null)
   const [command, setCommand] = useState('')
   const [candidates, setCandidates] = useState<Contact[]>([])

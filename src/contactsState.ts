@@ -92,10 +92,10 @@ export const removeContactSource = (contacts: Contact[], id: string, connector: 
   sources: contact.sources.filter((source) => source.connector !== connector),
 }))
 
-export const refreshContact = (contacts: Contact[], id: string, refreshedAt: string): Contact[] => replaceContact(contacts, id, (contact) => ({
-  ...contact,
-  refreshedAt: validTimestamp(refreshedAt),
-}))
+export const refreshContact = (contacts: Contact[], id: string, refreshedAt: string): Contact[] => replaceContact(contacts, id, (contact) => {
+  if (!contact.sources.length) throw new Error('no-source')
+  return { ...contact, refreshedAt: validTimestamp(refreshedAt) }
+})
 
 export const inviteContact = (contacts: Contact[], id: string, invitedAt: string): Contact[] => replaceContact(contacts, id, (contact) => ({
   ...contact,

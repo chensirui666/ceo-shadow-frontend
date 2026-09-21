@@ -66,6 +66,12 @@ test('preserves profile history when its final source identity is removed', () =
   assert.equal(original.sources.length, 1)
 })
 
+test('does not refresh a profile after every source identity is removed', () => {
+  const sourceFree = removeContactSource([contact()], 'mia-lin', 'dingtalk')
+
+  assert.throws(() => refreshContact(sourceFree, 'mia-lin', '2026-09-21T12:00:00.000Z'), /no-source/)
+})
+
 test('refreshing and inviting mutate only the selected profile without adding contacts', () => {
   const contacts = [contact(), candidate('sam-wu')]
   const refreshed = refreshContact(contacts, 'mia-lin', '2026-09-21T12:00:00.000Z')

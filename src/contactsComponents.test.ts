@@ -11,7 +11,7 @@ after(() => vite.close())
 const copy = {
   title: 'Contacts',
   explainer: 'Your assistant builds a working profile of the people you interact with, drawn from your conversations and background research.',
-  search: 'Search contacts', time: 'Contact time', source: 'Source', allSources: 'All sources', get: 'Get contacts', goConnect: 'Go connect',
+  search: 'Search contacts', time: 'Contact time', source: 'Source', allSources: 'All sources', noSources: 'No source identity', get: 'Get contacts', goConnect: 'Go connect',
   times: { all: 'All time', day: 'Today', week: 'Last week', month: 'Last month', quarter: 'Last three months' },
   sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
   fields: { name: 'Name', relationship: 'Relationship', sources: 'Sources', context: 'Additional context or instructions', contextHint: 'Optional — passed to your assistant when refreshing their people document' },
@@ -37,4 +37,24 @@ test('contacts list presents the three required information fields and a continu
   assert.match(html, /DingTalk.*Mia Lin/)
   assert.match(html, /Mia works with Stardust AI on product launches.*Confirmed the release checklist.*work together on product launches.*Usually concise and action-oriented/s)
   assert.doesNotMatch(html, /raw message|prompt|reasoning/i)
+})
+
+test('uses the current saved connector state when opening contacts', async () => {
+  const { connectedContactSources } = await vite.ssrLoadModule('/src/components/ContactsWorkspace.tsx')
+  const { createDefaultSettings } = await vite.ssrLoadModule('/src/settingsState.ts')
+  const settings = createDefaultSettings()
+  settings.connectors.dingtalk = 'connected'
+
+  assert.deepEqual(connectedContactSources(settings), ['dingtalk'])
+})
+
+test('labels a profile with no remaining source identity accurately', async () => {
+  const { ContactsWorkspaceContent } = await vite.ssrLoadModule('/src/components/ContactsWorkspace.tsx')
+  const contact = { ...createContactCandidates()[0], sources: [] }
+  const html = renderToStaticMarkup(createElement(ContactsWorkspaceContent, {
+    contacts: [contact], selectedId: contact.id, query: '', time: 'all', sourceIds: [], connectedSources: ['dingtalk'], copy,
+    onOpen: () => {}, onAction: () => {}, onQueryChange: () => {}, onSourceIdsChange: () => {}, onTimeChange: () => {},
+  }))
+
+  assert.match(html, /No source identity/)
 })
