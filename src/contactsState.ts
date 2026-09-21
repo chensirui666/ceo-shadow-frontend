@@ -25,11 +25,16 @@ export type ContactCandidate = Omit<Contact, 'refreshedAt' | 'invitedAt'>
 export type ContactFilters = { query: string; sourceIds: ConnectorId[]; time: ContactTime }
 export type ContactPatch = Partial<Pick<Contact, 'name' | 'relationship' | 'sources' | 'contextPrompt'>>
 
-const timeWindows: Record<Exclude<ContactTime, 'all'>, number> = {
-  day: 24 * 60 * 60 * 1_000,
+const timeWindows: Record<Exclude<ContactTime, 'all' | 'day'>, number> = {
   week: 7 * 24 * 60 * 60 * 1_000,
   month: 30 * 24 * 60 * 60 * 1_000,
   quarter: 90 * 24 * 60 * 60 * 1_000,
+}
+
+const connectorSearchTerms: Record<ConnectorId, string[]> = {
+  dingtalk: ['dingtalk', '钉钉'],
+  feishu: ['feishu', '飞书'],
+  teams: ['teams', '微软 teams'],
 }
 
 const requireContact = (contacts: Contact[], id: string): Contact => {
@@ -60,10 +65,10 @@ const replaceContact = (contacts: Contact[], id: string, update: (contact: Conta
 
 export const selectContacts = (contacts: Contact[], filters: ContactFilters, now: Date): Contact[] => {
   const term = filters.query.trim().toLocaleLowerCase()
-  const threshold = filters.time === 'all' ? Number.NEGATIVE_INFINITY : now.getTime() - timeWindows[filters.time]
+  const threshold = filters.time === 'all' ? Number.NEGATIVE_INFINITY : filters.time === 'day' ? new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() : now.getTime() - timeWindows[filters.time]
 
   return contacts.filter((contact) => {
-    const search = [contact.name, contact.relationship, ...contact.sources.map((source) => source.name)].join(' ').toLocaleLowerCase()
+    const search = [contact.name, contact.relationship, ...contact.sources.flatMap((source) => [source.name, ...connectorSearchTerms[source.connector]])].join(' ').toLocaleLowerCase()
     const sourceMatches = !filters.sourceIds.length || contact.sources.some((source) => filters.sourceIds.includes(source.connector))
     return search.includes(term) && sourceMatches && Date.parse(contact.lastInteractionAt) >= threshold
   }).slice().sort((a, b) => Date.parse(b.lastInteractionAt) - Date.parse(a.lastInteractionAt))

@@ -2,7 +2,8 @@ import { confirmCandidates, deleteContact, inviteContact, refreshContact, remove
 import type { Contact, ContactCandidate, ContactPatch } from './contactsState.ts'
 import type { ConnectorId } from './settingsState.ts'
 
-type ContactCandidateFixture = ContactCandidate & { recentContactsBySource: Partial<Record<ConnectorId, string>> }
+type SourceInteraction = { recentContacts: string; lastInteractionAt: string }
+type ContactCandidateFixture = ContactCandidate & { sourceInteractions: Partial<Record<ConnectorId, SourceInteraction>> }
 
 const createContactCandidateFixtures = (): ContactCandidateFixture[] => [
   {
@@ -14,7 +15,7 @@ const createContactCandidateFixtures = (): ContactCandidateFixture[] => [
       relationship: 'You work together on product launches.',
       context: 'Usually concise and action-oriented.',
     },
-    recentContactsBySource: { dingtalk: 'Sep 20 · DingTalk · Confirmed the release checklist. Sep 19 · DingTalk · Aligned the rollout owner.', feishu: 'Sep 18 · Feishu · Aligned the final review.' },
+    sourceInteractions: { dingtalk: { recentContacts: 'Sep 20 · DingTalk · Confirmed the release checklist. Sep 19 · DingTalk · Aligned the rollout owner.', lastInteractionAt: '2026-09-20T11:00:00.000Z' }, feishu: { recentContacts: 'Sep 18 · Feishu · Aligned the final review.', lastInteractionAt: '2026-09-18T10:00:00.000Z' } },
   },
   {
     id: 'sam-wu', name: 'Sam Wu', relationship: 'Design partner', lastInteractionAt: '2026-09-16T08:30:00.000Z', contextPrompt: '',
@@ -25,7 +26,7 @@ const createContactCandidateFixtures = (): ContactCandidateFixture[] => [
       relationship: 'You collaborate on the onboarding experience.',
       context: 'Often includes clear review points and next actions.',
     },
-    recentContactsBySource: { feishu: 'Sep 16 · Feishu · Shared annotated onboarding feedback.' },
+    sourceInteractions: { feishu: { recentContacts: 'Sep 16 · Feishu · Shared annotated onboarding feedback.', lastInteractionAt: '2026-09-16T08:30:00.000Z' } },
   },
   {
     id: 'olivia-zhao', name: 'Olivia Zhao', relationship: 'Team operations partner', lastInteractionAt: '2026-08-28T09:15:00.000Z', contextPrompt: '',
@@ -36,11 +37,11 @@ const createContactCandidateFixtures = (): ContactCandidateFixture[] => [
       relationship: 'You coordinate release operations together.',
       context: 'There is not enough interaction to describe a communication pattern yet.',
     },
-    recentContactsBySource: { teams: 'Aug 28 · Teams · Asked for the rollout owner in the release channel.' },
+    sourceInteractions: { teams: { recentContacts: 'Aug 28 · Teams · Asked for the rollout owner in the release channel.', lastInteractionAt: '2026-08-28T09:15:00.000Z' } },
   },
 ]
 
-export const createContactCandidates = (): ContactCandidate[] => createContactCandidateFixtures().map(({ recentContactsBySource: _, ...candidate }) => candidate)
+export const createContactCandidates = (): ContactCandidate[] => createContactCandidateFixtures().map(({ sourceInteractions: _, ...candidate }) => candidate)
 
 export type ContactsService = {
   load: () => Promise<Contact[]>
@@ -64,8 +65,10 @@ export const createContactsService = (initial: Contact[] = []): ContactsService 
     discover: async (connected) => {
       preview = candidates.map((candidate) => {
         const sources = candidate.sources.filter((source) => connected.includes(source.connector))
-        const { recentContactsBySource, ...contact } = candidate
-        return { ...contact, sources, profile: { ...candidate.profile, recentContacts: sources.map((source) => recentContactsBySource[source.connector]).filter(Boolean).join(' ') } }
+        const interactions = sources.map((source) => candidate.sourceInteractions[source.connector]).filter((interaction): interaction is SourceInteraction => interaction !== undefined)
+        const { sourceInteractions: _, ...contact } = candidate
+        const lastInteractionAt = interactions.reduce((latest, interaction) => Date.parse(interaction.lastInteractionAt) > Date.parse(latest) ? interaction.lastInteractionAt : latest, interactions[0]?.lastInteractionAt ?? contact.lastInteractionAt)
+        return { ...contact, sources, lastInteractionAt, profile: { ...candidate.profile, recentContacts: interactions.map((interaction) => interaction.recentContacts).join(' ') } }
       }).filter((candidate) => candidate.sources.length)
       return structuredClone(preview)
     },

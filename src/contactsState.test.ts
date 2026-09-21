@@ -28,7 +28,19 @@ test('filters by visible name, relationship, source identity, time, and source t
 
   assert.deepEqual(selectContacts(contacts, { query: ' Lin ', sourceIds: ['dingtalk'], time: 'week' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['mia-lin'])
   assert.deepEqual(selectContacts(contacts, { query: '吴森', sourceIds: ['feishu'], time: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
+  assert.deepEqual(selectContacts(contacts, { query: 'Feishu', sourceIds: [], time: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
+  assert.deepEqual(selectContacts(contacts, { query: '飞书', sourceIds: [], time: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
   assert.equal(selectContacts(contacts, { query: 'partner', sourceIds: ['dingtalk'], time: 'all' }, new Date('2026-09-21T12:00:00.000Z')).length, 0)
+})
+
+test('treats today as the current calendar day instead of the past 24 hours', () => {
+  const now = new Date(2026, 8, 21, 1)
+  const contacts = [
+    { ...contact(), id: 'last-night', lastInteractionAt: new Date(2026, 8, 20, 23).toISOString() },
+    { ...candidate('this-morning'), lastInteractionAt: new Date(2026, 8, 21, 0, 10).toISOString() },
+  ]
+
+  assert.deepEqual(selectContacts(contacts, { query: '', sourceIds: [], time: 'day' }, now).map((item) => item.id), ['this-morning'])
 })
 
 test('keeps candidates out until explicit confirmation and never adds the same candidate twice', () => {

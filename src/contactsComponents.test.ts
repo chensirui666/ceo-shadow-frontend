@@ -58,3 +58,13 @@ test('labels a profile with no remaining source identity accurately', async () =
 
   assert.match(html, /No source identity/)
 })
+
+test('uses Go connect as the sole primary entry when no source is connected', async () => {
+  const { ContactsWorkspaceContent } = await vite.ssrLoadModule('/src/components/ContactsWorkspace.tsx')
+  const html = renderToStaticMarkup(createElement(ContactsWorkspaceContent, {
+    contacts: [], selectedId: null, query: '', time: 'all', sourceIds: [], connectedSources: [], copy,
+    onOpen: () => {}, onAction: () => {}, onQueryChange: () => {}, onSourceIdsChange: () => {}, onTimeChange: () => {},
+  }))
+
+  assert.match(html, /Go connect/)
+})
