@@ -33,6 +33,10 @@ test('Library is a supported workspace route', () => {
   assert.equal(appState.resolveRoute('library'), 'library')
 })
 
+test('Contacts is a supported workspace route', () => {
+  assert.equal(appState.resolveRoute('contacts'), 'contacts')
+})
+
 test('resolveLocale defaults to English and accepts the supported Chinese locale', () => {
   assert.equal(appState.resolveLocale(), 'en')
   assert.equal(appState.resolveLocale('zh'), 'zh')

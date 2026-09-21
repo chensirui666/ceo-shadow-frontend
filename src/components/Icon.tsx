@@ -1,13 +1,14 @@
-import { Bell, BookOpen, CalendarCheck, CalendarClock, CheckCircle2, Clock, Files, House, MessageSquare, Settings as SettingsIcon, UserRound } from 'lucide-react'
+import { Bell, BookOpen, CalendarCheck, CalendarClock, CheckCircle2, Clock, ContactRound, Files, House, MessageSquare, Settings as SettingsIcon, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-export type IconName = 'home' | 'routine' | 'tasks' | 'library' | 'memory' | 'feedback' | 'settings' | 'bell' | 'progress' | 'user' | 'check'
+export type IconName = 'home' | 'routine' | 'tasks' | 'library' | 'contacts' | 'memory' | 'feedback' | 'settings' | 'bell' | 'progress' | 'user' | 'check'
 
 const icons: Record<IconName, LucideIcon> = {
   home: House,
   routine: CalendarClock,
   tasks: CalendarCheck,
   library: Files,
+  contacts: ContactRound,
   memory: BookOpen,
   feedback: MessageSquare,
   settings: SettingsIcon,

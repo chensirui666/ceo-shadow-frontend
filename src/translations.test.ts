@@ -71,6 +71,12 @@ test('the stable home and tasks routes are presented as Message and Task', () =>
   assert.equal(translations.en.workspace.tasks.sections.sources, 'Project sources')
 })
 
+test('Contacts has localized navigation and the required English explanatory text', () => {
+  assert.equal(translations.en.workspace.nav.contacts, 'Contacts')
+  assert.equal(translations.zh.workspace.nav.contacts, '联系人')
+  assert.equal(translations.en.workspace.contacts.explainer, 'Your assistant builds a working profile of the people you interact with, drawn from your conversations and background research.')
+})
+
 test('AI Product document copy identifies local editing, feedback, and assistant entry points', () => {
   assert.equal(translations.zh.workspace.tasks.aiProductDocument.openCopilot, '打开 AI 助手')
   assert.equal(translations.en.workspace.tasks.aiProductDocument.feedbackSent, 'Feedback saved for this session')

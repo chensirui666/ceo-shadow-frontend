@@ -1,4 +1,4 @@
-export const routes = ['home', 'routine', 'tasks', 'library', 'memory', 'feedback', 'settings'] as const
+export const routes = ['home', 'routine', 'tasks', 'library', 'contacts', 'memory', 'feedback', 'settings'] as const
 export const locales = ['en', 'zh'] as const
 
 export type Route = typeof routes[number]

@@ -10,6 +10,8 @@ import { createRoutineService } from '../routineService.ts'
 import { createMessageService } from '../messageService.ts'
 import { createLibraryService } from '../libraryService.ts'
 import LibraryWorkspace from './LibraryWorkspace.tsx'
+import { createContactsService } from '../contactsService.ts'
+import ContactsWorkspace from './ContactsWorkspace.tsx'
 import { createOnboardingState, needsOnboarding } from '../onboardingState.ts'
 import { createBackgroundProgressState, markBackgroundNotificationsRead, queueBackgroundJob } from '../backgroundProgressState.ts'
 import type { BackgroundJobKind } from '../backgroundProgressState.ts'
@@ -40,6 +42,7 @@ const pages: Array<{ id: Route; icon: IconName }> = [
   { id: 'routine', icon: 'routine' },
   { id: 'tasks', icon: 'tasks' },
   { id: 'library', icon: 'library' },
+  { id: 'contacts', icon: 'contacts' },
   { id: 'memory', icon: 'memory' },
   { id: 'feedback', icon: 'feedback' },
   { id: 'settings', icon: 'settings' },
@@ -63,6 +66,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
   const [routineVisit, setRoutineVisit] = useState(0)
   const [sessionMessageService] = useState(createMessageService)
   const [sessionLibraryService] = useState(createLibraryService)
+  const [sessionContactsService] = useState(createContactsService)
   const [messageSourceId, setMessageSourceId] = useState<string | undefined>()
   const [tasksDetailHeader, setTasksDetailHeader] = useState<TasksDetailHeader | null>(null)
   const [tasksListRequest, setTasksListRequest] = useState(0)
@@ -172,12 +176,14 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
       </aside>
 
       <section aria-hidden={settingsOpen} aria-label={copy.content(currentLabel)} className="workspace-canvas" inert={settingsOpen || undefined}>
-        {route !== 'home' && route !== 'routine' && route !== 'library' && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
+        {route !== 'home' && route !== 'routine' && route !== 'library' && route !== 'contacts' && <header className={`workspace-header${route === 'memory' ? ' workspace-header-compact' : ''}`}>
           <div className="workspace-header-title"><h1>{tasksDetailHeader?.title ?? currentLabel}</h1>{route === 'tasks' && tasksDetailHeader && <span className={`task-status task-status-${tasksDetailHeader.status}`}>{copy.tasks.projectStatus[tasksDetailHeader.status]}</span>}</div>
         </header>}
 
         {route === 'library' ? (
           <LibraryWorkspace locale={locale} service={sessionLibraryService} onOpenSource={(source) => { if (source.kind === 'message') { setMessageSourceId(source.recordId); setRoute('home') } }} />
+        ) : route === 'contacts' ? (
+          <ContactsWorkspace copy={copy.contacts} locale={locale} onOpenSettings={() => openSettings('apps')} service={sessionContactsService} />
         ) : route === 'routine' ? (
           <RoutineWorkspace key={routineVisit} locale={locale} service={routineService} registerLeaveGuard={registerRoutineGuard} />
         ) : route === 'feedback' ? (

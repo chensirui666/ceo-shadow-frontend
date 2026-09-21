@@ -4,6 +4,7 @@ import type { ActivityHour, HomeOutcome, HomeSource, HomeStatus, OperatingMode }
 import type { MemorySource } from '../memoryState.ts'
 import type { MessageCategory, MessageSource, MessageStatus, MessageSummaryRange } from '../messageState.ts'
 import type { ConnectorId, ConnectorStatus, SettingsSection } from '../settingsState.ts'
+import type { ContactsCopy } from '../components/ContactsWorkspace.tsx'
 
 type PageCopy = [string, string, string]
 export type BackgroundProgressCopy = {
@@ -222,6 +223,7 @@ export type Translation = {
     message: MessageCopy
     onboarding: OnboardingCopy
     feedback: FeedbackCopy
+    contacts: ContactsCopy
     tasks: TasksCopy
     pages: Record<string, PageCopy>
     exit: Record<'title' | 'body' | 'cancel', string>
@@ -264,7 +266,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday work scene',
     },
     workspace: {
-      nav: { home: 'Message', routine: 'Routine', tasks: 'Task', library: 'Library', memory: 'Memory', feedback: 'Feedback', settings: 'Settings' },
+      nav: { home: 'Message', routine: 'Routine', tasks: 'Task', library: 'Library', contacts: 'Contacts', memory: 'Memory', feedback: 'Feedback', settings: 'Settings' },
       primaryNavigation: 'Primary navigation',
       content: (label: string) => `${label} content`,
       greeting: (name: string) => `Welcome back, ${name}`,
@@ -328,6 +330,26 @@ export const translations: Record<Locale, Translation> = {
         memory: { title: 'Build your Memory', subtitle: 'Choose what Friday can read, then let it build your first work Memory in the background.', signalsTitle: 'What Friday can read', signals: { messages: ['Work messages', 'Chats, decisions, and follow-ups'], documents: ['Work documents', 'Project context and key conclusions'], calendar: ['Calendar context', 'Meetings, events, and timing'] }, migration: { title: 'Bring existing Memory with you', body: 'Complete data migration in Memory when you are ready.' }, confirm: 'Build Memory', scopeTitle: 'Choose apps to read', scopeHint: 'Remove any app you do not want included in this Memory.', readSelected: 'Read selected apps', removeSource: (name) => `Remove ${name} from this Memory` },
         style: { title: 'Set up your work style', subtitle: 'Friday will generate your work style in the background from the work material already available.', summary: 'Friday will organize these parts of how you work.', points: ['Expression: concise and explicit about uncertainty.', 'Judgment: check facts, risks, and owner first.', 'Next step: make the next action clear.', 'Boundaries: hand off commitments and sensitive or missing context.'], extract: 'Confirm processing', confirmTitle: 'Generate work style?', confirmBody: 'Friday will organize your expression, judgment, next steps, and boundaries from the work material you connected.', confirm: 'Start in background', completeSetup: 'Complete setup', completionTitle: 'Finish onboarding?', completionBody: 'Your work style will keep processing in the background. Friday will notify you when it is ready.', completionConfirm: 'Finish setup' },
         activation: { celebrating: 'Friday is getting ready for you', completeTitle: 'Your work avatar is now active', completeBody: 'Friday is ready to start helping you work.', completeAction: 'Start exploring' },
+      },
+
+      contacts: {
+        title: 'Contacts',
+        explainer: 'Your assistant builds a working profile of the people you interact with, drawn from your conversations and background research.',
+        demo: 'Local demo — candidate results are fixtures; no connected source has been read.',
+        loading: 'Loading contacts…', search: 'Search contacts', time: 'Contact time', source: 'Source', allSources: 'All sources', get: 'Get contacts', goConnect: 'Go connect',
+        times: { all: 'All time', day: 'Today', week: 'Last week', month: 'Last month', quarter: 'Last three months' },
+        sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
+        fields: { name: 'Name', relationship: 'Relationship', sources: 'Sources', context: 'Additional context or instructions', contextHint: 'Optional — passed to your assistant when refreshing their people document' },
+        empty: 'Contacts keeps the people Friday has confirmed for you.', profile: 'Profile', close: 'Close profile', more: 'More actions', edit: 'Edit information', remove: 'Delete contact', invite: 'Invite to Team', refresh: 'Update profile',
+        noContext: 'There is not enough interaction to describe a communication pattern yet.',
+        getDialog: {
+          title: 'Get contacts', body: 'Friday can find people from direct messages, personal emails, and group messages that directly mention you.', cancel: 'Cancel', tryChat: 'Try in chat',
+          command: (sources) => `/Get contacts Find people in the following connected sources who meet at least one condition:\n1. You have at least three direct messages;\n2. They sent you a personal email;\n3. They directly mentioned you in a group.\n\nConnected sources: ${sources}`,
+          send: 'Send', result: 'Found the following eligible contacts. Confirm to add them.', noResult: 'No contacts met the current criteria.', confirm: 'Confirm add',
+        },
+        editDialog: { title: 'Edit contact', save: 'Save changes', removeSource: 'Remove source', error: 'Enter a name for the contact and every remaining source identity.' },
+        deleteDialog: { title: 'Delete this contact?', body: 'This removes the contact from this local session.', cancel: 'Cancel', confirm: 'Delete contact' },
+        notices: { added: 'Contacts added to this local session.', saved: 'Contact information saved.', refreshed: 'Profile refresh recorded locally.', invited: 'Team invitation recorded locally.', removed: 'Contact removed.' },
       },
 
       feedback: {
@@ -471,7 +493,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday 工作场景',
     },
     workspace: {
-      nav: { home: 'Message', routine: 'Routine', tasks: 'Task', library: 'Library', memory: '记忆', feedback: '反馈', settings: '设置' },
+      nav: { home: 'Message', routine: 'Routine', tasks: 'Task', library: 'Library', contacts: '联系人', memory: '记忆', feedback: '反馈', settings: '设置' },
       primaryNavigation: '主要导航',
       content: (label: string) => `${label}内容`,
       greeting: (name: string) => `欢迎回来，${name}`,
@@ -535,6 +557,26 @@ export const translations: Record<Locale, Translation> = {
         memory: { title: '建立你的工作记忆', subtitle: '确认读取范围后，Friday 会在后台建立第一份工作记忆。', signalsTitle: 'Friday 会读取什么', signals: { messages: ['工作消息', '对话、决策与待办'], documents: ['工作文档', '项目背景与关键结论'], calendar: ['日历信息', '会议、事件与时间安排'] }, migration: { title: '迁移已有工作记忆', body: '你可以在 Memory 中完成数据迁移。' }, confirm: '建立工作记忆', scopeTitle: '选择要读取的应用', scopeHint: '可移除本次不想纳入工作记忆的应用。', readSelected: '读取所选应用', removeSource: (name) => `从本次工作记忆中移除${name}` },
         style: { title: '生成你的工作风格', subtitle: 'Friday 会基于当前已可用的工作材料，在后台生成你的工作方式。', summary: 'Friday 会整理你工作方式中的这些部分。', points: ['表达：简洁直接；不确定会说清楚。', '判断：先确认事实、风险与负责人。', '下一步：更新后说清下一步。', '边界：承诺、敏感事项或信息不足，交给你。'], extract: '确认处理说明', confirmTitle: '确认生成工作风格', confirmBody: 'Friday 会基于已连接的工作材料，整理你的表达、判断、下一步和边界。', confirm: '开始后台处理', completeSetup: '完成配置', completionTitle: '确认完成配置', completionBody: '工作风格会继续在后台处理；完成后，Friday 会通过通知提醒你。', completionConfirm: '确认完成' },
         activation: { celebrating: 'Friday 正在为你准备工作空间', completeTitle: '你的工作分身已启用', completeBody: 'Friday 已准备好开始协助你工作。', completeAction: '开始体验' },
+      },
+
+      contacts: {
+        title: '联系人',
+        explainer: 'Your assistant builds a working profile of the people you interact with, drawn from your conversations and background research.',
+        demo: '本地演示：候选结果为 fixture，Friday 尚未读取任何已连接来源。',
+        loading: '正在加载联系人…', search: '搜索联系人', time: '联系时间', source: '来源', allSources: '全部来源', get: '获取联系人', goConnect: '去连接',
+        times: { all: '全部时间', day: '当天', week: '最近一周', month: '最近一个月', quarter: '最近三个月' },
+        sources: { dingtalk: '钉钉', feishu: '飞书', teams: '微软 Teams' },
+        fields: { name: '名称', relationship: '关系描述', sources: '信息来源', context: 'Additional context or instructions', contextHint: '可选 — 刷新人物档案时会传给你的助手' },
+        empty: 'Contacts 用于管理 Friday 已确认的人物关系。', profile: '人物档案', close: '关闭人物档案', more: '更多操作', edit: '编辑信息', remove: '删除联系人', invite: '邀请进 Team', refresh: '更新 Profile',
+        noContext: '暂无足够互动判断沟通方式。',
+        getDialog: {
+          title: '获取联系人', body: 'Friday 会从你已连接的信息源中，查找与你有明确互动的联系人。你可先在对话中查看结果，确认后再加入 Contacts。', cancel: '取消', tryChat: '聊天试试',
+          command: (sources) => `/获取联系人 请从如下已连接 Connector 中寻找到满足任一条件的人：\n1. 与用户有至少 3 条私聊；\n2. 此人直接给用户发过个人邮件；\n3. 此人在群内直接 @ 用户。\n\n如下已连接 Connector：${sources}`,
+          send: '发送', result: '找到以下符合条件的联系人。确认后，他们将加入 Contacts。', noResult: '没有找到符合当前条件的联系人。', confirm: '确认纳入',
+        },
+        editDialog: { title: '编辑联系人', save: '保存修改', removeSource: '移除来源身份', error: '请填写联系人名称和所有保留来源身份的名称。' },
+        deleteDialog: { title: '删除联系人？', body: '这会从当前本地会话中移除该联系人。', cancel: '取消', confirm: '删除联系人' },
+        notices: { added: '联系人已加入当前本地会话。', saved: '联系人信息已保存。', refreshed: '已在本地记录 Profile 更新。', invited: '已在本地记录 Team 邀请。', removed: '联系人已删除。' },
       },
 
       feedback: {
