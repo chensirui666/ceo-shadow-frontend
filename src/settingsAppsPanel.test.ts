@@ -43,3 +43,23 @@ test('profile replaces its three summaries and auxiliary links with one editable
   assert.match(html, /先看目标与事实；信息不足先追问；不轻易替人承诺。/)
   for (const removed of ['我的判断方式', '我的表达方式', '我的工作边界', '安全边界', '去工作记忆查看来源', '去反馈校准不准确的地方']) assert.doesNotMatch(html, new RegExp(removed))
 })
+
+test('profile lists blacklisted contacts and offers a restore action', async () => {
+  const { default: SettingsProfilePanel } = await vite.ssrLoadModule('/src/components/SettingsProfilePanel.tsx')
+  const draft = settingsState.blacklistContact(settingsState.createDefaultSettings(), {
+    id: 'mia-lin', name: 'Mia Lin', sourceLabels: ['DingTalk · Mia Lin'],
+  })
+  const html = renderToStaticMarkup(createElement(SettingsProfilePanel, {
+    confirmation: null,
+    copy: translations.zh.workspace.settings,
+    draft,
+    notice: '',
+    onSave: () => {},
+    onUpdateDraft: (update: (current: FridaySettings) => FridaySettings) => update(draft),
+  }))
+
+  assert.match(html, /黑名单/)
+  assert.match(html, /Mia Lin/)
+  assert.match(html, /DingTalk · Mia Lin/)
+  assert.match(html, /移出黑名单/)
+})

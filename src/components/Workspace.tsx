@@ -183,7 +183,7 @@ export default function Workspace({ locale, onLocaleChange, onSignOut, session }
         {route === 'library' ? (
           <LibraryWorkspace locale={locale} service={sessionLibraryService} onOpenSource={(source) => { if (source.kind === 'message') { setMessageSourceId(source.recordId); setRoute('home') } }} />
         ) : route === 'contacts' ? (
-          <ContactsWorkspace copy={copy.contacts} locale={locale} onOpenSettings={() => openSettings('apps')} service={sessionContactsService} />
+          <ContactsWorkspace copy={copy.contacts} onOpenSettings={() => openSettings('apps')} service={sessionContactsService} />
         ) : route === 'routine' ? (
           <RoutineWorkspace key={routineVisit} locale={locale} service={routineService} registerLeaveGuard={registerRoutineGuard} />
         ) : route === 'feedback' ? (

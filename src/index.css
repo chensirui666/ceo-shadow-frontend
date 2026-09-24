@@ -1360,7 +1360,15 @@ button, input, select, textarea { font: inherit; }
 .settings-time-row { display: grid; grid-template-columns: 1fr 1fr; }
 .settings-time-row .settings-field { border-bottom: 0; }
 .settings-time-row .settings-field:first-child { border-right: 1px solid #e5e0d7; }
-.settings-prompt-field { border-bottom: 0; }
+.settings-field small { color: #777168; font-size: var(--font-meta); font-weight: 400; line-height: 1.45; }
+.settings-prompt-field:last-of-type { border-bottom: 0; }
+.settings-blacklist { gap: 7px; }
+.settings-blacklist > p { margin: 0; color: #777168; font-size: var(--font-meta); font-weight: 400; }
+.settings-blacklist ul { display: grid; gap: 8px; margin: 2px 0 0; padding: 0; list-style: none; }
+.settings-blacklist li { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #e5e0d7; border-radius: var(--radius-control); background: #fffefd; padding: 10px 12px; }
+.settings-blacklist li > div { display: grid; min-width: 0; gap: 3px; }
+.settings-blacklist li strong, .settings-blacklist li small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings-blacklist .settings-text-danger { flex: none; font-size: var(--font-meta); }
 
 .settings-confirmation { margin-top: 24px; border: 1px solid #ded5c8; border-radius: var(--radius-card); background: #fbf7ef; padding: 20px; }
 .settings-confirmation h3 { margin: 0; color: #38342d; font-size: var(--font-section); }

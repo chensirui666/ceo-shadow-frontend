@@ -1,14 +1,18 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { confirmCandidates, deleteContact, inviteContact, refreshContact, removeContactSource, selectContacts, updateContact } from './contactsState.ts'
-import type { Contact, ContactCandidate } from './contactsState.ts'
+import { inviteContact, refreshContact, removeContactSource, selectContacts, updateContact } from './contactsState.ts'
+import type { Contact } from './contactsState.ts'
 
-const candidate = (id = 'mia-lin'): ContactCandidate => ({
+const fixture = (id = 'mia-lin'): Contact => ({
   id,
   name: 'Mia Lin',
   relationship: 'Stardust AI colleague',
+  category: 'colleague',
+  company: 'Stardust AI',
+  tagIds: ['product-launch'],
   sources: [{ connector: 'dingtalk', name: 'Mia Lin' }],
   lastInteractionAt: '2026-09-20T11:00:00.000Z',
+  recentStatus: { tone: 'on-track', detail: 'Product launch · release checklist confirmed' },
   profile: {
     summary: 'Mia works with Stardust AI on product launches.',
     recentContacts: 'Sep 20 · DingTalk · Confirmed the release checklist.',
@@ -18,55 +22,67 @@ const candidate = (id = 'mia-lin'): ContactCandidate => ({
   contextPrompt: '',
 })
 
-const contact = (): Contact => candidate()
+const contact = (): Contact => fixture()
 
-test('filters by visible name, relationship, source identity, time, and source together', () => {
+test('filters by visible name, relationship, tag, source identity, time, and source together', () => {
   const contacts: Contact[] = [
     contact(),
-    { ...candidate('sam-wu'), name: 'Sam Wu', relationship: 'Design partner', sources: [{ connector: 'feishu', name: '吴森' }], lastInteractionAt: '2026-07-01T11:00:00.000Z' },
+    { ...fixture('sam-wu'), name: 'Sam Wu', relationship: 'Design partner', tagIds: ['design-review'], sources: [{ connector: 'feishu', name: '吴森' }], lastInteractionAt: '2026-07-01T11:00:00.000Z' },
+  ]
+  const tags = [
+    { id: 'product-launch', name: 'Product launch', rule: 'Works on the product launch.', color: 'blue' as const },
+    { id: 'design-review', name: 'Design review', rule: 'Reviews product design.', color: 'violet' as const },
   ]
 
-  assert.deepEqual(selectContacts(contacts, { query: ' Lin ', sourceIds: ['dingtalk'], time: 'week' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['mia-lin'])
-  assert.deepEqual(selectContacts(contacts, { query: '吴森', sourceIds: ['feishu'], time: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
-  assert.deepEqual(selectContacts(contacts, { query: 'Feishu', sourceIds: [], time: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
-  assert.deepEqual(selectContacts(contacts, { query: '飞书', sourceIds: [], time: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
-  assert.equal(selectContacts(contacts, { query: 'partner', sourceIds: ['dingtalk'], time: 'all' }, new Date('2026-09-21T12:00:00.000Z')).length, 0)
+  assert.deepEqual(selectContacts(contacts, { query: ' Lin ', sourceIds: ['dingtalk'], time: 'week', category: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['mia-lin'])
+  assert.deepEqual(selectContacts(contacts, { query: '吴森', sourceIds: ['feishu'], time: 'all', category: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
+  assert.deepEqual(selectContacts(contacts, { query: 'Feishu', sourceIds: [], time: 'all', category: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
+  assert.deepEqual(selectContacts(contacts, { query: '飞书', sourceIds: [], time: 'all', category: 'all' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
+  assert.deepEqual(selectContacts(contacts, { query: 'Product launch', sourceIds: [], time: 'all', category: 'all' }, new Date('2026-09-21T12:00:00.000Z'), tags).map((item) => item.id), ['mia-lin'])
+  assert.equal(selectContacts(contacts, { query: 'partner', sourceIds: ['dingtalk'], time: 'all', category: 'all' }, new Date('2026-09-21T12:00:00.000Z')).length, 0)
 })
 
 test('treats today as the current calendar day instead of the past 24 hours', () => {
   const now = new Date(2026, 8, 21, 1)
   const contacts = [
     { ...contact(), id: 'last-night', lastInteractionAt: new Date(2026, 8, 20, 23).toISOString() },
-    { ...candidate('this-morning'), lastInteractionAt: new Date(2026, 8, 21, 0, 10).toISOString() },
+    { ...fixture('this-morning'), lastInteractionAt: new Date(2026, 8, 21, 0, 10).toISOString() },
   ]
 
-  assert.deepEqual(selectContacts(contacts, { query: '', sourceIds: [], time: 'day' }, now).map((item) => item.id), ['this-morning'])
+  assert.deepEqual(selectContacts(contacts, { query: '', sourceIds: [], time: 'day', category: 'all' }, now).map((item) => item.id), ['this-morning'])
 })
 
-test('keeps candidates out until explicit confirmation and never adds the same candidate twice', () => {
-  const candidates = [candidate(), candidate('sam-wu')]
-  const before = confirmCandidates([], candidates, [])
-  const after = confirmCandidates(before, candidates, ['mia-lin'])
+test('filters contacts by category together with the existing filters', () => {
+  const contacts: Contact[] = [
+    contact(),
+    { ...fixture('sam-wu'), category: 'client', sources: [{ connector: 'feishu', name: 'Sam Wu' }] },
+  ]
 
-  assert.equal(before.length, 0)
-  assert.deepEqual(after.map((item) => item.id), ['mia-lin'])
-  assert.equal(confirmCandidates(after, candidates, ['mia-lin']).length, 1)
+  assert.deepEqual(selectContacts(contacts, { query: '', sourceIds: [], time: 'all', category: 'client' }, new Date('2026-09-21T12:00:00.000Z')).map((item) => item.id), ['sam-wu'])
 })
 
-test('edits user-controlled fields without rewriting observed profile facts', () => {
+test('edits user-controlled fields without changing the contact name or observed profile facts', () => {
   const original = contact()
   const updated = updateContact([original], original.id, {
-    name: 'Mia L.',
     relationship: 'Product launch partner',
+    category: 'client',
     sources: [{ connector: 'dingtalk', name: '林米娅' }],
     contextPrompt: 'Keep references to the release checklist short.',
   })
 
   assert.deepEqual(updated[0].sources, [{ connector: 'dingtalk', name: '林米娅' }])
+  assert.equal(updated[0].category, 'client')
   assert.equal(updated[0].contextPrompt, 'Keep references to the release checklist short.')
   assert.equal(updated[0].profile.context, original.profile.context)
+  assert.equal(updated[0].name, 'Mia Lin')
   assert.equal(original.name, 'Mia Lin')
-  assert.throws(() => updateContact([original], original.id, { name: '   ' }), /invalid-name/)
+})
+
+test('keeps each contact tag assignment unique when it is edited', () => {
+  const original = contact()
+  const updated = updateContact([original], original.id, { tagIds: ['design-review', 'design-review', 'product-launch'] })
+
+  assert.deepEqual(updated[0].tagIds, ['design-review', 'product-launch'])
 })
 
 test('preserves profile history when its final source identity is removed', () => {
@@ -85,7 +101,7 @@ test('does not refresh a profile after every source identity is removed', () => 
 })
 
 test('refreshing and inviting mutate only the selected profile without adding contacts', () => {
-  const contacts = [contact(), candidate('sam-wu')]
+  const contacts = [contact(), fixture('sam-wu')]
   const refreshed = refreshContact(contacts, 'mia-lin', '2026-09-21T12:00:00.000Z')
   const invited = inviteContact(refreshed, 'mia-lin', '2026-09-21T12:05:00.000Z')
 
@@ -94,12 +110,4 @@ test('refreshing and inviting mutate only the selected profile without adding co
   assert.equal(invited[0].invitedAt, '2026-09-21T12:05:00.000Z')
   assert.equal(invited[1].refreshedAt, undefined)
   assert.equal(invited[1].invitedAt, undefined)
-})
-
-test('deleting a contact does not alter any surviving profile', () => {
-  const contacts = [contact(), candidate('sam-wu')]
-  const remaining = deleteContact(contacts, 'mia-lin')
-
-  assert.deepEqual(remaining.map((item) => item.id), ['sam-wu'])
-  assert.throws(() => deleteContact(contacts, 'missing'), /not-found/)
 })

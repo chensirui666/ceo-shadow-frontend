@@ -9,6 +9,7 @@ export type ConnectorId = typeof connectorIds[number]
 export type ConnectorStatus = typeof connectorStatuses[number]
 export type SettingsSection = typeof settingsSections[number]
 export type QuietHours = { start: string; end: string }
+export type BlacklistedContact = { id: string; name: string; sourceLabels: string[] }
 export type FridaySettings = {
   connectors: Record<ConnectorId, ConnectorStatus>
   general: {
@@ -17,6 +18,7 @@ export type FridaySettings = {
     quietHours: QuietHours | null
   }
   profile: { name: string; aliases: string[]; prompt: string }
+  contacts: { rules: string; blacklist: BlacklistedContact[] }
   lastSection: SettingsSection
 }
 
@@ -42,6 +44,22 @@ const isWaitMinutes = (value: unknown): value is typeof waitMinutes[number] => (
   waitMinutes.includes(value as typeof waitMinutes[number])
 )
 
+const normalizeBlacklist = (value: unknown): BlacklistedContact[] => {
+  if (!Array.isArray(value)) return []
+  const seen = new Set<string>()
+  return value.flatMap((item) => {
+    const record = asRecord(item)
+    const id = typeof record.id === 'string' ? record.id.trim() : ''
+    const name = typeof record.name === 'string' ? record.name.trim() : ''
+    if (!id || !name || seen.has(id)) return []
+    seen.add(id)
+    const sourceLabels = Array.isArray(record.sourceLabels)
+      ? [...new Set(record.sourceLabels.filter((label): label is string => typeof label === 'string').map((label) => label.trim()).filter(Boolean))].slice(0, 8)
+      : []
+    return [{ id, name, sourceLabels }]
+  })
+}
+
 export const createDefaultSettings = (): FridaySettings => ({
   connectors: { dingtalk: 'disconnected', feishu: 'disconnected', teams: 'disconnected' },
   general: {
@@ -50,6 +68,7 @@ export const createDefaultSettings = (): FridaySettings => ({
     quietHours: null,
   },
   profile: { name: '陈思睿', aliases: ['@思睿', '@CS'], prompt: '先看目标与事实；信息不足先追问；不轻易替人承诺。\n\n结论优先，简短直接；复杂事项给出下一步。\n\n涉及关键判断、对外承诺或敏感议题时，必须交由本人确认。' },
+  contacts: { rules: 'Include people when they have at least three direct messages with you, send you a personal email, or directly @ mention you in a group.', blacklist: [] },
   lastSection: 'apps',
 })
 
@@ -59,6 +78,7 @@ export const normalizeSettings = (value: unknown): FridaySettings => {
   const connectors = asRecord(record.connectors)
   const general = asRecord(record.general)
   const profile = asRecord(record.profile)
+  const contacts = asRecord(record.contacts)
   const quietHours = asRecord(general.quietHours)
   const aliases = Array.isArray(profile.aliases)
     ? [...new Set(profile.aliases.filter((alias): alias is string => typeof alias === 'string').map((alias) => alias.trim()).filter(Boolean))].slice(0, 8)
@@ -80,9 +100,24 @@ export const normalizeSettings = (value: unknown): FridaySettings => {
       aliases: aliases.length ? aliases : fallback.profile.aliases,
       prompt: typeof profile.prompt === 'string' && profile.prompt.trim() ? profile.prompt.trim() : fallback.profile.prompt,
     },
+    contacts: {
+      rules: typeof contacts.rules === 'string' && contacts.rules.trim() ? contacts.rules.trim() : fallback.contacts.rules,
+      blacklist: normalizeBlacklist(contacts.blacklist),
+    },
     lastSection: isSection(record.lastSection) ? record.lastSection : fallback.lastSection,
   }
 }
+
+export const blacklistContact = (settings: FridaySettings, contact: BlacklistedContact): FridaySettings => {
+  const [entry] = normalizeBlacklist([contact])
+  if (!entry) throw new Error('invalid-blacklist-contact')
+  return { ...settings, contacts: { ...settings.contacts, blacklist: [...settings.contacts.blacklist.filter((item) => item.id !== entry.id), entry] } }
+}
+
+export const unblacklistContact = (settings: FridaySettings, id: string): FridaySettings => ({
+  ...settings,
+  contacts: { ...settings.contacts, blacklist: settings.contacts.blacklist.filter((contact) => contact.id !== id) },
+})
 
 export const loadSettings = (storage: Pick<SettingsStorage, 'getItem'>): FridaySettings => {
   try {

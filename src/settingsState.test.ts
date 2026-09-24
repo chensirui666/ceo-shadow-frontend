@@ -11,7 +11,7 @@ const createStorage = (entries: Record<string, string> = {}) => {
   }
 }
 
-test('settings default to safe group handling, a five-minute wait, and one editable prompt', () => {
+test('settings default to safe group handling, a five-minute wait, and editable Contacts rules', () => {
   const settings = settingsState.createDefaultSettings()
 
   assert.equal(settings.general.respondToEveryone, false)
@@ -19,6 +19,7 @@ test('settings default to safe group handling, a five-minute wait, and one edita
   assert.equal(settings.general.quietHours, null)
   assert.deepEqual(settings.connectors, { dingtalk: 'disconnected', feishu: 'disconnected', teams: 'disconnected' })
   assert.equal(settings.profile.prompt, '先看目标与事实；信息不足先追问；不轻易替人承诺。\n\n结论优先，简短直接；复杂事项给出下一步。\n\n涉及关键判断、对外承诺或敏感议题时，必须交由本人确认。')
+  assert.match((settings as unknown as { contacts: { rules: string } }).contacts.rules, /three direct messages/)
 })
 
 test('normalizeSettings recovers safe values from malformed persisted preferences', () => {
@@ -51,6 +52,28 @@ test('normalizeSettings discards removed notification preferences', () => {
   })
 
   assert.equal('notifications' in settings.general, false)
+})
+
+test('normalizes a saved Contacts inclusion rule', () => {
+  const settings = settingsState.normalizeSettings({ contacts: { rules: '  Add only project sponsors.  ' } })
+
+  assert.equal(settings.contacts.rules, 'Add only project sponsors.')
+})
+
+test('persists a blacklisted contact until it is explicitly restored', () => {
+  const initial = settingsState.createDefaultSettings()
+  const blocked = settingsState.blacklistContact(initial, {
+    id: 'mia-lin',
+    name: 'Mia Lin',
+    sourceLabels: ['DingTalk · Mia Lin', 'Feishu · 林米娅'],
+  })
+
+  assert.deepEqual(blocked.contacts.blacklist, [{
+    id: 'mia-lin',
+    name: 'Mia Lin',
+    sourceLabels: ['DingTalk · Mia Lin', 'Feishu · 林米娅'],
+  }])
+  assert.deepEqual(settingsState.unblacklistContact(blocked, 'mia-lin').contacts.blacklist, [])
 })
 
 test('saveSettings persists normalized preferences for a later load', () => {

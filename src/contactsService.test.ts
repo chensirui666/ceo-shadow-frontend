@@ -1,22 +1,38 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { createContactCandidates, createContactsService } from './contactsService.ts'
+import { createContactsService } from './contactsService.ts'
 
-test('confirms the exact source identities shown in the discovery preview', async () => {
+test('loads five automatically maintained contacts with reusable tag definitions', async () => {
   const service = createContactsService()
-  const feishuPreview = await service.discover(['feishu'])
-  const preview = await service.discover(['dingtalk'])
-  const contacts = await service.confirm(preview.map((candidate) => candidate.id))
+  const { contacts, tags } = await service.load()
 
-  assert.equal(feishuPreview[0].lastInteractionAt, '2026-09-18T10:00:00.000Z')
-  assert.match(feishuPreview[0].profile.recentContacts, /Feishu/)
-  assert.deepEqual(contacts[0].sources, [{ connector: 'dingtalk', name: 'Mia Lin' }])
-  assert.doesNotMatch(contacts[0].profile.recentContacts, /Feishu/)
+  assert.equal(contacts.length, 5)
+  assert.deepEqual(contacts.map((contact) => contact.category), ['colleague', 'leader', 'report', 'client', 'other'])
+  assert.equal(new Set(contacts.map((contact) => contact.lastInteractionAt)).size, 5)
+  assert.deepEqual([...new Set(contacts.flatMap((contact) => contact.sources.map((source) => source.connector)))].sort(), ['dingtalk', 'feishu', 'teams'])
+  assert.deepEqual(contacts.map((contact) => contact.recentStatus.tone), ['on-track', 'waiting', 'on-track', 'needs-follow-up', 'no-update'])
+  assert.deepEqual(tags.map((tag) => tag.name), ['Product launch', 'Decision maker', 'Design review', 'Needs follow-up'])
+  assert.deepEqual(contacts.map((contact) => contact.tagIds), [['product-launch'], ['decision-maker'], ['design-review'], ['needs-follow-up'], []])
 })
 
-test('rejects an invalid edit without overwriting the saved contact', async () => {
-  const service = createContactsService([createContactCandidates()[0]])
+test('rejects an unknown tag assignment without overwriting the saved contact', async () => {
+  const { contacts: [mia] } = await createContactsService().load()
+  const service = createContactsService([mia])
 
-  await assert.rejects(service.update('mia-lin', { name: ' ' }), /invalid-name/)
-  assert.equal((await service.load())[0].name, 'Mia Lin')
+  await assert.rejects(service.update('mia-lin', { tagIds: ['unknown'] }), /invalid-tag/)
+  assert.deepEqual((await service.load()).contacts[0].tagIds, ['product-launch'])
+})
+
+test('creates a tag with its rule and deletes it from every contact', async () => {
+  const service = createContactsService()
+  const created = await service.createTag({ name: 'Executive review', rule: 'People who review the executive update.' })
+  const tag = created.tags.find((item) => item.name === 'Executive review')
+
+  assert.ok(tag)
+  const assigned = await service.update('mia-lin', { tagIds: ['product-launch', tag.id] })
+  assert.ok(assigned.contacts.find((item) => item.id === 'mia-lin')?.tagIds.includes(tag.id))
+
+  const removed = await service.removeTag(tag.id)
+  assert.equal(removed.tags.some((item) => item.id === tag.id), false)
+  assert.equal(removed.contacts.some((item) => item.tagIds.includes(tag.id)), false)
 })

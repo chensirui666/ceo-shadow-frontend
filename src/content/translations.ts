@@ -60,6 +60,12 @@ type SettingsCopy = {
     addAlias: string
     removeAlias: (alias: string) => string
     prompt: string
+    contactsRules: string
+    contactsRulesHint: string
+    blacklist: string
+    blacklistHint: string
+    blacklistEmpty: string
+    removeBlacklist: (name: string) => string
     save: string
   }
 }
@@ -335,21 +341,19 @@ export const translations: Record<Locale, Translation> = {
       contacts: {
         title: 'Contacts',
         explainer: 'Your assistant builds a working profile of the people you interact with, drawn from your conversations and background research.',
-        demo: 'Local demo — candidate results are fixtures; no connected source has been read.',
-        loading: 'Loading contacts…', search: 'Search contacts', time: 'Contact time', source: 'Source', allSources: 'All sources', noSources: 'No source identity', get: 'Get contacts', goConnect: 'Go connect',
+        loading: 'Loading contacts…', search: 'Search contacts', time: 'Contact time', source: 'Source', allSources: 'All sources', noSources: 'No source identity', get: 'Get contacts', goConnect: 'Go connect', lastContact: 'Last contact',
         times: { all: 'All time', day: 'Today', week: 'Last week', month: 'Last month', quarter: 'Last three months' },
+        categories: { all: 'All', leader: 'Leader', colleague: 'Colleague', report: 'Report', client: 'Client', other: 'Other' },
         sources: { dingtalk: 'DingTalk', feishu: 'Feishu', teams: 'Teams' },
-        fields: { name: 'Name', relationship: 'Relationship', sources: 'Sources', context: 'Additional context or instructions', contextHint: 'Optional — passed to your assistant when refreshing their people document' },
-        empty: 'Contacts keeps the people Friday has confirmed for you.', profile: 'Profile', close: 'Close profile', more: 'More actions', edit: 'Edit information', remove: 'Delete contact', invite: 'Invite to Team', refresh: 'Update profile',
+        fields: { name: 'Name', relationship: 'Relationship', company: 'Company', tags: 'Tags', recentStatus: 'Recent status', category: 'Category', sources: 'Sources', context: 'Additional context or instructions', contextHint: 'Optional — passed to your assistant when refreshing their people document' },
+        statuses: { 'on-track': 'On track', waiting: 'Waiting', 'needs-follow-up': 'Needs follow-up', 'no-update': 'No recent update' },
+        actions: 'Actions', empty: 'Contacts keeps the people Friday has confirmed for you.', profile: 'Profile', close: 'Close profile', more: 'More actions', edit: 'Edit information', blacklist: 'Add to blacklist', invite: 'Invite to Team', refresh: 'Update profile',
         noContext: 'There is not enough interaction to describe a communication pattern yet.',
-        getDialog: {
-          title: 'Get contacts', body: 'Friday can find people from direct messages, personal emails, and group messages that directly mention you.', cancel: 'Cancel', tryChat: 'Try in chat',
-          command: (sources) => `/Get contacts Find people in the following connected sources who meet at least one condition:\n1. You have at least three direct messages;\n2. They sent you a personal email;\n3. They directly mentioned you in a group.\n\nConnected sources: ${sources}`,
-          send: 'Send', result: 'Found the following eligible contacts. Confirm to add them.', noResult: 'No contacts met the current criteria.', confirm: 'Confirm add',
-        },
-        editDialog: { title: 'Edit contact', save: 'Save changes', removeSource: 'Remove source', error: 'Enter a name for the contact and every remaining source identity.' },
-        deleteDialog: { title: 'Delete this contact?', body: 'This removes the contact from this local session.', cancel: 'Cancel', confirm: 'Delete contact' },
-        notices: { added: 'Contacts added to this local session.', saved: 'Contact information saved.', refreshed: 'Profile refresh recorded locally.', invited: 'Team invitation recorded locally.', removed: 'Contact removed.' },
+        getDialog: { title: 'Get contacts', body: 'Friday automatically maintains Contacts from people who match your inclusion rules. You can edit those rules in Settings.', cancel: 'Cancel', tryChat: 'Try in chat' },
+        editDialog: { title: 'Edit contact', save: 'Save changes', removeSource: 'Remove source', error: 'Enter every remaining source identity.' },
+        blacklistDialog: { title: 'Add this contact to the blacklist?', body: 'Friday will no longer use this person in future processing. You can restore them from Settings.', cancel: 'Cancel', confirm: 'Add to blacklist' },
+        tagDialog: { title: 'Manage tags', name: 'Tag name', rule: 'Who should receive this tag?', create: 'Create tag', remove: 'Delete tag', deleteTitle: 'Delete tag?', deleteBody: 'This removes the tag from every contact.', cancel: 'Cancel', confirm: 'Delete tag', error: 'Enter a unique tag name and rule.' },
+        notices: { saved: 'Contact information saved.', refreshed: 'Profile refresh recorded locally.', invited: 'Team invitation recorded locally.', blacklisted: 'Contact added to the blacklist.', tagCreated: 'Tag created.', tagRemoved: 'Tag removed.' },
       },
 
       feedback: {
@@ -455,6 +459,12 @@ export const translations: Record<Locale, Translation> = {
           addAlias: 'Add',
           removeAlias: (alias) => `Remove ${alias}`,
           prompt: 'Prompt',
+          contactsRules: 'Contacts inclusion rules',
+          contactsRulesHint: 'Friday automatically adds people who match these rules.',
+          blacklist: 'Blacklist',
+          blacklistHint: 'People on this list are excluded from all future Friday processing.',
+          blacklistEmpty: 'No blacklisted contacts.',
+          removeBlacklist: (name) => `Remove ${name} from blacklist`,
           save: 'Save identity',
         },
       },
@@ -562,21 +572,19 @@ export const translations: Record<Locale, Translation> = {
       contacts: {
         title: '联系人',
         explainer: 'Your assistant builds a working profile of the people you interact with, drawn from your conversations and background research.',
-        demo: '本地演示：候选结果为 fixture，Friday 尚未读取任何已连接来源。',
-        loading: '正在加载联系人…', search: '搜索联系人', time: '联系时间', source: '来源', allSources: '全部来源', noSources: '暂无来源身份', get: '获取联系人', goConnect: '去连接',
+        loading: '正在加载联系人…', search: '搜索联系人', time: '联系时间', source: '来源', allSources: '全部来源', noSources: '暂无来源身份', get: '获取联系人', goConnect: '去连接', lastContact: '最近联系',
         times: { all: '全部时间', day: '当天', week: '最近一周', month: '最近一个月', quarter: '最近三个月' },
+        categories: { all: '全部', leader: '领导', colleague: '同事', report: '下属', client: '客户', other: '其他' },
         sources: { dingtalk: '钉钉', feishu: '飞书', teams: '微软 Teams' },
-        fields: { name: '名称', relationship: '关系描述', sources: '信息来源', context: 'Additional context or instructions', contextHint: '可选 — 刷新人物档案时会传给你的助手' },
-        empty: 'Contacts 用于管理 Friday 已确认的人物关系。', profile: '人物档案', close: '关闭人物档案', more: '更多操作', edit: '编辑信息', remove: '删除联系人', invite: '邀请进 Team', refresh: '更新 Profile',
+        fields: { name: '名称', relationship: '关系描述', company: '公司名称', tags: '标签', recentStatus: '最近状态', category: '分类', sources: '信息来源', context: 'Additional context or instructions', contextHint: '可选 — 刷新人物档案时会传给你的助手' },
+        statuses: { 'on-track': '推进顺利', waiting: '等待中', 'needs-follow-up': '需跟进', 'no-update': '暂无新进展' },
+        actions: '操作', empty: 'Contacts 用于管理 Friday 已确认的人物关系。', profile: '人物档案', close: '关闭人物档案', more: '更多操作', edit: '编辑信息', blacklist: '加入黑名单', invite: '邀请进 Team', refresh: '更新 Profile',
         noContext: '暂无足够互动判断沟通方式。',
-        getDialog: {
-          title: '获取联系人', body: 'Friday 会从你已连接的信息源中，查找与你有明确互动的联系人。你可先在对话中查看结果，确认后再加入 Contacts。', cancel: '取消', tryChat: '聊天试试',
-          command: (sources) => `/获取联系人 请从如下已连接 Connector 中寻找到满足任一条件的人：\n1. 与用户有至少 3 条私聊；\n2. 此人直接给用户发过个人邮件；\n3. 此人在群内直接 @ 用户。\n\n如下已连接 Connector：${sources}`,
-          send: '发送', result: '找到以下符合条件的联系人。确认后，他们将加入 Contacts。', noResult: '没有找到符合当前条件的联系人。', confirm: '确认纳入',
-        },
-        editDialog: { title: '编辑联系人', save: '保存修改', removeSource: '移除来源身份', error: '请填写联系人名称和所有保留来源身份的名称。' },
-        deleteDialog: { title: '删除联系人？', body: '这会从当前本地会话中移除该联系人。', cancel: '取消', confirm: '删除联系人' },
-        notices: { added: '联系人已加入当前本地会话。', saved: '联系人信息已保存。', refreshed: '已在本地记录 Profile 更新。', invited: '已在本地记录 Team 邀请。', removed: '联系人已删除。' },
+        getDialog: { title: '获取联系人', body: 'Friday 会自动维护符合纳入规则的联系人。你可以在设置中编辑这些规则。', cancel: '取消', tryChat: '聊天试试' },
+        editDialog: { title: '编辑联系人', save: '保存修改', removeSource: '移除来源身份', error: '请填写所有保留来源身份的名称。' },
+        blacklistDialog: { title: '将此联系人加入黑名单？', body: 'Friday 后续不会再使用此人的信息进行任何处理。你可以在设置中将其恢复。', cancel: '取消', confirm: '加入黑名单' },
+        tagDialog: { title: '管理标签', name: '标签名称', rule: '哪些人应被打上此标签？', create: '创建标签', remove: '删除标签', deleteTitle: '删除标签？', deleteBody: '删除后，所有联系人的该标签都会被一并移除。', cancel: '取消', confirm: '删除标签', error: '请填写未重复的标签名称和规则。' },
+        notices: { saved: '联系人信息已保存。', refreshed: '已在本地记录 Profile 更新。', invited: '已在本地记录 Team 邀请。', blacklisted: '联系人已加入黑名单。', tagCreated: '标签已创建。', tagRemoved: '标签已移除。' },
       },
 
       feedback: {
@@ -682,6 +690,12 @@ export const translations: Record<Locale, Translation> = {
           addAlias: '添加',
           removeAlias: (alias) => `移除 ${alias}`,
           prompt: 'Prompt',
+          contactsRules: 'Contacts 纳入规则',
+          contactsRulesHint: 'Friday 会自动纳入符合以下规则的联系人。',
+          blacklist: '黑名单',
+          blacklistHint: '名单中的联系人不会参与 Friday 后续的任何处理。',
+          blacklistEmpty: '暂无黑名单联系人。',
+          removeBlacklist: (name) => `将 ${name} 移出黑名单`,
           save: '保存身份信息',
         },
       },
