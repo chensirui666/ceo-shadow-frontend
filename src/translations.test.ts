@@ -62,11 +62,13 @@ test('Memory page omits introductory and demo copy', () => {
   }
 })
 
-test('the stable home and tasks routes are presented as Message and Task', () => {
+test('workspace navigation follows the selected language', () => {
   assert.equal(translations.en.workspace.nav.home, 'Message')
-  assert.equal(translations.zh.workspace.nav.home, 'Message')
   assert.equal(translations.en.workspace.nav.tasks, 'Task')
-  assert.equal(translations.zh.workspace.nav.tasks, 'Task')
+  assert.equal(translations.zh.workspace.nav.home, '消息')
+  assert.equal(translations.zh.workspace.nav.routine, '日程')
+  assert.equal(translations.zh.workspace.nav.tasks, '任务')
+  assert.equal(translations.zh.workspace.nav.library, '资料库')
   assert.equal(translations.zh.workspace.tasks.sections.todos, '待办')
   assert.equal(translations.en.workspace.tasks.sections.sources, 'Project sources')
 })

@@ -1,6 +1,6 @@
 export const libraryCopy = {
   zh: {
-    subtitle: '你与 Friday 完成的工作', sample: '示例文件', search: '搜索文件', source: '来源', category: '类型', all: '全部',
+    title: '资料库', subtitle: '你与 Friday 完成的工作', weekly: { label: '本周与 Friday 一起完成', summary: '本周创建了 12 项', emphasis: '成果', breakdown: '5 份文档 · 3 份报告 · 4 个文件' }, sourceTypes: { message: '消息', routine: '日程' }, view: { layout: '显示方式', list: '列表视图', grid: '网格视图' }, missingNotice: '文件不存在或已被删除，列表已更新。', recent: '最近生成', sample: '示例文件', search: '搜索文件', source: '来源', category: '类型', all: '全部',
     categories: { document: '文档', spreadsheet: '表格', presentation: '演示', image: '图片', code: '代码', other: '其他' },
     clear: '清除筛选', more: '更多操作', download: '下载', rename: '重命名', remove: '删除', save: '保存', cancel: '取消',
     name: '文件名称', preview: '文件预览', close: '关闭预览', details: '来源与发送详情', originalDeleted: '原日程已删除', unavailable: '来源暂不可访问',
@@ -10,7 +10,7 @@ export const libraryCopy = {
     result: { 'not-sent': '未发送', sending: '发送中', sent: '已发送', partial: '部分发送失败', failed: '发送失败', unknown: '结果待确认' },
   },
   en: {
-    subtitle: 'The work you and Friday have completed', sample: 'Sample files', search: 'Search files', source: 'Source', category: 'Type', all: 'All',
+    title: 'Library', subtitle: 'The work you and Friday have completed', weekly: { label: 'This week with Friday', summary: '12 things', emphasis: 'created', breakdown: '5 docs · 3 reports · 4 files' }, sourceTypes: { message: 'Message', routine: 'Routine' }, view: { layout: 'View layout', list: 'List view', grid: 'Grid view' }, missingNotice: 'The file no longer exists. The list has been updated.', recent: 'Recently created', sample: 'Sample files', search: 'Search files', source: 'Source', category: 'Type', all: 'All',
     categories: { document: 'Documents', spreadsheet: 'Spreadsheets', presentation: 'Presentations', image: 'Images', code: 'Code', other: 'Other' },
     clear: 'Clear filters', more: 'More actions', download: 'Download', rename: 'Rename', remove: 'Delete', save: 'Save', cancel: 'Cancel',
     name: 'File name', preview: 'File preview', close: 'Close preview', details: 'Source and delivery details', originalDeleted: 'Original routine deleted', unavailable: 'Source unavailable',

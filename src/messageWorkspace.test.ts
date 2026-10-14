@@ -27,5 +27,5 @@ test('MessageWorkspace content has a readable empty state and switches to the se
 
   assert.match(empty, /还没有需要处理的消息/)
   assert.match(detail, new RegExp(message.question))
-  assert.match(detail, /返回 Message/)
+  assert.match(detail, /返回消息/)
 })

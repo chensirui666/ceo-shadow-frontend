@@ -155,11 +155,11 @@ test('MessageDetail keeps A-to-C in the reading area and moves Feedback to the a
   assert.match(asideHtml, /aria-label="点踩"/)
   assert.match(asideHtml, /message-detail-information-row/)
   assert.match(asideHtml, /message-detail-task-summary-link/)
-  assert.match(asideHtml, /1 个 Task（1 个进行中）/)
+  assert.match(asideHtml, /1 个任务（1 个进行中）/)
   assert.doesNotMatch(asideHtml, /活动时间线/)
 })
 
-test('MessageDetail keeps the Task summary visual while making it noninteractive', async () => {
+test('MessageDetail keeps the task summary visual while making it noninteractive', async () => {
   const { default: MessageDetail } = await vite.ssrLoadModule('/src/components/MessageDetail.tsx')
   const message = createDemoMessageSnapshot(new Date('2026-08-13T12:00:00.000Z')).messages.find((item) => item.id === 'delivery-commitment')!
   const detail = MessageDetail({ copy: translations.zh.workspace.message, message, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} })
@@ -167,7 +167,7 @@ test('MessageDetail keeps the Task summary visual while making it noninteractive
 
   assert.equal(summary.type, 'div')
   assert.equal(summary.props.onPress, undefined)
-  assert.match(renderToStaticMarkup(summary), /1 个 Task（1 个进行中）.*<svg/)
+  assert.match(renderToStaticMarkup(summary), /1 个任务（1 个进行中）.*<svg/)
 })
 
 test('MessageDetail keeps rendering when a hot-reloaded session still holds a legacy Message record', async () => {
@@ -183,7 +183,7 @@ test('MessageDetail keeps rendering when a hot-reloaded session still holds a le
   const html = renderToStaticMarkup(createElement(MessageDetail, { copy: translations.zh.workspace.message, message: legacyMessage, onBack: () => {}, onConfirm: () => {}, onFeedback: () => {}, onSkip: () => {} }))
 
   assert.match(html, /C\. 回答／处理结果/)
-  assert.match(html, /0 个 Task（0 个进行中）/)
+  assert.match(html, /0 个任务（0 个进行中）/)
   assert.doesNotMatch(html, /D\. 关联 Task|关联 Task：确认交付资源与最终排期/)
 })
 
@@ -212,7 +212,7 @@ test('MessageDetail reads in decision order with compact feedback and a collapse
   assert.match(html, /message-detail-feedback-header/)
   assert.doesNotMatch(html, /反馈原因|提交反馈/)
   assert.match(html, /<details/)
-  for (const label of ['操作', 'Message 信息', 'Task 汇总']) assert.match(html, new RegExp(label))
+  for (const label of ['操作', '消息信息', '任务汇总']) assert.match(html, new RegExp(label))
   assert.doesNotMatch(html, /活动时间线/)
   assert.doesNotMatch(html, /思维链|技术日志/)
 })

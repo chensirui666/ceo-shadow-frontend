@@ -58,7 +58,7 @@ test('core skill selection starts as one empty slot and renders the chosen Skill
   assert.doesNotMatch(selected, /内容模板|主题总结|详细 Prompt/)
 })
 
-test('skill drawer keeps Add in the selected skill detail instead of every browse card', async () => {
+test('skill drawer localizes the add action in the selected skill detail', async () => {
   const { RoutineSkillDrawerBody } = await vite.ssrLoadModule('/src/components/RoutineCoreSkill.tsx')
   assert.equal(typeof RoutineSkillDrawerBody, 'function')
   const draft = createRoutineDraft([], 'Asia/Shanghai', 'zh')
@@ -71,7 +71,8 @@ test('skill drawer keeps Add in the selected skill detail instead of every brows
   assert.match(detail, /基于已连接的工作资料，形成一份结构清晰的项目周报。/)
   assert.match(detail, /能力说明.*输入.*产出.*编辑/s)
   assert.match(detail, /routine-skill-detail-action/)
-  assert.match(detail, /Add/)
+  assert.match(detail, />添加</)
+  assert.doesNotMatch(detail, />Add</)
 })
 
 test('routine settings do not retain legacy content controls or disconnected-app copy', async () => {
@@ -111,9 +112,9 @@ test('recent sessions use outlined status labels and give every state an operati
     { ...base, id: 'failed', startedAt: '2026-09-10T01:00:00.000Z', status: 'failed', deliveries: [] },
   ]
   const html = renderToStaticMarkup(createElement(RoutineSessions, { routine, sessions, service, locale: 'zh' }))
-  assert.match(html, /Recent Sessions/)
+  assert.match(html, /最近执行/)
   assert.match(html, /查看每次生成与发送结果。/)
-  assert.match(html, /routine-sessions-heading"><h2>Recent Sessions<\/h2><p>/)
+  assert.match(html, /routine-sessions-heading"><h2>最近执行<\/h2><p>/)
   assert.equal((html.match(/routine-session-status(?: |\")/g) || []).length, 5)
   assert.match(html, /生成中.*已生成.*已发送.*发送失败.*生成失败/s)
   assert.doesNotMatch(html, /routine-session-status[^>]*><svg/)
@@ -147,7 +148,7 @@ test('document previews do not expose temporary or demo labels', async () => {
   const document = await createRoutineService().preview(draft, 'zh')
   for (const style of ['edition', 'signal', 'folio']) {
     const html = renderToStaticMarkup(createElement(RoutineDocumentView, { document: { ...document, style }, locale: 'zh' }))
-    assert.match(html, /Friday Routine/)
+    assert.match(html, /Friday 日程/)
     assert.match(html, /工作进展/)
     assert.doesNotMatch(html, /示例|Demo|未实际生成或发送|未读取你的工作资料/)
     assert.match(html, new RegExp(`routine-paper-${style}`))

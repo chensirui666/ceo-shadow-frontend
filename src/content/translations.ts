@@ -503,7 +503,7 @@ export const translations: Record<Locale, Translation> = {
       authVisualLabel: 'Friday 工作场景',
     },
     workspace: {
-      nav: { home: 'Message', routine: 'Routine', tasks: 'Task', library: 'Library', contacts: '联系人', memory: '记忆', feedback: '反馈', settings: '设置' },
+      nav: { home: '消息', routine: '日程', tasks: '任务', library: '资料库', contacts: '联系人', memory: '记忆', feedback: '反馈', settings: '设置' },
       primaryNavigation: '主要导航',
       content: (label: string) => `${label}内容`,
       greeting: (name: string) => `欢迎回来，${name}`,
@@ -545,7 +545,7 @@ export const translations: Record<Locale, Translation> = {
         sources: { dingtalk: '钉钉', feishu: '飞书', teams: 'Teams', slack: 'Slack', wecom: '企微', discord: 'Discord' },
         categories: { chat: '聊天', document: '文档', approval: '审批', meeting: '会议' },
         list: {
-          title: 'Message', subtitle: '集中查看 Friday 正在处理、等待你确认和已经完成的事项。', statusNavigation: 'Message 状态', label: 'Message 列表',
+          title: '消息', subtitle: '集中查看 Friday 正在处理、等待你确认和已经完成的事项。', statusNavigation: '消息状态', label: '消息列表',
           columns: { statusTime: '状态与时间', metadata: '对象／来源／类别', question: '用户问题', handling: 'Friday 的处理', actions: '操作' },
           confirm: '确认', skip: '跳过', filteredEmpty: '这里还没有符合当前状态的消息。',
           aside: {
@@ -556,8 +556,8 @@ export const translations: Record<Locale, Translation> = {
           },
         },
         detail: {
-          back: '返回 Message', question: '原始问题', rationale: 'Friday 的判断依据', result: '回答／处理结果', feedback: '反馈', originalSource: (source, sender, time) => `${source}消息来自${sender} · ${time}`, references: '处理依据与材料',
-          actions: '操作', noActions: '当前没有需要你执行的操作。', information: 'Message 信息', object: '对象', sender: '发送人', source: '来源', category: '类别', status: '状态', time: '时间', received: '收到时间', taskSummary: 'Task 汇总', taskCount: (total, open) => `${total} 个 Task（${open} 个进行中）`,
+          back: '返回消息', question: '原始问题', rationale: 'Friday 的判断依据', result: '回答／处理结果', feedback: '反馈', originalSource: (source, sender, time) => `${source}消息来自${sender} · ${time}`, references: '处理依据与材料',
+          actions: '操作', noActions: '当前没有需要你执行的操作。', information: '消息信息', object: '对象', sender: '发送人', source: '来源', category: '类别', status: '状态', time: '时间', received: '收到时间', taskSummary: '任务汇总', taskCount: (total, open) => `${total} 个任务（${open} 个进行中）`,
         },
         feedbackControls: { upvote: '点赞', upvoteReason: '有帮助。', downvote: '点踩', reason: '反馈原因', submit: '提交反馈' },
       },
